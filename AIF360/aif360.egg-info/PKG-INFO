@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: aif360
+Version: 0.2.2
+Summary: IBM AI Fairness 360
+Home-page: https://github.com/IBM/AIF360
+Author: aif360 developers
+Author-email: aif360@us.ibm.com
+License: Apache License 2.0
+Description: The AI Fairness 360 toolkit is an open-source library to help detect and remove bias in machine
+        learning models. The AI Fairness 360 Python package includes a comprehensive set of metrics for datasets and models to
+        test for biases, explanations for these metrics, and algorithms to mitigate bias in datasets and models.
+        
+        We have developed the package with extensibility in mind. This library is still in development. We encourage the
+        contribution of your datasets, metrics, explainers, and debiasing algorithms.
+Platform: UNKNOWN
+Description-Content-Type: text/markdown
