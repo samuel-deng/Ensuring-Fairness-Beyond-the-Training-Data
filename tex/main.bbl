@@ -1,0 +1,222 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.0 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\datalist[entry]{anyt/global//global/global}
+  \entry{ABDL+18}{article}{}
+    \name{author}{5}{}{%
+      {{hash=AA}{%
+         family={Agarwal},
+         familyi={A\bibinitperiod},
+         given={Alekh},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=BA}{%
+         family={Beygelzimer},
+         familyi={B\bibinitperiod},
+         given={Alina},
+         giveni={A\bibinitperiod},
+      }}%
+      {{hash=DM}{%
+         family={Dud{\'\i}k},
+         familyi={D\bibinitperiod},
+         given={Miroslav},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=LJ}{%
+         family={Langford},
+         familyi={L\bibinitperiod},
+         given={John},
+         giveni={J\bibinitperiod},
+      }}%
+      {{hash=WH}{%
+         family={Wallach},
+         familyi={W\bibinitperiod},
+         given={Hanna},
+         giveni={H\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{AA+1}
+    \strng{fullhash}{AABADMLJWH1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{Aga+18}
+    \field{sortinit}{A}
+    \field{sortinithash}{A}
+    \field{title}{{A Reductions Approach to Fair Classification}}
+    \field{journaltitle}{arXiv preprint arXiv:1803.02453}
+    \field{year}{2018}
+  \endentry
+
+  \entry{BG18}{inproceedings}{}
+    \name{author}{2}{}{%
+      {{hash=BJ}{%
+         family={Buolamwini},
+         familyi={B\bibinitperiod},
+         given={Joy},
+         giveni={J\bibinitperiod},
+      }}%
+      {{hash=GT}{%
+         family={Gebru},
+         familyi={G\bibinitperiod},
+         given={Timnit},
+         giveni={T\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{BJGT1}
+    \strng{fullhash}{BJGT1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{BG18}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \field{booktitle}{Conference on fairness, accountability and transparency}
+    \field{pages}{77\bibrangedash 91}
+    \field{title}{{Gender Shades: Intersectional Accuracy Disparities in
+  Commercial Gender Classification}}
+    \field{year}{2018}
+  \endentry
+
+  \entry{BCZS+16}{inproceedings}{}
+    \name{author}{5}{}{%
+      {{hash=BT}{%
+         family={Bolukbasi},
+         familyi={B\bibinitperiod},
+         given={Tolga},
+         giveni={T\bibinitperiod},
+      }}%
+      {{hash=CKW}{%
+         family={Chang},
+         familyi={C\bibinitperiod},
+         given={Kai-Wei},
+         giveni={K\bibinithyphendelim W\bibinitperiod},
+      }}%
+      {{hash=ZJY}{%
+         family={Zou},
+         familyi={Z\bibinitperiod},
+         given={James\bibnamedelima Y},
+         giveni={J\bibinitperiod\bibinitdelim Y\bibinitperiod},
+      }}%
+      {{hash=SV}{%
+         family={Saligrama},
+         familyi={S\bibinitperiod},
+         given={Venkatesh},
+         giveni={V\bibinitperiod},
+      }}%
+      {{hash=KAT}{%
+         family={Kalai},
+         familyi={K\bibinitperiod},
+         given={Adam\bibnamedelima T},
+         giveni={A\bibinitperiod\bibinitdelim T\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{BT+1}
+    \strng{fullhash}{BTCKWZJYSVKAT1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{Bol+16}
+    \field{sortinit}{B}
+    \field{sortinithash}{B}
+    \field{booktitle}{Advances in neural information processing systems}
+    \field{pages}{4349\bibrangedash 4357}
+    \field{title}{{Man is to Computer Programmer as Woman is to Homemaker?
+  Debiasing Word Embeddings}}
+    \field{year}{2016}
+  \endentry
+
+  \entry{HPS16}{inproceedings}{}
+    \true{moreauthor}
+    \name{author}{3}{}{%
+      {{hash=HM}{%
+         family={Hardt},
+         familyi={H\bibinitperiod},
+         given={Moritz},
+         giveni={M\bibinitperiod},
+      }}%
+      {{hash=PE}{%
+         family={Price},
+         familyi={P\bibinitperiod},
+         given={Eric},
+         giveni={E\bibinitperiod},
+      }}%
+      {{hash=SN}{%
+         family={Srebro},
+         familyi={S\bibinitperiod},
+         given={Nati},
+         giveni={N\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{HMPESN+1}
+    \strng{fullhash}{HMPESN+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{HPS+16}
+    \field{sortinit}{H}
+    \field{sortinithash}{H}
+    \field{booktitle}{Advances in neural information processing systems}
+    \field{pages}{3315\bibrangedash 3323}
+    \field{title}{{Equality of Opportunity in Supervised Learning}}
+    \field{year}{2016}
+  \endentry
+
+  \entry{ZWSP+13}{inproceedings}{}
+    \name{author}{5}{}{%
+      {{hash=ZR}{%
+         family={Zemel},
+         familyi={Z\bibinitperiod},
+         given={Rich},
+         giveni={R\bibinitperiod},
+      }}%
+      {{hash=WY}{%
+         family={Wu},
+         familyi={W\bibinitperiod},
+         given={Yu},
+         giveni={Y\bibinitperiod},
+      }}%
+      {{hash=SK}{%
+         family={Swersky},
+         familyi={S\bibinitperiod},
+         given={Kevin},
+         giveni={K\bibinitperiod},
+      }}%
+      {{hash=PT}{%
+         family={Pitassi},
+         familyi={P\bibinitperiod},
+         given={Toni},
+         giveni={T\bibinitperiod},
+      }}%
+      {{hash=DC}{%
+         family={Dwork},
+         familyi={D\bibinitperiod},
+         given={Cynthia},
+         giveni={C\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{ZR+1}
+    \strng{fullhash}{ZRWYSKPTDC1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{Zem+13}
+    \field{sortinit}{Z}
+    \field{sortinithash}{Z}
+    \field{booktitle}{International Conference on Machine Learning}
+    \field{pages}{325\bibrangedash 333}
+    \field{title}{{Learning Fair Representations}}
+    \field{year}{2013}
+  \endentry
+\enddatalist
+\endinput

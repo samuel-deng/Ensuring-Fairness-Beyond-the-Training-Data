@@ -1,0 +1,230 @@
+\documentclass[11pt]{article}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{booktabs}
+
+\usepackage{booktabs} % For formal tables
+\usepackage{tabulary}
+\usepackage{makecell}
+\usepackage{xfrac}
+\usepackage[margin=0.75in]{geometry}
+%\let\comment\relax
+%\usepackage[authormarkup=none]{changes}
+
+\usepackage{thm-restate}
+
+\usepackage[ruled]{algorithm2e} % For algorithms
+\renewcommand{\algorithmcfname}{ALGORITHM}
+\SetAlFnt{\small}
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetAlCapHSkip{0pt}
+\SetKwInput{KwEl}{Elicitation Rule}
+\SetKwInput{KwAgg}{Aggregation Rule}
+\SetKwInput{KwComm}{Communication Complexity}
+\SetKwInput{KwDist}{Distortion}
+\IncMargin{-\parindent}
+
+\usepackage{color}
+\usepackage{amsmath,amsthm,amsfonts,amssymb,bbm}
+\usepackage{enumitem}
+\usepackage[english]{babel}
+\usepackage{multirow}
+\renewcommand*\ttdefault{cmtt}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\usepackage{graphicx}
+\usepackage{cleveref}
+
+
+% COMMENTS
+\newcount\Comments  % 0 suppresses notes to selves in text
+\Comments = 1
+\newcommand{\kibitz}[2]{\ifnum\Comments=1{\color{#1}{#2}}\fi}
+\newcommand{\deb}[1]{\kibitz{magenta}{[Deb: #1]}}
+
+%\renewcommand{\citet}[1]{\citeauthor{#1}~\cite{#1}}
+
+% MATH - GENERIC
+\newcommand{\ceil}[1]{\lceil #1 \rceil}
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
+\newcommand{\sign}{\textrm{sign}}
+\newcommand{\supp}{\textrm{supp}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\E}{\mathbb{E}}
+\renewcommand{\tilde}{\widetilde}
+%\renewcommand{\vec}{\mathbf}
+\newcommand{\set}[1]{\{#1\}}
+
+\newcommand{\calC}{\mathcal{C}}
+\newcommand{\calE}{\mathcal{E}}
+\newcommand{\calH}{\mathcal{H}}
+\newcommand{\calL}{\mathcal{L}}
+\newcommand{\calP}{\mathcal{P}}
+\newcommand{\calQ}{\mathcal{Q}}
+\newcommand{\calS}{\mathcal{S}}
+\newcommand{\calX}{\mathcal{X}}
+\newcommand{\calY}{\mathcal{Y}}
+
+\newcommand{\bbR}{\mathbb{R}}
+\newcommand{\bbN}{\mathbb{N}}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% CS - COMPLEXITY
+\newcommand{\bigo}[1]{O\left(#1\right)}%
+\newcommand{\bigom}[1]{\Omega\left(#1\right)}%
+\newcommand{\bigolog}[1]{\tilde{O}\left(#1\right)}%
+
+% PAPER SPECIFIC
+\newcommand{\query}{\calQ}
+\newcommand{\complist}{\calP}
+\newcommand{\comp}{P}
+\newcommand{\eli}{\Pi}
+\newcommand{\agg}{\Gamma}
+\newcommand{\comm}{\textrm{C}}
+\newcommand{\dist}{\textrm{dist}}
+\renewcommand{\sc}{\textrm{sc}}
+\newcommand{\nsw}{\textrm{nsw}}
+\newcommand{\sw}{\textrm{sw}}
+\newcommand{\hsw}{\hat{\sw}}
+\newcommand{\hvi}{\hat{v}_i}
+\newcommand{\id}{\mathbbm{1}}
+\newcommand{\vv}{\vec{v}}
+\newcommand{\vrho}{\vec{\rho}}
+\newcommand{\vsigma}{\vec{\sigma}}
+
+\newcommand{\ov}{\vv}
+\newcommand{\vis}{\tilde{v}_i(S)}
+
+
+\newcommand{\hata}{\hat{a}}
+
+\newcommand{\grth}{\textsc{GroupThreshold}\xspace }
+\newcommand{\prefth}{\textsc{PrefThreshold}\xspace}
+\newcommand{\randsub}{\textsc{RandSubset}\xspace}
+\newcommand{\randprefth}{\textsc{RandPrefTh}\xspace}
+
+\newcommand{\plu}{\textsc{Plurality}\xspace}
+\newcommand{\pluth}{\textsc{PluralityThreshold}\xspace}
+\newcommand{\pluunith}{\textsc{PluralityUniformThreshold}\xspace}
+\newcommand{\unif}{\textsc{UniformPartition}\xspace}
+\newcommand{\nhi}{N_{\text{high}}}
+\newcommand{\nlo}{N_{\text{low}}}
+\newcommand{\ahat}{\hat{a}}
+\newcommand{\astar}{a^*}
+\newcommand{\atilde}{\tilde{a}}
+\newcommand{\qstar}{q^*}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\UX}{\mathcal{X}}
+\newcommand{\GFDISJ}{\mathrm{GFDISJ}}
+\newcommand{\FDISJ}{\mathrm{FDISJ}}
+\newcommand{\DISJ}{\mathrm{DISJ}}
+\newcommand{\ent}{\mathrm{H}}
+\newcommand{\mi}{\mathrm{I}}
+\newcommand{\KL}{\mathrm{D_{KL}}}
+\newcommand{\ic}{\mathrm{IC}}
+\newcommand{\bstp}{\bar{s}_t'}
+\newcommand{\ou}{\vec{u}}
+\newcommand{\os}{\vec{\sigma}}
+\newcommand{\low}{\textrm{low}}
+\newcommand{\high}{\textrm{high}}
+\newcommand{\RD}{R_{\delta}}
+
+\newcommand{\Xc}{\mathcal{X}}
+\newcommand{\Ac}{\mathcal{A}}
+\newcommand{\Yc}{\mathcal{Y}}
+\newcommand{\dd}{\mathcal{D}}
+\newcommand{\reg}{\mathrm{Reg}}
+\newcommand{\poi}{\mathrm{Poi}}
+\newcommand{\eye}{\mathbf{1}}
+
+
+
+\hypersetup{
+	colorlinks,
+	linkcolor=red,
+	citecolor=blue,
+	urlcolor=green
+}
+
+\renewcommand\theequation{{\color{red}\arabic{equation}}}
+%bib
+\usepackage[style=alphabetic,natbib=true,backend=bibtex,backref=true,maxbibnames=10]{biblatex}
+\addbibresource{./newrefs.bib}
+\renewcommand{\cite}{\parencite}
+
+\title{{\bfseries Fairness Checking} }
+\begin{document}
+
+\maketitle
+
+
+\section{Introduction}
+Nowadays, AI systems are increasingly being used for making various high-stakes decision making. Applications include bail decision, credit approval, housing allocation etc.
+These applications use learning algorithms and if such algorithms are trained on past data which is almost always biased, such bias is often reflected in the eventual decision. For example, \citet{BCZS+16} show that popular word embeddings implicitly encodes societal bias. Similarly, \citet{BG18} evaluate existing facial recognition systems and find that they perform better on lighter subjects as a whole than on darker subjects as a whole with an 11.8\% - 19.2\% difference in error rates. There have been several approaches to design fair classifiers \cite{ZWSP+13,HPS16,ABDL+18}. Since different algorithms adopt different definitions of fairness and provide different trade-offs with respect to accuracy / utility, it is neither legal nor ethical to enforce any business to use such algorithms. In this paper, we approach this problem with a perspective from the literature of automated verification, and aim to build tools that can verify whether an algorithm satifies a given fairness criteria irrespective of the particular algorithm / dataset used.
+
+\section{Model}
+We first check whether an algorithm is fair against a family of possible distributions. In particular, we consider distributions which are weighted empirical distributions and weightes are chosen so that the new weighted distribution is close to the original training distribution.
+
+\subsection{Setup}
+Suppose, we have access to a ``protected'' attribute $A \in \set{0,1}$, and a qualification attribute $Y \in \set{0,1}$. Let us assume that $X \in \Xc$ denote the set of remaining attributes which are used as input to a classifier $f$. For a distirbution $P$ over the space of attributes $\Xc$, we consider the following two fairness criteria:
+\begin{itemize}
+\item Demographic Parity ({\bfseries DP}):
+$$\abs{\E_{P}[f(X,a)|A=a] - \E_P[f(X,a')|A=a']} \le \epsilon$$
+for all $a$ and $a'$.
+\item Equalized Odds ({\bfseries EO}):
+$$\abs{\E_{P}[f(X,a)|Y=y, A=a] - \E_P[f(X,a')|Y=y, A=a']} \le \epsilon$$
+for all $y,a,$ and $a'$.
+\end{itemize}
+We assume that we have data $(X_i,Y_i,A_i)$ for $i=1,\ldots,n$ and $P$
+can be represented as a weighted empirical distribution i.e. for any $(x,y,a) \in \Xc \times \set{0,1} \times \set{0,1}$ we have
+$$ P(x,y,a) = \sum_{i=1}^n w_i \eye_{(X_i,Y_i,A_i)=(x,y,a)}.$$
+
+\subsection{Checking Demographic Parity (DP)}
+As a start, we assume that the weighted empirical distributions are such that the marginal distributions over the protected attributes are preserved. In particular, we consider weights such that $\sum_{i=1}^n w_i \eye_{A_i = a} = \pi_a$ for all $a$. Here the $\pi_a$ are the proportions for the protected attributes, which we assume are known. We use the following linear programs to check if the classifier $f$ fails on some allowable weighted empirical distribution. For each $a, a'$:
+\begin{equation}
+\label{eq:checkdp}
+\begin{aligned}
+\max_w \quad & \frac{1}{\pi_a} \sum_{i=1}^n w_i f(X_i)\eye_{A_i = a} - \frac{1}{\pi_{a'}} \sum_{i=1}^n w_i f(X_i)\eye_{A_i = a'} \\
+\textrm{s.t.} \quad & \sum_{i=1}^n w_i \eye_{A_i = a} = \pi_a \\
+& \sum_{i=1}^n w_i \eye_{A_i = a'} = \pi_{a'} \\
+& w_i \ge 0 \quad \forall i \in [n] \\
+&\sum_{i=1}^n w_i = 1
+\end{aligned}
+\end{equation}
+If there exists a pair of protected attributes $a,a'$ such that the optimal value of the linear program is more than $\epsilon$, then we have found a violation of DP.
+
+\subsection{Checking Equalized Odds (EO)}
+As in the previous section, we assume that we only care about weighted empirical distributions such that $\sum_{i=1}^n w_i \eye_{A_i = a, Y_i = y} = \pi_{a,y}$ for all $a$ and $y$ where $\pi_{a,y}$ are known proportions for the protected and qualification attributes. We again use the following linear programs to check if $f$ fails on some weighted empirical distribution.
+\begin{equation}
+\label{eq:checkeo}
+\begin{aligned}
+\max_w \quad & \frac{1}{\pi_{a,y}} \sum_{i=1}^n w_i f(X_i)\eye_{A_i = a, Y_i = y} - \frac{1}{\pi_{a',y}} \sum_{i=1}^n w_i f(X_i)\eye_{A_i = a',Y_i = y} \\
+\textrm{s.t.} \quad & \sum_{i=1}^n w_i \eye_{A_i = a, Y_i = y} = \pi_{a,y} \\
+& \sum_{i=1}^n w_i \eye_{A_i = a', Y_i = y} = \pi_{a',y} \\
+& w_i \ge 0 \quad \forall i \in [n] \\
+&\sum_{i=1}^n w_i = 1
+\end{aligned}
+\end{equation}
+
+\section{Result}
+
+\section{Conclusion}
+
+\printbibliography
+\end{document}
