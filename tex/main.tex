@@ -23,6 +23,12 @@
 
 \usepackage[ruled]{algorithm2e} % For algorithms
 \renewcommand{\algorithmcfname}{ALGORITHM}
+\newcommand\mycommfont[1]{\footnotesize\ttfamily\textcolor{blue}{#1}}
+\SetCommentSty{mycommfont}
+
+\SetKwInput{KwInput}{Input}                % Set the Input
+\SetKwInput{KwOutput}{Output}  
+
 \SetAlFnt{\small}
 \SetAlCapFnt{\small}
 \SetAlCapNameFnt{\small}
@@ -114,8 +120,7 @@
 
 
 \newcommand{\hata}{\hat{a}}
-
-
+\newcommand{\WW}{\mathcal{W}}
 
 
 \newcommand{\nhi}{N_{\text{high}}}
@@ -148,9 +153,12 @@
 \newcommand{\reg}{\mathrm{Reg}}
 \newcommand{\poi}{\mathrm{Poi}}
 \newcommand{\eye}{\mathbf{1}}
+\newcommand{\HH}{\mathcal{H}}
+\newcommand{\YY}{\mathcal{Y}}
 
+\newcommand{\eps}{\varepsilon}
 
-
+\newcommand{\norm}[1]{\lVert #1 \rVert}
 \hypersetup{
 	colorlinks,
 	linkcolor=red,
@@ -305,6 +313,86 @@ EO (Y = 1) & 0.17  & 0.0021 & 0.0021  & 0.0026  & 0.00042 & 0.00079 & 0.00051 & 
 \end{table}
 
 We observe that, by modifying the original "fair" distribution with uniform weights to a weighted empirical distribution that violates fairness for both properties (with gap $\ge 0.1$), the distributions are, in fact, extremely similar. The average L1 distance in marginal distributions between features in the original distribution and the violating distribution are all within the range of 0 and 1.5\%. For COMPAS DP, the maximum L1 difference in marginal distributions was 2.5\% for $\texttt{priors\_3}$ and for COMPAS EO, the maximum L1 differences were 2.5\% ($\texttt{age\_45}$, $Y = 0$) and 2.0\% ($\texttt{priors\_3}$, $Y = 1$). For Adult DP, the maximum L1 difference in marginal distributions was 8.8\% ($\texttt{edu\_>12},$ not shown above) and for COMPAS EO, the max L1 differences were 1.7\% ($\texttt{edu\_>12}, Y = 0$) and 2.6 \% ($\texttt{edu\_>12}, Y = 1$). In Appendix A, we include histograms for the marginal distributions of each of the attributes, including those not shown in the tables above. Therefore, we observe that small changes in the weighted empirical distribution of the data result in a violation of unfairness, bringing into question the robustness of fair classifiers. 
+
+\section{Robust and Fair Classification}
+In this section, we first provide a meta-algorithm that helps us to design  fair classifiers that are robust with respect to
+any distribution that are some weighted perturbations of the empirical distribution of the training data. The meta-algorithm repeatedly calls an oracle that solves the fair classification problem with respect to a given weighted empirical distribution. In the next section, we will see how to design such an oracle by modifying standard fair classifiers.
+
+Let $\WW$ be the set of all possible weights i.e. $\WW = \set{w \in \bbR^+_n : \sum_i w_i = 1}$. For a hypothesis $h$ and weight $w$, we define the following loss function $\ell(h,w) = \sum_{i=1}^n w_i \ell(h(x_i,a_i), y_i)$, where $\ell: \YY \times \YY \rightarrow \bbR$ is a convex loss function. Note that, this does not pose any restriction on the classifier $h$, which can be any arbitrary classifier like neural network. We also use $\delta_F^w(f)$ to define the ``unfairness gap'' with respect to the weighted empirical distribution defined by the weight $w$ and fairness constraint $F$ (e.g. DP, EOY1, EOY0). For example, $\delta^w_{DP}(f)$ is defined as
+$$\delta^w_{DP}(f) = \abs{ \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} -  \frac{\sum_{i: a_i = a'} w_i f(x_i,a')}{{\sum_{i: a_i = a'} w_i}} }.$$
+For a class of hypothesis $\HH$, let $\HH_{\WW} = \set{h \in \HH: \delta^w_F(h) \le \epsilon\ \forall w \in \WW}$ be the set of feasible hypothesis. 
+Our goal is to solve the following minmax problem:
+\begin{equation}\label{eq:det-wt-classification}
+\min_{h \in {\HH}_{\WW} } \max_{w \in \WW} \ell(h,w) 
+%&\text{s.t. } \delta^w_F(h) \le \epsilon \nonumber
+\end{equation}
+
+We will allow our algorithm to output a classifier which is randomized i.e. it is a distribution over the hypothesis $\HH$. This will also be necessary if the space $\HH$ is non-convex or if the fairness constraints are such that the set of feasible hypothesis $\HH_{\WW}$ is non-convex. Let us write $\Delta(\HH_{\WW})$ to denote a distribution over the space of feasible hypothesis. For a randomized classifier $Q \in \HH_{\WW}$ define the expected loss of $Q$ as $\ell(Q,w) = \sum_{h} Q(h) \ell(h,w)$. Then we aim to solve the following problem.
+
+\begin{equation}\label{eq:rand-wt-classification}
+\min_{Q \in \Delta(\HH_{\WW}) }  \max_{w \in \WW} \ell(Q,w) 
+\end{equation}
+
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\KwInput{all the inputs}
+\KwOutput{all the outputs}
+
+$w_0(i) = 1/n$ for all $i \in [n]$\\
+$h_0 \in \argmin_{h \in \HH_{\WW}} \frac{1}{n} \sum_{i=1}^n \ell(h(x_i,a_i), y_i)$\\
+%$\qquad \text{s.t. } \delta^{w_0}_F(h) \le \epsilon$\\
+\For{each time step $t \in [T]$}
+{
+	$w_t = w_{t-1} + \eta \nabla_w \ell(h_{t-1},w_{t-1})$\\
+	$w_t = \Pi_{\WW}(w_t)$\\
+	$h_t \in \argmin_{h \in \HH_{\WW}} \sum_{i=1}^n w_t(i) \ell(h(x_i,a_i),y_i)$\\
+	%$\qquad \text{s.t. } \delta^{w_t}_F(h) \le \epsilon$
+}
+\caption{Meta-Algorithm}
+\end{algorithm}
+
+We first discretize the set of weights $\WW$ as follows. For each $i \in [n]$, consider the buckets $B_0 = [0,\delta)$, $B_{j+1} = [(1+\eps)^j \delta, (1+\eps)^{j+1}\delta)$ for $j=0,1,\ldots,M-1$ for $M = O(\log_{1+\eps}(1/\delta) )$. For any weight $w\in \WW$, we consider the weight $w'$. Here $w'_i$ is the upper-end point of the bucket containing $w_i$. Note that this guarantees that either $w_i\le \delta$ or $\frac{w'_i}{1+\eps} \le w_i \le w_i'$. Now we shwo that  fairness guarantee with respect to the weight $w'$ is sufficient to guarantee fairness with respect to the weight $w$. 
+%
+\begin{align*}
+\frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \ge \frac{1}{1+\eps}  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} \ge (1-\eps) \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} 
+\end{align*}
+Also note that,
+\begin{align*}
+\sum_{i: a_i = a} w_i' &\le \sum_{i:a_i = a, w_i > \delta} w_i + \sum_{i: a_i = a, w_i \le \delta} \delta \\
+&\le (1+\eps) \sum_{i:a_i = a, w_i > \delta} w_i' + n \delta
+\end{align*}
+This gives us the following.
+\begin{align*}
+\frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \le \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\frac{1}{1+\eps}\sum_{i: a_i = a} w_i' - \frac{n\delta}{1+\eps} }  \le (1+\eps) \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i' - n\delta } 
+\end{align*}
+Now we substitute, $\delta=\eps/(2n)$. 
+\begin{align}
+\frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \le (1+\eps) \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i' - \eps/2} \le \frac{1+\eps}{1-\eps} \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} \le (1+3\eps)  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'}
+\end{align}
+% \begin{align*}
+% &\frac{\sum_{i: a_i = a} w_i f(x_i,a) - \norm{w - w'}_1}{\sum_{i: a_i = a} w_i + \norm{w - w'}_1} \le \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \le \frac{\sum_{i: a_i = a} w_i f(x_i,a) + \norm{w - w'}_1}{\sum_{i: a_i = a} w_i - \norm{w - w'}_1} \\
+% \iff &\frac{\sum_{i: a_i = a} w_i f(x_i,a) - \eps/4}{\sum_{i: a_i = a} w_i + \eps/4} \le \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \le \frac{\sum_{i: a_i = a} w_i f(x_i,a) + \eps/4}{\sum_{i: a_i = a} w_i - \eps/4} \\
+% \iff & \frac{\sum_{i: a_i = a} w_i f(x_i,a) - \eps/4}{1/2\sum_{i: a_i = a} w_i} \le \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \le  \frac{\sum_{i: a_i = a} w_i f(x_i,a) + \eps/4}{1/2\sum_{i: a_i = a} w_i}
+% \end{align*}
+Now we bound $\delta^w_{DP}(f)$ using the results above. Suppose
+\begin{align*}
+\delta^w_{DP}(f) = \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} -  \frac{\sum_{i: a_i = a'} w_i f(x_i,a')}{\sum_{i: a_i = a'} w_i}
+\end{align*}
+Then we have,
+\begin{align*}
+\delta^w_{DP}(f) &\le (1+3\eps)  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} - (1-\eps) \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'}  \\
+&\le  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} -  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} + 4\eps\\
+&\le \delta^{w'}_{DP}(f) + 4\eps
+\end{align*}
+Therefore, if we guarantee that $\delta^{w'}_{DP}(f) \le \eps$, we have $\delta^w_{DP}(f) \le 5\eps$. Therefore, in order to ensure that $\delta^w_{DP}(f) \le \eps$ we construct $M = O(\log_{1+\eps/5}(10n/\eps) )$ buckets and enforce $\eps/5$ fairness for all the weights constructed using the end-points of the bucket. Let us write $N(\eps/5,\WW)$ to denote the set of all possible such weights vectors. Now our aim is to solve the following problem.
+\begin{align}
+&\min_{h \in \HH} \sum_{i=1}^n w_1(i) \ell(h(x_i,a_i),y_i)\label{eq:final-objective}\\
+&\text{s.t.} \delta^w_F(h) \le \eps / 5\ \forall w \in N(\eps/5,\WW) \nonumber
+\end{align}
+We form the following Lagrangian.
+\begin{align}
+\min_{h \in \HH} \max_{\lambda \in \bbR^{\abs{N(\eps/5,\WW)}}_+, \norm{\lambda}_1 \le B} \sum_{i=1}^n w_1(i) \ell(h(x_i,a_i),y_i) + \sum_{w \in N(\eps/5,\WW)} \lambda_w (\delta^w_F(h) - \eps / 5)
+\end{align}
 
 \section{Conclusion}
 In this paper, we introduce tools to verify whether an algorithm satisfies fairness for the well-known group fairness properties of Demographic Parity and Equalized Odds. We run experiments with these tools on simple weighted empirical distributions of the data. By allowing the weights of the distribution to change within a small $\gamma$ window, we found $\gamma$ such that our new distribution violates fairness by $\epsilon = 0.1$ Upon comparing the marginal distributions of the "unfair," re-weighted distribution to the original "fair" distribution, we found small differences. That is, with small perturbations to the distribution of data, we can get our classifier to violate group fairness. There are several directions for future work.
