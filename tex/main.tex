@@ -404,14 +404,14 @@ Then we have,
 &\le  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} -  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} + 4\eps\\
 &\le \delta^{w'}_{DP}(f) + 4\eps
 \end{align*}
-Therefore, if we guarantee that $\delta^{w'}_{DP}(f) \le \eps$, we have $\delta^w_{DP}(f) \le 5\eps$. Therefore, in order to ensure that $\delta^w_{DP}(f) \le \eps$ we construct $M = O(\log_{1+\eps/5}(10n/\eps) )$ buckets and enforce $\eps/5$ fairness for all the weights constructed using the end-points of the bucket. Let us write $N(\eps/5,\WW)$ to denote the set of all possible such weights vectors. Now our aim is to solve the following problem.
+Therefore, if we guarantee that $\delta^{w'}_{DP}(f) \le \eps$, we have $\delta^w_{DP}(f) \le 5\eps$. Therefore, in order to ensure that $\delta^w_{DP}(f) \le \eps$ we construct $M = O(\log_{1+\eps/5}(10n/\eps) )$ buckets and enforce $\eps/5$ fairness for all the weights constructed using the end-points of the bucket. Let us write $N(\eps/5,\WW)$ to denote the set of all possible such weights vectors. We also introduce the notation $T(w,a,h) = \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i}$. Then $\delta^w_{DP}(f) = \sup_{a,a'}\abs{T(w,a,f) - T(w,a',f)}$. Now our aim is to solve the following problem.
 \begin{align}
 &\min_{h \in \HH} \sum_{i=1}^n w_0(i) \ell(h(x_i,a_i),y_i)\label{eq:final-objective}\\
-&\text{s.t.} \delta^w_F(h) \le \eps / 5\ \forall w \in N(\eps/5,\WW) \nonumber
+&\text{s.t.} T(w,a,h) - T(w,a',h) \le \eps / 5\ \forall w \in N(\eps/5,\WW) \ a,a' \in \Ac \nonumber
 \end{align}
 We form the following Lagrangian.
 \begin{align}
-\min_{h \in \HH} \max_{\lambda \in \bbR^{\abs{N(\eps/5,\WW)}}_+, \norm{\lambda}_1 \le B} \sum_{i=1}^n w_0(i) \ell(h(x_i,a_i),y_i) + \sum_{w \in N(\eps/5,\WW)} \lambda_w (\delta^w_F(h) - \eps / 5)
+\min_{h \in \HH} \max_{\stackrel{\lambda \in \bbR^{\abs{N(\eps/5,\WW)} \times \abs{\Ac}^2}_+}{ \norm{\lambda}_1 \le B} } \sum_{i=1}^n w_0(i) \ell(h(x_i,a_i),y_i) + \sum_{w \in N(\eps/5,\WW)} \sum_{a,a' \in \Ac} \lambda_w^{a,a'} ( T(w,a,h) - T(w,a',h) - \eps / 5)
 \end{align}
 
 {\bfseries Best Respose to $\lambda$}: For a given set of lagrangian multipliers $\{\lambda_w\}_{w \in N(\eps/5,\WW)}$, the optimal choice of $h$ is a weighted classification problem. 
