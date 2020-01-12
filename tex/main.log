@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  11 JAN 2020 11:20
+This is pdfTeX, Version 3.14159265-2.6-1.40.19 (TeX Live 2018) (preloaded format=pdflatex 2018.4.16)  12 JAN 2020 12:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -841,9 +841,10 @@ Package: multirow 2016/11/25 v2.2 Span multiple rows of a table
 \multirow@dima=\skip84
 \bigstrutjot=\dimen199
 )
-\c@theorem=\count288
-\c@conjecture=\count289
-\c@lemma=\count290
+\c@definition=\count288
+\c@theorem=\count289
+\c@conjecture=\count290
+\c@lemma=\count291
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/cleveref/cleveref.sty
 Package: cleveref 2018/03/03 v0.21.3 Intelligent cross-referencing
@@ -861,19 +862,19 @@ LaTeX Info: Redefining \labelcpageref on input line 2234.
 Package cleveref Info: `amsthm' support loaded on input line 2890.
 Package cleveref Info: `algorithm2e' support loaded on input line 3011.
 )
-\Comments=\count291
-Package hyperref Info: Option `colorlinks' set `true' on input line 167.
+\Comments=\count292
+Package hyperref Info: Option `colorlinks' set `true' on input line 168.
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/biblatex/biblatex.sty
 Package: biblatex 2018/03/04 v3.11 programmable bibliographies (PK/MW)
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/etoolbox/etoolbox.sty
 Package: etoolbox 2018/02/11 v2.5e e-TeX tools for LaTeX (JAW)
-\etb@tempcnta=\count292
+\etb@tempcnta=\count293
 )
 (/usr/local/texlive/2018/texmf-dist/tex/latex/logreq/logreq.sty
 Package: logreq 2010/08/04 v1.0 xml request logger
-\lrq@indent=\count293
+\lrq@indent=\count294
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/logreq/logreq.def
 File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
@@ -881,49 +882,49 @@ File: logreq.def 2010/08/04 v1.0 logreq spec v1.0
 (/usr/local/texlive/2018/texmf-dist/tex/generic/xstring/xstring.sty
 (/usr/local/texlive/2018/texmf-dist/tex/generic/xstring/xstring.tex
 \@xs@message=\write3
-\integerpart=\count294
-\decimalpart=\count295
+\integerpart=\count295
+\decimalpart=\count296
 )
 Package: xstring 2013/10/13  v1.7c  String manipulations (C Tellechea)
 )
-\c@tabx@nest=\count296
-\c@listtotal=\count297
-\c@listcount=\count298
-\c@liststart=\count299
-\c@liststop=\count300
-\c@citecount=\count301
-\c@citetotal=\count302
-\c@multicitecount=\count303
-\c@multicitetotal=\count304
-\c@instcount=\count305
-\c@maxnames=\count306
-\c@minnames=\count307
-\c@maxitems=\count308
-\c@minitems=\count309
-\c@citecounter=\count310
-\c@savedcitecounter=\count311
-\c@uniquelist=\count312
-\c@uniquename=\count313
-\c@refsection=\count314
-\c@refsegment=\count315
-\c@maxextratitle=\count316
-\c@maxextratitleyear=\count317
-\c@maxextradate=\count318
-\c@maxextraalpha=\count319
-\c@abbrvpenalty=\count320
-\c@highnamepenalty=\count321
-\c@lownamepenalty=\count322
-\c@maxparens=\count323
-\c@parenlevel=\count324
-\blx@tempcnta=\count325
-\blx@tempcntb=\count326
-\blx@tempcntc=\count327
-\blx@maxsection=\count328
-\blx@maxsegment@0=\count329
-\blx@notetype=\count330
-\blx@parenlevel@text=\count331
-\blx@parenlevel@foot=\count332
-\blx@sectionciteorder@0=\count333
+\c@tabx@nest=\count297
+\c@listtotal=\count298
+\c@listcount=\count299
+\c@liststart=\count300
+\c@liststop=\count301
+\c@citecount=\count302
+\c@citetotal=\count303
+\c@multicitecount=\count304
+\c@multicitetotal=\count305
+\c@instcount=\count306
+\c@maxnames=\count307
+\c@minnames=\count308
+\c@maxitems=\count309
+\c@minitems=\count310
+\c@citecounter=\count311
+\c@savedcitecounter=\count312
+\c@uniquelist=\count313
+\c@uniquename=\count314
+\c@refsection=\count315
+\c@refsegment=\count316
+\c@maxextratitle=\count317
+\c@maxextratitleyear=\count318
+\c@maxextradate=\count319
+\c@maxextraalpha=\count320
+\c@abbrvpenalty=\count321
+\c@highnamepenalty=\count322
+\c@lownamepenalty=\count323
+\c@maxparens=\count324
+\c@parenlevel=\count325
+\blx@tempcnta=\count326
+\blx@tempcntb=\count327
+\blx@tempcntc=\count328
+\blx@maxsection=\count329
+\blx@maxsegment@0=\count330
+\blx@notetype=\count331
+\blx@parenlevel@text=\count332
+\blx@parenlevel@foot=\count333
+\blx@sectionciteorder@0=\count334
 \labelnumberwidth=\skip85
 \labelalphawidth=\skip86
 \biblabelsep=\skip87
@@ -934,9 +935,9 @@ Package: xstring 2013/10/13  v1.7c  String manipulations (C Tellechea)
 \bibhang=\skip92
 \blx@bcfin=\read1
 \blx@bcfout=\write4
-\c@mincomprange=\count334
-\c@maxcomprange=\count335
-\c@mincompwidth=\count336
+\c@mincomprange=\count335
+\c@maxcomprange=\count336
+\c@mincompwidth=\count337
 Package biblatex Info: Trying to load biblatex default data model...
 Package biblatex Info: ... file 'blx-dm.def' found.
 
@@ -947,74 +948,74 @@ Package biblatex Info: Trying to load biblatex style data model...
 Package biblatex Info: ... file 'alphabetic.dbx' not found.
 Package biblatex Info: Trying to load biblatex custom data model...
 Package biblatex Info: ... file 'biblatex-dm.cfg' not found.
-\c@afterword=\count337
-\c@savedafterword=\count338
-\c@annotator=\count339
-\c@savedannotator=\count340
-\c@author=\count341
-\c@savedauthor=\count342
-\c@bookauthor=\count343
-\c@savedbookauthor=\count344
-\c@commentator=\count345
-\c@savedcommentator=\count346
-\c@editor=\count347
-\c@savededitor=\count348
-\c@editora=\count349
-\c@savededitora=\count350
-\c@editorb=\count351
-\c@savededitorb=\count352
-\c@editorc=\count353
-\c@savededitorc=\count354
-\c@foreword=\count355
-\c@savedforeword=\count356
-\c@holder=\count357
-\c@savedholder=\count358
-\c@introduction=\count359
-\c@savedintroduction=\count360
-\c@namea=\count361
-\c@savednamea=\count362
-\c@nameb=\count363
-\c@savednameb=\count364
-\c@namec=\count365
-\c@savednamec=\count366
-\c@translator=\count367
-\c@savedtranslator=\count368
-\c@shortauthor=\count369
-\c@savedshortauthor=\count370
-\c@shorteditor=\count371
-\c@savedshorteditor=\count372
-\c@labelname=\count373
-\c@savedlabelname=\count374
-\c@institution=\count375
-\c@savedinstitution=\count376
-\c@lista=\count377
-\c@savedlista=\count378
-\c@listb=\count379
-\c@savedlistb=\count380
-\c@listc=\count381
-\c@savedlistc=\count382
-\c@listd=\count383
-\c@savedlistd=\count384
-\c@liste=\count385
-\c@savedliste=\count386
-\c@listf=\count387
-\c@savedlistf=\count388
-\c@location=\count389
-\c@savedlocation=\count390
-\c@organization=\count391
-\c@savedorganization=\count392
-\c@origlocation=\count393
-\c@savedoriglocation=\count394
-\c@origpublisher=\count395
-\c@savedorigpublisher=\count396
-\c@publisher=\count397
-\c@savedpublisher=\count398
-\c@language=\count399
-\c@savedlanguage=\count400
-\c@origlanguage=\count401
-\c@savedoriglanguage=\count402
-\c@pageref=\count403
-\c@savedpageref=\count404
+\c@afterword=\count338
+\c@savedafterword=\count339
+\c@annotator=\count340
+\c@savedannotator=\count341
+\c@author=\count342
+\c@savedauthor=\count343
+\c@bookauthor=\count344
+\c@savedbookauthor=\count345
+\c@commentator=\count346
+\c@savedcommentator=\count347
+\c@editor=\count348
+\c@savededitor=\count349
+\c@editora=\count350
+\c@savededitora=\count351
+\c@editorb=\count352
+\c@savededitorb=\count353
+\c@editorc=\count354
+\c@savededitorc=\count355
+\c@foreword=\count356
+\c@savedforeword=\count357
+\c@holder=\count358
+\c@savedholder=\count359
+\c@introduction=\count360
+\c@savedintroduction=\count361
+\c@namea=\count362
+\c@savednamea=\count363
+\c@nameb=\count364
+\c@savednameb=\count365
+\c@namec=\count366
+\c@savednamec=\count367
+\c@translator=\count368
+\c@savedtranslator=\count369
+\c@shortauthor=\count370
+\c@savedshortauthor=\count371
+\c@shorteditor=\count372
+\c@savedshorteditor=\count373
+\c@labelname=\count374
+\c@savedlabelname=\count375
+\c@institution=\count376
+\c@savedinstitution=\count377
+\c@lista=\count378
+\c@savedlista=\count379
+\c@listb=\count380
+\c@savedlistb=\count381
+\c@listc=\count382
+\c@savedlistc=\count383
+\c@listd=\count384
+\c@savedlistd=\count385
+\c@liste=\count386
+\c@savedliste=\count387
+\c@listf=\count388
+\c@savedlistf=\count389
+\c@location=\count390
+\c@savedlocation=\count391
+\c@organization=\count392
+\c@savedorganization=\count393
+\c@origlocation=\count394
+\c@savedoriglocation=\count395
+\c@origpublisher=\count396
+\c@savedorigpublisher=\count397
+\c@publisher=\count398
+\c@savedpublisher=\count399
+\c@language=\count400
+\c@savedlanguage=\count401
+\c@origlanguage=\count402
+\c@savedoriglanguage=\count403
+\c@pageref=\count404
+\c@savedpageref=\count405
 \shorthandwidth=\skip93
 \shortjournalwidth=\skip94
 \shortserieswidth=\skip95
@@ -1050,13 +1051,13 @@ Package biblatex Info: Trying to load generic definitions...
 Package biblatex Info: ... file 'biblatex.def' found.
  (/usr/local/texlive/2018/texmf-dist/tex/latex/biblatex/biblatex.def
 File: biblatex.def 2018/03/04 v3.11 biblatex compatibility (PK/MW)
-\c@textcitecount=\count405
-\c@textcitetotal=\count406
-\c@textcitemaxnames=\count407
-\c@biburlnumpenalty=\count408
-\c@biburlucpenalty=\count409
-\c@biburllcpenalty=\count410
-\c@smartand=\count411
+\c@textcitecount=\count406
+\c@textcitetotal=\count407
+\c@textcitemaxnames=\count408
+\c@biburlnumpenalty=\count409
+\c@biburlucpenalty=\count410
+\c@biburllcpenalty=\count411
+\c@smartand=\count412
 )
 Package biblatex Info: Trying to load natbib compatibility...
 Package biblatex Info: ... file 'blx-natbib.def' found.
@@ -1074,8 +1075,8 @@ Package biblatex Info: ... file 'standard.bbx' found.
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/biblatex/bbx/standard.bbx
 File: standard.bbx 2018/03/04 v3.11 biblatex bibliography style (PK/MW)
-\c@bbx:relatedcount=\count412
-\c@bbx:relatedtotal=\count413
+\c@bbx:relatedcount=\count413
+\c@bbx:relatedtotal=\count414
 ))
 Package biblatex Info: Trying to load citation style 'alphabetic'...
 Package biblatex Info: ... file 'alphabetic.cbx' found.
@@ -1109,34 +1110,34 @@ File: english.lbx 2018/03/04 v3.11 biblatex localization (PK/MW)
 Package biblatex Warning: 'babel/polyglossia' detected but 'csquotes' missing.
 (biblatex)                Loading 'csquotes' recommended.
 
-\@quotelevel=\count414
-\@quotereset=\count415
+\@quotelevel=\count415
+\@quotereset=\count416
 (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 176.
-LaTeX Font Info:    ... okay on input line 176.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 176.
-LaTeX Font Info:    ... okay on input line 176.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 176.
-LaTeX Font Info:    ... okay on input line 176.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 176.
-LaTeX Font Info:    ... okay on input line 176.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 176.
-LaTeX Font Info:    ... okay on input line 176.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 176.
-LaTeX Font Info:    ... okay on input line 176.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 176.
-LaTeX Font Info:    ... okay on input line 176.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 176.
-LaTeX Font Info:    Try loading font information for TS1+cmr on input line 176.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 177.
+LaTeX Font Info:    ... okay on input line 177.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 177.
+LaTeX Font Info:    ... okay on input line 177.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 177.
+LaTeX Font Info:    ... okay on input line 177.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 177.
+LaTeX Font Info:    ... okay on input line 177.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 177.
+LaTeX Font Info:    ... okay on input line 177.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 177.
+LaTeX Font Info:    ... okay on input line 177.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 177.
+LaTeX Font Info:    ... okay on input line 177.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 177.
+LaTeX Font Info:    Try loading font information for TS1+cmr on input line 177.
 
  (/usr/local/texlive/2018/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
-LaTeX Font Info:    ... okay on input line 176.
+LaTeX Font Info:    ... okay on input line 177.
 \AtBeginShipoutBox=\box56
-Package hyperref Info: Link coloring ON on input line 176.
+Package hyperref Info: Link coloring ON on input line 177.
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
@@ -1144,17 +1145,17 @@ Package: nameref 2016/05/21 v2.44 Cross-referencing by name of section
 (/usr/local/texlive/2018/texmf-dist/tex/generic/oberdiek/gettitlestring.sty
 Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 )
-\c@section@level=\count416
+\c@section@level=\count417
 )
-LaTeX Info: Redefining \ref on input line 176.
-LaTeX Info: Redefining \pageref on input line 176.
-LaTeX Info: Redefining \nameref on input line 176.
+LaTeX Info: Redefining \ref on input line 177.
+LaTeX Info: Redefining \pageref on input line 177.
+LaTeX Info: Redefining \nameref on input line 177.
 
 (./main.out) (./main.out)
 \@outlinefile=\write5
 \openout5 = `main.out'.
 
-LaTeX Info: Redefining \microtypecontext on input line 176.
+LaTeX Info: Redefining \microtypecontext on input line 177.
 Package microtype Info: Generating PDF output.
 Package microtype Info: Character protrusion enabled (level 2).
 Package microtype Info: Using default protrusion set `alltext'.
@@ -1174,16 +1175,16 @@ Package caption Info: End \AtBeginDocument code.
 
 (/usr/local/texlive/2018/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count417
+\scratchcounter=\count418
 \scratchdimen=\dimen256
 \scratchbox=\box57
-\nofMPsegments=\count418
-\nofMParguments=\count419
+\nofMPsegments=\count419
+\nofMParguments=\count420
 \everyMPshowfont=\toks36
-\MPscratchCnt=\count420
+\MPscratchCnt=\count421
 \MPscratchDim=\dimen257
-\MPnumerator=\count421
-\makeMPintoPDFobject=\count422
+\MPnumerator=\count422
+\makeMPintoPDFobject=\count423
 \everyMPtoPDFconversion=\toks37
 ) (/usr/local/texlive/2018/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
@@ -1250,16 +1251,16 @@ Package biblatex Info: Data encoding 'utf8' specified.
 Package biblatex Info: Trying to load bibliographic data...
 Package biblatex Info: ... file 'main.bbl' found.
 (./main.bbl)
-Package biblatex Info: Reference section=0 on input line 176.
-Package biblatex Info: Reference segment=0 on input line 176.
-LaTeX Font Info:    Try loading font information for U+msa on input line 179.
+Package biblatex Info: Reference section=0 on input line 177.
+Package biblatex Info: Reference segment=0 on input line 177.
+LaTeX Font Info:    Try loading font information for U+msa on input line 180.
  (/usr/local/texlive/2018/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
 (/usr/local/texlive/2018/texmf-dist/tex/latex/microtype/mt-msa.cfg
 File: mt-msa.cfg 2006/02/04 v1.1 microtype config. file: AMS symbols (a) (RS)
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 179.
+LaTeX Font Info:    Try loading font information for U+msb on input line 180.
 
 (/usr/local/texlive/2018/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
@@ -1274,7 +1275,7 @@ LaTeX Warning: No \author given.
 
 {/usr/local/texlive/2018/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
 [2] [3] [4]
-LaTeX Font Info:    Try loading font information for T1+cmtt on input line 299.
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 300.
 
  (/usr/local/texlive/2018/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
@@ -1285,94 +1286,96 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             See the microtype manual for details.
 
 [5] [6] [7] [8]
-<marginals/compas_DP.png, id=206, 867.24pt x 867.24pt>
+<marginals/compas_DP.png, id=212, 867.24pt x 867.24pt>
 File: marginals/compas_DP.png Graphic file (type png)
 <use marginals/compas_DP.png>
-Package pdftex.def Info: marginals/compas_DP.png  used on input line 417.
+Package pdftex.def Info: marginals/compas_DP.png  used on input line 440.
 (pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 418.
+(caption)                particular \caption on input line 441.
 See the caption package documentation for explanation.
 
-[9 <./marginals/compas_DP.png>]
-<marginals/compas_EO_Y0.png, id=214, 867.24pt x 867.24pt>
+[9]
+<marginals/compas_EO_Y0.png, id=222, 867.24pt x 867.24pt>
 File: marginals/compas_EO_Y0.png Graphic file (type png)
 <use marginals/compas_EO_Y0.png>
-Package pdftex.def Info: marginals/compas_EO_Y0.png  used on input line 425.
+Package pdftex.def Info: marginals/compas_EO_Y0.png  used on input line 448.
 (pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 426.
+(caption)                particular \caption on input line 449.
 See the caption package documentation for explanation.
 
-<marginals/compas_EO_Y1.png, id=215, 867.24pt x 867.24pt>
+[10 <./marginals/compas_DP.png>]
+<marginals/compas_EO_Y1.png, id=230, 867.24pt x 867.24pt>
 File: marginals/compas_EO_Y1.png Graphic file (type png)
 <use marginals/compas_EO_Y1.png>
-Package pdftex.def Info: marginals/compas_EO_Y1.png  used on input line 431.
+Package pdftex.def Info: marginals/compas_EO_Y1.png  used on input line 454.
 (pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
 
+
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 432.
+(caption)                particular \caption on input line 455.
 See the caption package documentation for explanation.
 
-[10 <./marginals/compas_EO_Y0.png>]
+[11 <./marginals/compas_EO_Y0.png>]
 File: marginals/compas_DP.png Graphic file (type png)
 <use marginals/compas_DP.png>
-Package pdftex.def Info: marginals/compas_DP.png  used on input line 439.
+Package pdftex.def Info: marginals/compas_DP.png  used on input line 462.
 (pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 440.
+(caption)                particular \caption on input line 463.
 See the caption package documentation for explanation.
 
-[11 <./marginals/compas_EO_Y1.png>]
+[12 <./marginals/compas_EO_Y1.png>]
 File: marginals/compas_EO_Y0.png Graphic file (type png)
 <use marginals/compas_EO_Y0.png>
-Package pdftex.def Info: marginals/compas_EO_Y0.png  used on input line 447.
+Package pdftex.def Info: marginals/compas_EO_Y0.png  used on input line 470.
 (pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 448.
-See the caption package documentation for explanation.
-
-[12]
-File: marginals/compas_EO_Y1.png Graphic file (type png)
-<use marginals/compas_EO_Y1.png>
-Package pdftex.def Info: marginals/compas_EO_Y1.png  used on input line 453.
-(pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
-
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 454.
+(caption)                particular \caption on input line 471.
 See the caption package documentation for explanation.
 
 [13]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 457.
- [14]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 457.
+File: marginals/compas_EO_Y1.png Graphic file (type png)
+<use marginals/compas_EO_Y1.png>
+Package pdftex.def Info: marginals/compas_EO_Y1.png  used on input line 476.
+(pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 477.
+See the caption package documentation for explanation.
+
+[14]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 480.
+ [15]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 480.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 457.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 457.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 480.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 480.
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 05B3F0FC568B1BD4048BBC7019EA3B5A;966.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 457.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 480.
  ) 
 Here is how much of TeX's memory you used:
- 29328 strings out of 492649
- 534328 string characters out of 6129622
- 837685 words of memory out of 5000000
- 32671 multiletter control sequences out of 15000+600000
- 557849 words of font info for 154 fonts, out of 8000000 for 9000
+ 29363 strings out of 492649
+ 534780 string characters out of 6129622
+ 838750 words of memory out of 5000000
+ 32689 multiletter control sequences out of 15000+600000
+ 559911 words of font info for 162 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 44i,13n,49p,10391b,1617s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 44i,13n,49p,10391b,1619s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2018/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}
 {/usr/local/texlive/2018/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}<
 /usr/local/texlive/2018/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></
@@ -1404,10 +1407,10 @@ pe1/public/cm-super/sfti1000.pfb></usr/local/texlive/2018/texmf-dist/fonts/type
 1/public/cm-super/sfti1095.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/
 public/cm-super/sftt1000.pfb></usr/local/texlive/2018/texmf-dist/fonts/type1/pu
 blic/cm-super/sftt1095.pfb>
-Output written on main.pdf (14 pages, 519553 bytes).
+Output written on main.pdf (15 pages, 527966 bytes).
 PDF statistics:
- 357 PDF objects out of 1000 (max. 8388607)
- 302 compressed objects within 4 object streams
- 72 named destinations out of 1000 (max. 500000)
- 30856 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 373 PDF objects out of 1000 (max. 8388607)
+ 317 compressed objects within 4 object streams
+ 75 named destinations out of 1000 (max. 500000)
+ 31880 words of extra memory for PDF output out of 35830 (max. 10000000)
 

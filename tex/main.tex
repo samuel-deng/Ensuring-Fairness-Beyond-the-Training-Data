@@ -46,6 +46,7 @@
 \usepackage{multirow}
 \renewcommand*\ttdefault{cmtt}
 
+\newtheorem{definition}{Definition}
 \newtheorem{theorem}{Theorem}
 \newtheorem{conjecture}{Conjecture}
 \newtheorem{lemma}{Lemma}
@@ -319,7 +320,7 @@ In this section, we first provide a meta-algorithm that helps us to design  fair
 any distribution that are some weighted perturbations of the empirical distribution of the training data. The meta-algorithm repeatedly calls an oracle that solves the fair classification problem with respect to a given weighted empirical distribution. In the next section, we will see how to design such an oracle by modifying standard fair classifiers.
 
 Let $\WW$ be the set of all possible weights i.e. $\WW = \set{w \in \bbR^+_n : \sum_i w_i = 1}$. For a hypothesis $h$ and weight $w$, we define the following loss function $\ell(h,w) = \sum_{i=1}^n w_i \ell(h(x_i,a_i), y_i)$, where $\ell: \YY \times \YY \rightarrow \bbR$ is a convex loss function. Note that, this does not pose any restriction on the classifier $h$, which can be any arbitrary classifier like neural network. We also use $\delta_F^w(f)$ to define the ``unfairness gap'' with respect to the weighted empirical distribution defined by the weight $w$ and fairness constraint $F$ (e.g. DP, EOY1, EOY0). For example, $\delta^w_{DP}(f)$ is defined as
-$$\delta^w_{DP}(f) = \abs{ \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} -  \frac{\sum_{i: a_i = a'} w_i f(x_i,a')}{{\sum_{i: a_i = a'} w_i}} }.$$
+$$\delta^w_{DP}(f) = \abs{ \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} -  \frac{\sum_{i: a_i = a'} w_i f(x_i,a')}{{\sum_{i: a_i = a'} w_i}} }.$$ For the remainder of this section, we will work with demographic parity (DP), but other types of fairness constraints can be handled analgously.
 For a class of hypothesis $\HH$, let $\HH_{\WW} = \set{h \in \HH: \delta^w_F(h) \le \epsilon\ \forall w \in \WW}$ be the set of feasible hypothesis. 
 Our goal is to solve the following minmax problem:
 \begin{equation}\label{eq:det-wt-classification}
@@ -327,31 +328,50 @@ Our goal is to solve the following minmax problem:
 %&\text{s.t. } \delta^w_F(h) \le \epsilon \nonumber
 \end{equation}
 
-We will allow our algorithm to output a classifier which is randomized i.e. it is a distribution over the hypothesis $\HH$. This will also be necessary if the space $\HH$ is non-convex or if the fairness constraints are such that the set of feasible hypothesis $\HH_{\WW}$ is non-convex. Let us write $\Delta(\HH_{\WW})$ to denote a distribution over the space of feasible hypothesis. For a randomized classifier $Q \in \HH_{\WW}$ define the expected loss of $Q$ as $\ell(Q,w) = \sum_{h} Q(h) \ell(h,w)$. Then we aim to solve the following problem.
+We will allow our algorithm to output a classifier which is randomized i.e. it is a distribution over the hypothesis $\HH$. This will also be necessary if the space $\HH$ is non-convex or if the fairness constraints are such that the set of feasible hypothesis $\HH_{\WW}$ is non-convex. Let us write $\Delta(\HH_{\WW})$ to denote a distribution over the space of feasible hypothesis. For a randomized classifier $Q \in \HH_{\WW}$ define the expected loss of $Q$ as $\ell(Q,w) = \sum_{h} Q(h) \ell(h,w)$. 
 
-\begin{equation}\label{eq:rand-wt-classification}
-\min_{Q \in \Delta(\HH_{\WW}) }  \max_{w \in \WW} \ell(Q,w) 
-\end{equation}
+%Then we aim to solve the following problem.
+
+% \begin{equation}\label{eq:rand-wt-classification}
+% \min_{Q \in \Delta(\HH_{\WW}) }  \max_{w \in \WW} \ell(Q,w) 
+% \end{equation}
 
 \begin{algorithm}[H]
 \DontPrintSemicolon
-\KwInput{all the inputs}
-\KwOutput{all the outputs}
+\KwInput{Training Set: $\{x_i,a_i,y_i\}_{i=1}^n$, set of weights: $\WW$, hypothesis class $\HH$, parameters $T$ and $\eta$.}
+
 
 $w_0(i) = 1/n$ for all $i \in [n]$\\
-$h_0 \in \argmin_{h \in \HH_{\WW}} \frac{1}{n} \sum_{i=1}^n \ell(h(x_i,a_i), y_i)$\\
+$h_0 \in \argmin_{h \in \HH_{\WW}} \sum_{i=1}^n w_0(i) \ell(h(x_i,a_i), y_i)$\\
 %$\qquad \text{s.t. } \delta^{w_0}_F(h) \le \epsilon$\\
 \For{each time step $t \in [T]$}
 {
 	$w_t = w_{t-1} + \eta \nabla_w \ell(h_{t-1},w_{t-1})$\\
 	$w_t = \Pi_{\WW}(w_t)$\\
-	$h_t \in \argmin_{h \in \HH_{\WW}} \sum_{i=1}^n w_t(i) \ell(h(x_i,a_i),y_i)$\\
+	$h_t = M(w_t) \quad [\text{Approximate solution of } \min_{h \in \HH_{\WW}} \sum_{i=1}^n w_t(i) \ell(h(x_i,a_i),y_i)]$\\
 	%$\qquad \text{s.t. } \delta^{w_t}_F(h) \le \epsilon$
 }
-\caption{Meta-Algorithm}
+\KwOutput{Uniform distribution over $\set{h_1,\ldots,h_T}$.}
+\caption{Meta-Algorithm\label{algo:meta}}
 \end{algorithm}
 
-We first discretize the set of weights $\WW$ as follows. For each $i \in [n]$, consider the buckets $B_0 = [0,\delta)$, $B_{j+1} = [(1+\eps)^j \delta, (1+\eps)^{j+1}\delta)$ for $j=0,1,\ldots,M-1$ for $M = O(\log_{1+\eps}(1/\delta) )$. For any weight $w\in \WW$, we consider the weight $w'$. Here $w'_i$ is the upper-end point of the bucket containing $w_i$. Note that this guarantees that either $w_i\le \delta$ or $\frac{w'_i}{1+\eps} \le w_i \le w_i'$. Now we shwo that  fairness guarantee with respect to the weight $w'$ is sufficient to guarantee fairness with respect to the weight $w$. 
+Algorithm \ref{algo:meta} provides a meta algorithm to solve the min-max optimization problem defined in equation \ref{eq:det-wt-classification}. The algorithm is based on ideas presented in \cite{CLSS17}, which, given an $\alpha$-approximate
+Bayesian oracle for distributions over loss functions, provides an $\alpha$-approximate robust solution. So we assume an access to the following approximate Bayesian oracle.
+\begin{definition}\label{def:oracle}
+For any weight $w \in \bbR^n_+$, an $\alpha$-approximate oracle $M$ returns a hypothesis $h' = M(w)$ such that
+$$\sum_{i=1}^n w_i \ell(h'(x_i,a_i),y_i) \le \alpha \min_{h \in \HH_{\WW}} \sum_{i=1}^n w_i \ell(h(x_i,a_i),y_i).$$
+\end{definition}
+Using the approximate Bayesian oracle, we have the following gurantee on the output of algorithm \ref{algo:meta}. 
+\begin{theorem}\label{thm:meta-algo-result}
+Suppose the loss function $\ell(\cdot,\cdot)$ is convex in its first argument. Then the ensemble hypothesis $h^* = \frac{1}{T}\sum_{t=1}^T h_t$, where $\set{h_1,\ldots,h_T}$ are output by the meta-algorithm \ref{algo:meta} given access to the $\alpha$-approximate oracle (\ref{def:oracle}), satisfies the following:
+$$\max_{w \in \WW} \E_{h \sim h^*}\left[ \sum_{i=1}^n w_i \ell(h(x_i,a_i),y_i)\right] \le \alpha \min_{h \in {\HH}_{\WW} } \max_{w \in \WW} \ell(h,w) + \max_{w \in \WW} \norm{w}_2 \sqrt{\frac{2}{T}}$$
+\end{theorem}
+\begin{proof}
+Use theorem 7 from \citet{CLSS17}.
+\end{proof}
+
+We now derive an algorithm for the Baysian oracle promised in \ref{def:oracle}. 
+We first discretize the set of weights $\WW$. For each $i \in [n]$, consider the buckets $B_0 = [0,\delta)$, $B_{j+1} = [(1+\eps)^j \delta, (1+\eps)^{j+1}\delta)$ for $j=0,1,\ldots,M-1$ for $M = O(\log_{1+\eps}(1/\delta) )$. For any weight $w\in \WW$, we consider the weight $w'$. Here $w'_i$ is the upper-end point of the bucket containing $w_i$. Note that this guarantees that either $w_i\le \delta$ or $\frac{w'_i}{1+\eps} \le w_i \le w_i'$. Now we show that  fairness guarantee with respect to the weight $w'$ is sufficient to guarantee fairness with respect to the weight $w$. 
 %
 \begin{align*}
 \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \ge \frac{1}{1+\eps}  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} \ge (1-\eps) \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} 
@@ -386,13 +406,16 @@ Then we have,
 \end{align*}
 Therefore, if we guarantee that $\delta^{w'}_{DP}(f) \le \eps$, we have $\delta^w_{DP}(f) \le 5\eps$. Therefore, in order to ensure that $\delta^w_{DP}(f) \le \eps$ we construct $M = O(\log_{1+\eps/5}(10n/\eps) )$ buckets and enforce $\eps/5$ fairness for all the weights constructed using the end-points of the bucket. Let us write $N(\eps/5,\WW)$ to denote the set of all possible such weights vectors. Now our aim is to solve the following problem.
 \begin{align}
-&\min_{h \in \HH} \sum_{i=1}^n w_1(i) \ell(h(x_i,a_i),y_i)\label{eq:final-objective}\\
+&\min_{h \in \HH} \sum_{i=1}^n w_0(i) \ell(h(x_i,a_i),y_i)\label{eq:final-objective}\\
 &\text{s.t.} \delta^w_F(h) \le \eps / 5\ \forall w \in N(\eps/5,\WW) \nonumber
 \end{align}
 We form the following Lagrangian.
 \begin{align}
-\min_{h \in \HH} \max_{\lambda \in \bbR^{\abs{N(\eps/5,\WW)}}_+, \norm{\lambda}_1 \le B} \sum_{i=1}^n w_1(i) \ell(h(x_i,a_i),y_i) + \sum_{w \in N(\eps/5,\WW)} \lambda_w (\delta^w_F(h) - \eps / 5)
+\min_{h \in \HH} \max_{\lambda \in \bbR^{\abs{N(\eps/5,\WW)}}_+, \norm{\lambda}_1 \le B} \sum_{i=1}^n w_0(i) \ell(h(x_i,a_i),y_i) + \sum_{w \in N(\eps/5,\WW)} \lambda_w (\delta^w_F(h) - \eps / 5)
 \end{align}
+
+{\bfseries Best Respose to $\lambda$}: For a given set of lagrangian multipliers $\{\lambda_w\}_{w \in N(\eps/5,\WW)}$, the optimal choice of $h$ is a weighted classification problem. 
+
 
 \section{Conclusion}
 In this paper, we introduce tools to verify whether an algorithm satisfies fairness for the well-known group fairness properties of Demographic Parity and Equalized Odds. We run experiments with these tools on simple weighted empirical distributions of the data. By allowing the weights of the distribution to change within a small $\gamma$ window, we found $\gamma$ such that our new distribution violates fairness by $\epsilon = 0.1$ Upon comparing the marginal distributions of the "unfair," re-weighted distribution to the original "fair" distribution, we found small differences. That is, with small perturbations to the distribution of data, we can get our classifier to violate group fairness. There are several directions for future work.

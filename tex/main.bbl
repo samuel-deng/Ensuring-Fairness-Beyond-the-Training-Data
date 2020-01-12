@@ -194,6 +194,46 @@
     \field{year}{2017}
   \endentry
 
+  \entry{CLSS17}{inproceedings}{}
+    \name{author}{4}{}{%
+      {{hash=CRS}{%
+         family={Chen},
+         familyi={C\bibinitperiod},
+         given={Robert\bibnamedelima S},
+         giveni={R\bibinitperiod\bibinitdelim S\bibinitperiod},
+      }}%
+      {{hash=LB}{%
+         family={Lucier},
+         familyi={L\bibinitperiod},
+         given={Brendan},
+         giveni={B\bibinitperiod},
+      }}%
+      {{hash=SY}{%
+         family={Singer},
+         familyi={S\bibinitperiod},
+         given={Yaron},
+         giveni={Y\bibinitperiod},
+      }}%
+      {{hash=SV}{%
+         family={Syrgkanis},
+         familyi={S\bibinitperiod},
+         given={Vasilis},
+         giveni={V\bibinitperiod},
+      }}%
+    }
+    \strng{namehash}{CRS+1}
+    \strng{fullhash}{CRSLBSYSV1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{Che+17}
+    \field{sortinit}{C}
+    \field{sortinithash}{C}
+    \field{booktitle}{Advances in Neural Information Processing Systems}
+    \field{pages}{4705\bibrangedash 4714}
+    \field{title}{{Robust Optimization for Non-Convex Objectives}}
+    \field{year}{2017}
+  \endentry
+
   \entry{COMPAS}{misc}{}
     \field{labeltitlesource}{title}
     \field{labelalpha}{Com}
