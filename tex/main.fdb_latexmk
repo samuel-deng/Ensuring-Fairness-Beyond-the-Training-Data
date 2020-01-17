@@ -1,14 +1,14 @@
 # Fdb version 3
-["bibtex main"] 1579269416 "main.aux" "main.bbl" "main" 1579269421
+["bibtex main"] 1579303405 "main.aux" "main.bbl" "main" 1579303423
   "./newrefs.bib" 1579210466 3448 603f3a93cdd35f9fa645abb1e7fdc1aa ""
   "/usr/local/texlive/2019/texmf-dist/bibtex/bst/biblatex/biblatex.bst" 1541279461 64114 9f5431e5c511cac88d0dcd7e87bd2d0e ""
-  "main-blx.bib" 1579269420 334 798400fff2abebe1c5e43d11519d6467 "pdflatex"
-  "main.aux" 1579269420 14788 76f52508bb5f764f3f58b5710054e0c9 "pdflatex"
+  "main-blx.bib" 1579303422 334 798400fff2abebe1c5e43d11519d6467 "pdflatex"
+  "main.aux" 1579303422 14788 6b57dabd5bbed8021014d094c61154a2 "pdflatex"
   (generated)
   "main.blg"
   "main.bbl"
-["pdflatex"] 1579269419 "main.tex" "main.pdf" "main" 1579269421
-  "/dev/null" 1579269415 0 d41d8cd98f00b204e9800998ecf8427e ""
+["pdflatex"] 1579303420 "main.tex" "main.pdf" "main" 1579303423
+  "/dev/null" 1579303414 0 d41d8cd98f00b204e9800998ecf8427e ""
   "/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2019/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
@@ -197,18 +197,18 @@
   "/usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1557342064 3277517 23507ed665b4dd9046f0f2a94bbef2be ""
   "/usr/local/texlive/2019/texmf-var/web2c/pdftex/pdflatex.fmt" 1557342086 4259635 562fc36ec496993777a6c428d8bfb811 ""
   "/usr/local/texlive/2019/texmf.cnf" 1557341546 577 d150fef99ac436ad1156e86b0892f6ef ""
-  "main.aux" 1579269420 14788 76f52508bb5f764f3f58b5710054e0c9 "pdflatex"
-  "main.bbl" 1579269416 12728 c9f673b16243f354a9ea7c2937a554ec "bibtex main"
-  "main.out" 1579269420 966 05b3f0fc568b1bd4048bbc7019ea3b5a "pdflatex"
-  "main.run.xml" 1579269420 2561 50a053f5a73d7fb0e4ae29c239ba6478 "pdflatex"
-  "main.tex" 1579269413 39673 6558882cd664bc67f94c44006ca4cf8d ""
+  "main.aux" 1579303422 14788 6b57dabd5bbed8021014d094c61154a2 "pdflatex"
+  "main.bbl" 1579303405 12728 c9f673b16243f354a9ea7c2937a554ec "bibtex main"
+  "main.out" 1579303422 966 05b3f0fc568b1bd4048bbc7019ea3b5a "pdflatex"
+  "main.run.xml" 1579303422 2561 50a053f5a73d7fb0e4ae29c239ba6478 "pdflatex"
+  "main.tex" 1579303420 41108 7b1fef768ee67b4b21ca81cfecba34b9 ""
   "marginals/compas_DP.png" 1573425842 34769 64377bf01e46c12caf96d79c39a443f9 ""
   "marginals/compas_EO_Y0.png" 1573425842 35122 3d8ee62beb49980faa4a724678b0f430 ""
   "marginals/compas_EO_Y1.png" 1573425842 35109 1b0f6e31f21afa41b4154405276ca7d1 ""
   (generated)
+  "main.pdf"
+  "main.aux"
+  "main.log"
+  "main-blx.bib"
   "main.run.xml"
   "main.out"
-  "main.log"
-  "main.pdf"
-  "main-blx.bib"
-  "main.aux"
