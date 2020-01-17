@@ -156,7 +156,7 @@
 \newcommand{\eye}{\mathbf{1}}
 \newcommand{\HH}{\mathcal{H}}
 \newcommand{\YY}{\mathcal{Y}}
-
+\newcommand{\Kc}{\mathcal{K}}
 \newcommand{\eps}{\varepsilon}
 
 \newcommand{\norm}[1]{\lVert #1 \rVert}
@@ -410,11 +410,32 @@ Therefore, if we guarantee that $\delta^{w'}_{DP}(f) \le \eps$, we have $\delta^
 &\text{s.t.} T(w,a,h) - T(w,a',h) \le \eps / 5\ \forall w \in N(\eps/5,\WW) \ a,a' \in \Ac \nonumber
 \end{align}
 We form the following Lagrangian.
-\begin{align}
+\begin{align}\label{eq:lagrangian}
 \min_{h \in \HH} \max_{\stackrel{\lambda \in \bbR^{\abs{N(\eps/5,\WW)} \times \abs{\Ac}^2}_+}{ \norm{\lambda}_1 \le B} } \sum_{i=1}^n w_0(i) \ell(h(x_i,a_i),y_i) + \sum_{w \in N(\eps/5,\WW)} \sum_{a,a' \in \Ac} \lambda_w^{a,a'} ( T(w,a,h) - T(w,a',h) - \eps / 5)
 \end{align}
 
-{\bfseries Best Respose to $\lambda$}: For a given set of lagrangian multipliers $\{\lambda_w\}_{w \in N(\eps/5,\WW)}$, the optimal choice of $h$ is a weighted classification problem. 
+We now focus on solving the problem defined in equation \ref{eq:lagrangian}. In order to do so, we first convert equation \ref{eq:lagrangian} as a two-player zero-sum game. Here the learner's pure strategy is to play a hypothesis $h$ in $\HH$. And the auditor's pure strategy is to play a vector $\lambda \in \bbR^{\abs{N(\eps/5,\WW)} \times \abs{\Ac}^2}$ such that either all the coordinates of $\lambda$ are zero or exactly one is set to either $B$ or $-B$. We denote these set of pure strategies by $\Lambda_p$. Then for any pair of actions $(h,\lambda) \in \HH \times \Lambda_p$, the payoff is defined as
+\[U(h,\lambda) = \sum_{i=1}^n w_0(i) \ell(h(x_i,a_i),y_i) + \sum_{w \in N(\eps/5,\WW)} \sum_{a,a' \in \Ac} \lambda_w^{a,a'} ( T(w,a,h) - T(w,a',h) - \eps / 5) \]
+
+
+ Let us first recall the Regularized Follow the Leader (RFTL) algorithm for online convex optimization.
+
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\KwInput{$\eta > 0$, regularization function $R$, and a convex compact set $\Kc$.}
+Set $x_1 = \argmin_{x \in \Kc}R(x)$\\
+%$\qquad \text{s.t. } \delta^{w_0}_F(h) \le \epsilon$\\
+\For{$t \in [T]$}
+{
+	Predict $x_t$\\
+	Observe $f_t$ and compute $\nabla f_t(x_t)$\\
+	Update $$x_{t+1} = \argmin_{x \in \Kc} \left\{\eta \sum_{s=1}^t \nabla f_t(x_t)^T x + R(x)  \right\}$$\\
+	%$\qquad \text{s.t. } \delta^{w_t}_F(h) \le \epsilon$
+}
+\caption{RFTL}
+\end{algorithm}
+
+%{\bfseries Best Respose to $\lambda$}: For a given set of lagrangian multipliers $\{\lambda_w\}_{w \in N(\eps/5,\WW)}$, the optimal choice of $h$ is a weighted classification problem. 
 
 
 \section{Conclusion}
