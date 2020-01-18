@@ -461,7 +461,7 @@ Therefore, as long as we have access to an oracle that solves the cost-sensitive
 	}
 }
 Set $(a^*,a^{'*},\pi^*) = \argmax_{a,a',\pi} \text{val}(a,a',\pi)$\\
-\If{$\text{val}(a^*,a^{'*},\pi^*) > \eps - 4\gamma_1$}
+\If{$\text{val}(a^*,a^{'*},\pi^*) > \eps$}
 {
 	Let $w = w(a^*,a^{'*},\pi^*)$.\\
 	\For{$i \in [n]$}
@@ -478,10 +478,22 @@ Set $(a^*,a^{'*},\pi^*) = \argmax_{a,a',\pi} \text{val}(a,a',\pi)$\\
 \end{algorithm}
 
 \begin{theorem}
-Algorithm \ref{algo:best-lambda} is an $\gamma_1 + \gamma_2$-approximate best response for the $\lambda$-player.
+Algorithm \ref{algo:best-lambda} is an $B(4\gamma_1 + \gamma_2)$-approximate best response for the $\lambda$-player i.e. for any $h \in \HH$, it returns $\lambda^*$ such that
+$$U(h,\lambda^*) \ge \max_{\lambda} U(h,\lambda) - B(4\gamma_1 + \gamma_2)$$
 \end{theorem}
 \begin{proof}
-We need to consider two cases.
+We need to consider two cases. First, suppose that $T(w,a,h) - T(w,a',h) \le \eps - 4\gamma_1$ for all $w \in N(\gamma_1,\WW)$ and $a,a' \in \Ac$. Then for any marginal $\pi \in N(\gamma_2,\Ac)$, and $a,a'$ consider the corresponding linear program. We show that the optimal value of the LP is bounded by $\eps$. Indeed, any weight $w$ satisfying the marginal conditions i.e. $\sum_{i:a_i = a}w_i = \pi_a$ and $\sum_{i:a_i = a'}w_i = \pi_{a'}$. Then $w'$ be the weight constructed by rounding the weight $w$ i.e. for each $i \in [n]$, let $w_i'$ be the upper-end point of the bucket containing $w_i$. As we proved earlier $\delta^w_{DP}(h) \le \delta^{w'}_{DP} + 4\gamma_1$. This gives that $\delta^w_{DP}(h) \le \eps$. This implies that the optimal value of the LP is always less than $\eps$. So algorithm \ref{algo:best-lambda} returns the zero vector, which is the optimal solution in this case.
+
+Second, there exists $w,a,a'$ such that $T(w,a,h) - T(w,a',h) > \eps - 4\gamma_1$ and in particular let $(w^*,a^*,a^{'*}) \in \argmax_{w,a,a'} T(w,a,h) - T(w,a',h)$. Then the optimal solution sets $\lambda^{a^*,a^{'*}}_{w^*}$ to $B$ and everything else to zero. Let $\pi_{a^*}$ and $\pi_{a^{'*}}$ be the corresponding marginals for groups $a$ and $a'$, and let $\pi'_{a^*}$ and $\pi'_{a^{'*}}$ be the upper-end point of the bucket containing $\pi_{a^*}$ and $\pi_{a^{'*}}$ respectively. This guarantees the following.
+$$ \frac{\pi'_{a^*}}{1 + \gamma_2} \le \pi_{a^*} \le \pi'_{a^*} \quad \text{and} \quad \frac{\pi'_{a^{'*}}}{1 + \gamma_2} \le \pi_{a^{'*}} \le \pi'_{a^{'*}} $$
+Now, consider the LP corresponding to the marginal $\pi'$ and subgroups $a^*$ and $a^{'*}$. 
+\begin{align*}
+&\frac{1}{\pi'_{a^*}} \sum_{i:a_i = a^*} w_i h(x_i,a^*) - \frac{1}{\pi'_{a^{'*}}} \sum_{i:a_i = a^{'*}} w_i h(x_i,a^{'*}) \\
+&\ge \frac{1}{(1+\gamma_2) \pi_{a^*}} \sum_{i:a_i = a^*} w_i h(x_i,a^*) - \frac{1}{\pi_{a^{'*}}} \sum_{i:a_i = a^{'*}} w_i h(x_i,a^{'*})  \\
+&\ge (1-\gamma_2) T(w,a^*,h) - T(w,a^{'*},h)\\
+&\ge T(w,a^*,h) - T(w,a^{'*},h) - \gamma_2
+\end{align*}
+Therefore, if the maximum value of $T(w,a,h) - T(w,a',h)$ over all weights $w$ and subgroups $a,a'$ is larger than $\eps + \gamma_2$, the value of the corresponding LP will be larger than $\eps$ and the algorithm will set the correct coordinate of $\lambda$ to $B$. On the other hand, if the maximum value of $T(w,a,h) - T(w,a',h)$ is between $\eps - 4\gamma_1$ and $\eps+\gamma_2$. In that case, the algorithm might return the zero vector with value zero. However, the optimal can be as large as $B \times (4\gamma_1 + \gamma_2)$.
 \end{proof}
 
  Let us first recall the Regularized Follow the Leader (RFTL) algorithm for online convex optimization.
