@@ -439,8 +439,50 @@ Then the $h$-player's best response becomes the following cost-sensitive classif
 \end{equation}
 Therefore, as long as we have access to an oracle that solves the cost-sensitive classification problem, the $h$-player can solve it's best response problem.
 
-\noindent{\bfseries Best response of the $\lambda$-player}: 
+\noindent{\bfseries Best response of the $\lambda$-player}: We first discretize the simplex over $\abs{\Ac}$ groups, $\Delta_{\Ac} = \set{\pi \in \bbR^{\abs{\Ac}}_+: \sum_{a \in \Ac} \pi_a = 1}$. First, discretize $[0,1]$ as $0,\delta, (1+\gamma)^j \delta$ for $j=1,2,\ldots,M$ for $M = O(\log_{1+\gamma}(1/\delta))$. This discretizes $[0,1]^{\Ac}$ into $M^{\abs{\Ac} }$ points. Now we just retain the points for which $\sum_{a\in \Ac} \pi_a \in (1-2\gamma,1+2\gamma)$ and discard all other points. Let us denote the set of such points as $N(\gamma,\delta,\Ac)$. Algorithm \ref{algo:best-lambda} describes the best response of the $\lambda$-player for a given choice of $h$. It goes through all the points $\pi$ in $N(\gamma,\delta,\Ac)$ and for each such value and a pair of groups $a,a'$ finds the weight $w$ which maximizes $T(w,a,h) - T(w,a',h)$. Note that this can be solved using a Linear Program as the weights assigned to a group is fixed by the point $\pi$. Out of all the solutions, the algorithm finds the one with the maximum value. Then it checks whether the maximum violates the constraint i.e. greater than $\eps / 5$. If so, it sets the corresponding $\lambda$ value to $B$ and everything else to $0$. If not, it returns the zero vector. Note that, the weight returned by the linear program need not correspond to a weight in $N(\eps/5, \WW)$. In that case, the algorithm rounds the weight to the nearest weight in $N(\eps/5,\WW)$ and considers the corresponding $\lambda$ variable.
 
+\begin{algorithm}[H]
+\DontPrintSemicolon
+\KwInput{Training Set: $\{x_i,a_i,y_i\}_{i=1}^n$, and hypothesis $h \in \HH$.}
+%\KwInput{Training Set: $\{x_i,a_i,y_i\}_{i=1}^n$, set of weights: $\WW$, hypothesis class $\HH$, parameters $T$ and $\eta$.}
+\For{each $\pi \in N(\gamma,\delta,\Ac)$}
+{
+	\For{each $a,a' \in \Ac$}
+	{
+	Solve the following LP:
+	\begin{align*}
+	w(a,a',\pi) = \argmax_w \quad &\frac{1}{\pi_a} \sum_{i:a_i = a} w_i h(x_i,a) - \frac{1}{\pi_{a'}} \sum_{i:a_i = a'} w_i h(x_i,a') \\
+	\textrm{s.t.} \quad & \sum_{i=1:a_i = a} w_i  = \pi_a \\
+& \sum_{i=1: a_i = a'} w_i = \pi_{a'} \\
+& w_i \ge 0 \quad \forall i \in [n] \\
+&\sum_{i=1}^n w_i = 1
+	\end{align*}
+	Set $\text{val}(a,a',\pi) = \frac{1}{\pi_a} \sum_{i:a_i = a} w(a,a',\pi)_i h(x_i,a) - \frac{1}{\pi_{a'}} \sum_{i:a_i = a'} w(a,a',\pi)_i h(x_i,a')$\\
+	}
+}
+Set $(a^*,a^{'*},\pi^*) = \argmax_{a,a',\pi} \text{val}(a,a',\pi)$\\
+\If{$\text{val}(a^*,a^{'*},\pi^*) > \eps / 5$}
+{
+	Let $w = w(a^*,a^{'*},\pi^*)$.\\
+	\For{$i \in [n]$}
+		{Let $w_i'$ be the upper-end point of the bucket containing $w_i$.\\}
+	\Return{$\lambda^{a,a'}_w = \left\{ \begin{array}{cc}
+	B & \text{ if } (a,a',w) = (a^*,a^{'*},w') \\
+	0 & \text{ o.w. }
+	\end{array}\right.$}
+}
+\Else{
+	\Return{$\lambda^{a,a'}_w = 0$ for all $a,a' \in \Ac$ and $w \in N(\eps/5,\WW)$.}
+}
+\caption{Best Response of the $\lambda$-player\label{algo:best-lambda}}
+\end{algorithm}
+
+\begin{theorem}
+Algorithm \ref{algo:best-lambda} is an $\eps/5+\gamma$-approximate best response for the $\lambda$-player.
+\end{theorem}
+\begin{proof}
+We need to consider two cases.
+\end{proof}
 
  Let us first recall the Regularized Follow the Leader (RFTL) algorithm for online convex optimization.
 

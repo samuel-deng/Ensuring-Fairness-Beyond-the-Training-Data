@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.5.8)  17 JAN 2020 18:23
+This is pdfTeX, Version 3.14159265-2.6-1.40.20 (TeX Live 2019) (preloaded format=pdflatex 2019.5.8)  17 JAN 2020 22:38
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1285,134 +1285,135 @@ Package microtype Info: Loading generic protrusion settings for font family
 (microtype)             For optimal results, create family-specific settings.
 (microtype)             See the microtype manual for details.
 
-[5] [6] [7] [8] [9]
-<marginals/compas_DP.png, id=225, 867.24pt x 867.24pt>
+[5] [6] [7] [8] [9] [10]
+<marginals/compas_DP.png, id=235, 867.24pt x 867.24pt>
 File: marginals/compas_DP.png Graphic file (type png)
 <use marginals/compas_DP.png>
-Package pdftex.def Info: marginals/compas_DP.png  used on input line 485.
+Package pdftex.def Info: marginals/compas_DP.png  used on input line 527.
 (pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 486.
+(caption)                particular \caption on input line 528.
 See the caption package documentation for explanation.
 
-[10]
-<marginals/compas_EO_Y0.png, id=234, 867.24pt x 867.24pt>
+[11]
+<marginals/compas_EO_Y0.png, id=244, 867.24pt x 867.24pt>
 File: marginals/compas_EO_Y0.png Graphic file (type png)
 <use marginals/compas_EO_Y0.png>
-Package pdftex.def Info: marginals/compas_EO_Y0.png  used on input line 493.
+Package pdftex.def Info: marginals/compas_EO_Y0.png  used on input line 535.
 (pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 494.
+(caption)                particular \caption on input line 536.
 See the caption package documentation for explanation.
 
-[11 <./marginals/compas_DP.png>]
-<marginals/compas_EO_Y1.png, id=242, 867.24pt x 867.24pt>
+[12 <./marginals/compas_DP.png>]
+<marginals/compas_EO_Y1.png, id=252, 867.24pt x 867.24pt>
 File: marginals/compas_EO_Y1.png Graphic file (type png)
 <use marginals/compas_EO_Y1.png>
-Package pdftex.def Info: marginals/compas_EO_Y1.png  used on input line 499.
+Package pdftex.def Info: marginals/compas_EO_Y1.png  used on input line 541.
 (pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 500.
+(caption)                particular \caption on input line 542.
 See the caption package documentation for explanation.
 
-[12 <./marginals/compas_EO_Y0.png>]
+[13 <./marginals/compas_EO_Y0.png>]
 File: marginals/compas_DP.png Graphic file (type png)
 <use marginals/compas_DP.png>
-Package pdftex.def Info: marginals/compas_DP.png  used on input line 507.
+Package pdftex.def Info: marginals/compas_DP.png  used on input line 549.
 (pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 508.
+(caption)                particular \caption on input line 550.
 See the caption package documentation for explanation.
 
-[13 <./marginals/compas_EO_Y1.png>]
+[14 <./marginals/compas_EO_Y1.png>]
 File: marginals/compas_EO_Y0.png Graphic file (type png)
 <use marginals/compas_EO_Y0.png>
-Package pdftex.def Info: marginals/compas_EO_Y0.png  used on input line 515.
+Package pdftex.def Info: marginals/compas_EO_Y0.png  used on input line 557.
 (pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
 
 
 Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 516.
-See the caption package documentation for explanation.
-
-[14]
-File: marginals/compas_EO_Y1.png Graphic file (type png)
-<use marginals/compas_EO_Y1.png>
-Package pdftex.def Info: marginals/compas_EO_Y1.png  used on input line 521.
-(pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
-
-
-Package caption Warning: The option `hypcap=true' will be ignored for this
-(caption)                particular \caption on input line 522.
+(caption)                particular \caption on input line 558.
 See the caption package documentation for explanation.
 
 [15]
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 525.
- [16]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 525.
+File: marginals/compas_EO_Y1.png Graphic file (type png)
+<use marginals/compas_EO_Y1.png>
+Package pdftex.def Info: marginals/compas_EO_Y1.png  used on input line 563.
+(pdftex.def)             Requested size: 433.61894pt x 433.61894pt.
+
+
+Package caption Warning: The option `hypcap=true' will be ignored for this
+(caption)                particular \caption on input line 564.
+See the caption package documentation for explanation.
+
+[16]
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 567.
+ [17]
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 567.
  (./main.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 525.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 525.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 567.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 567.
 Package rerunfilecheck Info: File `main.out' has not changed.
 (rerunfilecheck)             Checksum: 05B3F0FC568B1BD4048BBC7019EA3B5A;966.
 Package logreq Info: Writing requests to 'main.run.xml'.
 \openout1 = `main.run.xml'.
 
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 525.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 567.
  ) 
 Here is how much of TeX's memory you used:
- 30892 strings out of 492616
- 558951 string characters out of 6129482
- 858620 words of memory out of 5000000
- 34255 multiletter control sequences out of 15000+600000
- 561977 words of font info for 164 fonts, out of 8000000 for 9000
+ 30908 strings out of 492616
+ 559148 string characters out of 6129482
+ 860620 words of memory out of 5000000
+ 34261 multiletter control sequences out of 15000+600000
+ 563523 words of font info for 168 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 41i,13n,63p,1643b,1629s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 41i,22n,63p,1643b,1629s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc}
 {/usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}<
 /usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></
 usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></u
 sr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb>
 </usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><
-/usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></u
-sr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr
-/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/l
-ocal/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/loc
-al/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/
-texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/tex
-live/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texliv
-e/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive
-/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/local/texlive/2
-019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/201
-9/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2019/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2019/te
-xmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/201
-9/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb></usr/local/texlive/
-2019/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/20
-19/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2019
-/texmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2019/t
-exmf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2019/tex
-mf-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2019/texmf
--dist/fonts/type1/public/cm-super/sfcc1095.pfb></usr/local/texlive/2019/texmf-d
-ist/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2019/texmf-dis
-t/fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2019/texmf-dist/
-fonts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2019/texmf-dist/fo
-nts/type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2019/texmf-dist/font
-s/type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2019/texmf-dist/fonts/
-type1/public/cm-super/sftt1000.pfb></usr/local/texlive/2019/texmf-dist/fonts/ty
-pe1/public/cm-super/sftt1095.pfb>
-Output written on main.pdf (16 pages, 549814 bytes).
+/usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi5.pfb></u
+sr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr
+/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/l
+ocal/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/loc
+al/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local
+/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/te
+xlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texli
+ve/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/
+2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2
+019/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.pfb></usr/local/texlive/201
+9/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2019/
+texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2019/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/local/texlive/2019/texm
+f-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2019/
+texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb></usr/local/texlive/20
+19/texmf-dist/fonts/type1/public/cm-super/sfbx1000.pfb></usr/local/texlive/2019
+/texmf-dist/fonts/type1/public/cm-super/sfbx1095.pfb></usr/local/texlive/2019/t
+exmf-dist/fonts/type1/public/cm-super/sfbx1200.pfb></usr/local/texlive/2019/tex
+mf-dist/fonts/type1/public/cm-super/sfbx1440.pfb></usr/local/texlive/2019/texmf
+-dist/fonts/type1/public/cm-super/sfbx1728.pfb></usr/local/texlive/2019/texmf-d
+ist/fonts/type1/public/cm-super/sfcc1095.pfb></usr/local/texlive/2019/texmf-dis
+t/fonts/type1/public/cm-super/sfrm1000.pfb></usr/local/texlive/2019/texmf-dist/
+fonts/type1/public/cm-super/sfrm1095.pfb></usr/local/texlive/2019/texmf-dist/fo
+nts/type1/public/cm-super/sfrm1200.pfb></usr/local/texlive/2019/texmf-dist/font
+s/type1/public/cm-super/sfti1000.pfb></usr/local/texlive/2019/texmf-dist/fonts/
+type1/public/cm-super/sfti1095.pfb></usr/local/texlive/2019/texmf-dist/fonts/ty
+pe1/public/cm-super/sftt1000.pfb></usr/local/texlive/2019/texmf-dist/fonts/type
+1/public/cm-super/sftt1095.pfb>
+Output written on main.pdf (17 pages, 571595 bytes).
 PDF statistics:
- 392 PDF objects out of 1000 (max. 8388607)
- 333 compressed objects within 4 object streams
- 80 named destinations out of 1000 (max. 500000)
- 31880 words of extra memory for PDF output out of 35830 (max. 10000000)
+ 405 PDF objects out of 1000 (max. 8388607)
+ 344 compressed objects within 4 object streams
+ 84 named destinations out of 1000 (max. 500000)
+ 32904 words of extra memory for PDF output out of 35830 (max. 10000000)
 
