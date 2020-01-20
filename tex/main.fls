@@ -301,6 +301,7 @@ INPUT /usr/local/texlive/2019/texmf-dist/fonts/tfm/jknappen/ec/ecti1095.tfm
 INPUT /usr/local/texlive/2019/texmf-dist/fonts/tfm/jknappen/ec/ecti0700.tfm
 INPUT /usr/local/texlive/2019/texmf-dist/fonts/tfm/jknappen/ec/ecti0500.tfm
 INPUT /usr/local/texlive/2019/texmf-dist/fonts/tfm/jknappen/ec/eccc1095.tfm
+INPUT /usr/local/texlive/2019/texmf-dist/fonts/tfm/jknappen/ec/tcti1095.tfm
 INPUT marginals/compas_DP.png
 INPUT ./marginals/compas_DP.png
 INPUT ./marginals/compas_DP.png
@@ -321,8 +322,8 @@ INPUT ./main.out
 INPUT ./main.out
 INPUT main.run.xml
 OUTPUT main.run.xml
-INPUT /usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc
 INPUT /usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc
+INPUT /usr/local/texlive/2019/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc
 INPUT /usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
 INPUT /usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb
 INPUT /usr/local/texlive/2019/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex8.pfb

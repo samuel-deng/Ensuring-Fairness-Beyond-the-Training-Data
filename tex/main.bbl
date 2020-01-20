@@ -297,6 +297,35 @@
     \field{year}{2011}
   \endentry
 
+  \entry{Hazan16}{article}{}
+    \true{moreauthor}
+    \name{author}{1}{}{%
+      {{hash=HE}{%
+         family={Hazan},
+         familyi={H\bibinitperiod},
+         given={Elad},
+         giveni={E\bibinitperiod},
+      }}%
+    }
+    \list{publisher}{1}{%
+      {Now Publishers, Inc.}%
+    }
+    \strng{namehash}{HE+1}
+    \strng{fullhash}{HE+1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{Haz+16}
+    \field{sortinit}{H}
+    \field{sortinithash}{H}
+    \field{number}{3-4}
+    \field{pages}{157\bibrangedash 325}
+    \field{title}{Introduction to online convex optimization}
+    \field{volume}{2}
+    \field{journaltitle}{Foundations and Trends{\textregistered} in
+  Optimization}
+    \field{year}{2016}
+  \endentry
+
   \entry{HPS16}{inproceedings}{}
     \true{moreauthor}
     \name{author}{3}{}{%

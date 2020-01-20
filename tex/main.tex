@@ -496,7 +496,7 @@ Now, consider the LP corresponding to the marginal $\pi'$ and subgroups $a^*$ an
 Therefore, if the maximum value of $T(w,a,h) - T(w,a',h)$ over all weights $w$ and subgroups $a,a'$ is larger than $\eps + \gamma_2$, the value of the corresponding LP will be larger than $\eps$ and the algorithm will set the correct coordinate of $\lambda$ to $B$. On the other hand, if the maximum value of $T(w,a,h) - T(w,a',h)$ is between $\eps - 4\gamma_1$ and $\eps+\gamma_2$. In that case, the algorithm might return the zero vector with value zero. However, the optimal can be as large as $B \times (4\gamma_1 + \gamma_2)$.
 \end{proof}
 
- Let us first recall the Regularized Follow the Leader (RFTL) algorithm for online convex optimization.
+ We are now ready to introduce our algorithm for the problem defined in equation \ref{eq:lagrangian}. In this algorithm, the $h$-player will use a learning algorithm, but the $\lambda$-player will use algorithm \ref{algo:best-lambda} to compute approximate best response. We first recall Regularized Follow the Leader (RFTL) algorithm and its guarantees (c.f. \cite{Hazan16}).
 
 \begin{algorithm}[H]
 \DontPrintSemicolon
@@ -513,9 +513,64 @@ Set $x_1 = \argmin_{x \in \Kc}R(x)$\\
 \caption{RFTL}
 \end{algorithm}
 
+\begin{theorem}\label{thm:rftl-guarantee}
+The RFTL algorithm achieves the following regret bound for any $u \in \Kc$
+$$\sum_{t=1}^T f_t(x_t) - f_t(u) \le \frac{\eta}{4} \sum_{t=1}^T \norm{\nabla f_t(x_t)}_{\infty}^{2} + \frac{R(u) - R(x_1)}{2 \eta}$$
+Moreover, if $\norm{\nabla f_t(x_t)}_{\infty} \le G_R$ for all $t$ and $R(u) - R(x_1) \le D_R$ for all $u \in \Kc$, then we can optimize $\eta$ to get the following bound: $\sum_{t=1}^T f_t(x_t) - f_t(u) \le D_R G_R \sqrt{T}$.
+\end{theorem}
+
+Recall the best response of the $h$-player. For a given $\lambda$ the best response of the $h$-player is the following cost-sensitive classification problem.
+\begin{equation}
+\hat{h} \in \argmin_{h \in \HH} \sum_{i=1}^n c^1_i (\lambda) h(x_i,a_i) + c^0_i(\lambda) (1 - h(x_i,a_i))
+\end{equation}
+Writing $L_i(\lambda) = c^1_i(\lambda) - c^0_i(\lambda)$ the problem stated above becomes
+\begin{equation}
+\hat{h} \in \argmin_{h \in \HH} \sum_{i=1}^n L_i(\lambda) h(x_i,a_i)
+\end{equation}
 %{\bfseries Best Respose to $\lambda$}: For a given set of lagrangian multipliers $\{\lambda_w\}_{w \in N(\eps/5,\WW)}$, the optimal choice of $h$ is a weighted classification problem. 
+Algorithm \ref{algo:inner} describes the algorithm for solving a minmax approximate equilibrium of the game $U(h,\lambda)$ for $h \in \HH$ and $\lambda \in \bbR^{\abs{N(\gamma_1,\WW)}\times \abs{\Ac}^2}_+, \norm{\lambda}_1 \le B$. We will later see how this solution immediately leads to a solution for the optimization problem defined in equation \ref{eq:final-objective}. The $h$-player uses the RFTL algorithm as a learning algorithm whereas the $\lambda$-player approximately best respond to $h_t$ in each round. Recall that, in order to use the RFTL algorithm we need to specify the regularization function $R$ and cost function $f_t$ in each round. We choose $R(x) = 1/2\norm{x}_2^2$. As the learner always chooses a vector in $\set{0,1}^n$ corresponding to the $n$ predictions for the $n$ training instances, the diameter $D_R$ is bounded by $n$. At round $t$, for an action $h_t$, the cost function is $f_t(h_t) = U(h_t,\lambda_t)$ where $\lambda_t$ is the $B(4\gamma_1 + \gamma_2)$-approximate best-response to $h_t$. Now we show that the optimization problem faced by the learner becomes a cost-sensitive classification problem. Indeed,
+\begin{align*}
+&\eta \sum_{s=1}^t \left \langle L(\lambda_s), h \right \rangle + R(h) \\
+&= \eta \sum_{s=1}^t \sum_{i=1}^n L(\lambda_s) h(x_i,a_i) + \frac{1}{2} \sum_{i=1}^n (h(x_i,a_i))^2 \\
+&= \eta \sum_{i=1}^n L(\sum_{s=1}^t \lambda_s) h(x_i,a_i) + \frac{1}{2} \sum_{i=1}^n h(x_i,a_i) \\
+&= \sum_{i=1}^n (\eta L(\sum_{s=1}^t \lambda_s) + 1/2) h(x_i,a_i)
+\end{align*}
+The third inequality follows because $L(\lambda)$ is linear in $\lambda$ and $h(x_i,a_i) \in \set{0,1}$. Finally, we show even though the number of $\lambda$-variables is exponential in $n$, the algorithm can be efficiently implemented. In fact, the best response of the $\lambda$-player always returns a solution where all the variables are zero or exactly one is set to $B$. Therefore, instead of recording the entire $\lambda$ vector the learning algorithm can just record the non-zero variables and there will be at most $T$ of them.
 
+\begin{algorithm}
+\DontPrintSemicolon
+\KwInput{$\eta > 0$, weight $w^0 \in \bbR^n_+$, number of rounds $T$}
+Set $h_1 = 0$\\
+\For{$t \in [T]$}
+{
+	$\lambda_t = \text{Best}_{\lambda}(h_t)$\\
+	Set $\tilde{\lambda}_t = \sum_{t'=1}^t \lambda_{t'}$\\
+	$h_{t+1} = \argmin_{h \in \HH} \sum_{i=1}^n (\eta L_i(\tilde{\lambda}_t) + 1/2) h(x_i,a_i)$
+}
+\Return{Uniform distribution over $\set{h_1,\ldots,h_T}$.}
+\caption{Inner Optimization\label{algo:inner}}
+\end{algorithm}
 
+\begin{theorem}
+Suppose $\abs{\ell(y,\hat{y})} \le M$ for all $y,\hat{y}$. Then algorithm \ref{algo:inner} computes a $(2M + B)\sqrt{n/T} + B(4\gamma_1 + \gamma_2)$-approximate minmax equilibrium of the game $U(h,\lambda)$ for $h \in \HH$ and $\lambda \in \bbR^{\abs{N(\gamma_1,\WW)}\times \abs{\Ac}^2}_+, \norm{\lambda}_1 \le B$. 
+\end{theorem}
+\begin{proof}
+At round $t$, the cost is linear in $h_t$ i.e. $f_t(h_t) = \sum_{i=1}^n L(\lambda_t)_i h_t(x_i,a_i)$. Let us write $\bar{\lambda} = \frac{1}{T} \lambda_t$ and $D$ to be the uniform distribution over $h_1,\ldots,h_T$. Since we chose $R(x) = 1/2 \norm{x}_2^2$ as the regularization function and the actions are $0-1$ vectors in $n$-dimensional space, the diameter $D_R$ is bounded by $\sqrt{n}$. On the other hand, $\norm{\nabla f_t(h_t)}_{\infty} = \max_i \abs{L(\lambda_t)_i} $. We now bound $\abs{L(\lambda_t)_i}$ for an arbitrary $i$. Suppose $y_i=1$. The proof when $y=0$ is identical.
+\begin{align*}
+&\abs{L(\lambda_t)_i} = \abs{c^1_i - c^0_i} = 
+\end{align*}
+Therefore, by theorem \ref{thm:rftl-guarantee}, for any hypothesis $h \in \HH$,
+\begin{align*}
+&\sum_{t=1}^T \sum_{i=1}^n L(\lambda_t)_i h_t(x_i,a_i) - \sum_{i=1}^n L(\lambda_t)_i h(x_i,a_i) \le (2M + B)\sqrt{nT}\\
+\Leftrightarrow &\sum_{t=1}^T U(h_t,\lambda_t) - U(h,\lambda_t) \le (2M + B)\sqrt{nT} \\
+\Leftrightarrow &\frac{1}{T} \sum_{t=1}^T U(h_t,\lambda_t) \le U(h,\bar{\lambda}) + \frac{(2M + B)\sqrt{n}}{\sqrt{T}}
+\end{align*}
+On the other hand, $\lambda_t$ is an approximate $B(4\gamma_1 + \gamma_2)$-approximate best response to $h_t$ for each round $t$. Therefore, for any $\lambda$ we have,
+\begin{align*}
+&\sum_{t=1}^T U(h_t,\lambda_t) \ge \sum_{t=1}^T U(h_t,\lambda) - BT(4\gamma_1 + \gamma_2) \\
+\Leftrightarrow &\frac{1}{T} \sum_{t=1}^T U(h_t,\lambda_t) \ge \E_{h \sim D} U(h,\lambda) - B(4\gamma_1 + \gamma_2)
+\end{align*}
+\end{proof}
 \section{Conclusion}
 In this paper, we introduce tools to verify whether an algorithm satisfies fairness for the well-known group fairness properties of Demographic Parity and Equalized Odds. We run experiments with these tools on simple weighted empirical distributions of the data. By allowing the weights of the distribution to change within a small $\gamma$ window, we found $\gamma$ such that our new distribution violates fairness by $\epsilon = 0.1$ Upon comparing the marginal distributions of the "unfair," re-weighted distribution to the original "fair" distribution, we found small differences. That is, with small perturbations to the distribution of data, we can get our classifier to violate group fairness. There are several directions for future work.
 
