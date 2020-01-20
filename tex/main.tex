@@ -557,19 +557,50 @@ Suppose $\abs{\ell(y,\hat{y})} \le M$ for all $y,\hat{y}$. Then algorithm \ref{a
 \begin{proof}
 At round $t$, the cost is linear in $h_t$ i.e. $f_t(h_t) = \sum_{i=1}^n L(\lambda_t)_i h_t(x_i,a_i)$. Let us write $\bar{\lambda} = \frac{1}{T} \lambda_t$ and $D$ to be the uniform distribution over $h_1,\ldots,h_T$. Since we chose $R(x) = 1/2 \norm{x}_2^2$ as the regularization function and the actions are $0-1$ vectors in $n$-dimensional space, the diameter $D_R$ is bounded by $\sqrt{n}$. On the other hand, $\norm{\nabla f_t(h_t)}_{\infty} = \max_i \abs{L(\lambda_t)_i} $. We now bound $\abs{L(\lambda_t)_i}$ for an arbitrary $i$. Suppose $y_i=1$. The proof when $y=0$ is identical.
 \begin{align*}
-&\abs{L(\lambda_t)_i} = \abs{c^1_i - c^0_i} = 
+\abs{L(\lambda_t)_i} = \abs{c^1_i - c^0_i} = &\abs{w^0_i}\abs{\ell(0,1) - \ell(1,1)} + \abs{\Delta_i} \\
+&\le 2M + B
 \end{align*}
+The last line follows as $w^0_i \le 1$ and since $\lambda_t$ is an approximate best reponse computed by algorithm \ref{algo:best-lambda}, exactly one $\lambda$ variable is set to $B$.
 Therefore, by theorem \ref{thm:rftl-guarantee}, for any hypothesis $h \in \HH$,
-\begin{align*}
-&\sum_{t=1}^T \sum_{i=1}^n L(\lambda_t)_i h_t(x_i,a_i) - \sum_{i=1}^n L(\lambda_t)_i h(x_i,a_i) \le (2M + B)\sqrt{nT}\\
-\Leftrightarrow &\sum_{t=1}^T U(h_t,\lambda_t) - U(h,\lambda_t) \le (2M + B)\sqrt{nT} \\
-\Leftrightarrow &\frac{1}{T} \sum_{t=1}^T U(h_t,\lambda_t) \le U(h,\bar{\lambda}) + \frac{(2M + B)\sqrt{n}}{\sqrt{T}}
-\end{align*}
+\begin{align}
+&\sum_{t=1}^T \sum_{i=1}^n L(\lambda_t)_i h_t(x_i,a_i) - \sum_{i=1}^n L(\lambda_t)_i h(x_i,a_i) \le (2M + B)\sqrt{nT}\nonumber \\
+\Leftrightarrow &\sum_{t=1}^T U(h_t,\lambda_t) - U(h,\lambda_t) \le (2M + B)\sqrt{nT}\nonumber \\
+\Leftrightarrow &\frac{1}{T} \sum_{t=1}^T U(h_t,\lambda_t) \le U(h,\bar{\lambda}) + \frac{(2M + B)\sqrt{n}}{\sqrt{T}} \label{eq:minmax-1}
+\end{align}
 On the other hand, $\lambda_t$ is an approximate $B(4\gamma_1 + \gamma_2)$-approximate best response to $h_t$ for each round $t$. Therefore, for any $\lambda$ we have,
+\begin{align}
+&\sum_{t=1}^T U(h_t,\lambda_t) \ge \sum_{t=1}^T U(h_t,\lambda) - BT(4\gamma_1 + \gamma_2)\nonumber \\
+\Leftrightarrow &\frac{1}{T} \sum_{t=1}^T U(h_t,\lambda_t) \ge \E_{h \sim D} U(h,\lambda) - B(4\gamma_1 + \gamma_2) \label{eq:minmax-2}
+\end{align}
+Equations \ref{eq:minmax-1} and \ref{eq:minmax-2} immediately imply that the distribution $D$ and $\bar{\lambda}$ is a $(2M + B)\sqrt{n/T} + B(4\gamma_1 + \gamma_2)$-approximate equilibrium of the game $U(h,\lambda)$ (\cite{FS96}).
+\end{proof}
+
+The next theorem establishes the guarantees of the approximate minmax solution. The proof is similar to the proof of theorem 4.5 from \cite{KNRZ17}.
+\begin{theorem}
+Let $(\hat{h},\hat{\lambda})$ be a $\nu$-approximate minmax equilibrium of the game $U(h,\lambda)$. Then,
+$$\sum_{i=1}^n w^0_i \ell(\hat{h}(x_i,a_i),y_i) \le \min_{h \in \HH}\sum_{i=1}^n w^0_i \ell({h}(x_i,a_i),y_i) + 2\nu$$
+and 
+$$\forall w \in \WW\quad \delta^w_{DP}(\hat{h}) \le \eps + \frac{M + 2\nu}{B}$$
+\end{theorem}
+\begin{proof}
+Let $(\hat{h},\hat{\lambda})$ be a $\nu$-approximate minmax equilibrium of the game $U(h,\lambda)$ i.e. 
 \begin{align*}
-&\sum_{t=1}^T U(h_t,\lambda_t) \ge \sum_{t=1}^T U(h_t,\lambda) - BT(4\gamma_1 + \gamma_2) \\
-\Leftrightarrow &\frac{1}{T} \sum_{t=1}^T U(h_t,\lambda_t) \ge \E_{h \sim D} U(h,\lambda) - B(4\gamma_1 + \gamma_2)
+ \forall h \quad  U(\hat{h},\hat{\lambda}) \le U(h,\hat{\lambda}) + \nu  \quad \text{ and } \quad \forall \lambda  \quad U(\hat{h},\hat{\lambda}) \ge U(\hat{h}, \lambda) - \nu
 \end{align*}
+Let $h^*$ be the optimal feasible hypothesis. First suppose that $\hat{h}$ is feasible i.e. $T(w,a,\hat{h}) - T(w,a',\hat{h}) \le \eps - 4\gamma_1$ for all $w \in N(\gamma_1,\WW)$ and $a,a' \in \Ac$. In that case, the optimal $\lambda$ is the zero vector and $\max_{\lambda} U(\hat{h},\lambda) = \sum_{i=1}^n w^0_i \ell(h(x_i,a_i),y_i)$. Therefore,
+\begin{align*}
+\sum_{i=1}^n w^0_i \ell(\hat{h}(x_i,a_i),y_i) = \max_{\lambda} U(\hat{h},\lambda) \le U(\hat{h},\hat{\lambda}) + \nu \le U(h^*,\hat{\lambda}) + 2\nu \le \sum_{i=1}^n w^0_i \ell(h^*(x_i,a_i),y_i) + 2\nu
+\end{align*}
+The last inequality follows because $h^*$ is feasible and $\lambda$ is non-negative. Now consider the case when $\hat{h}$ is not feasible i.e. there exists $w,a,a'$ such that $T(w,a,\hat{h}) - T(w,a',\hat{h}) > \eps - 4\gamma_1$. In that case, let $(\hat{w},\hat{a},\hat{a}')$ be the tuple with maximum violation and the optimal $\lambda$, say $\lambda^*$, sets this coordinate to $B$ and everything else to zero. Then
+\begin{align*}
+\sum_{i=1}^n w^0_i \ell(\hat{h}(x_i,a_i),y_i) &= U(\hat{h},\lambda^*) - B(T(\hat{w},\hat{a},\hat{h}) - T(\hat{w},\hat{a}',\hat{h}) - \eps + 4\gamma_1)\\
+ &\le U(\hat{h},\lambda^*) \le U(\hat{h},\hat{\lambda}) + \nu \le U(h^*,\hat{\lambda}) + 2\nu \le \sum_{i=1}^n w^0_i \ell(h^*(x_i,a_i),y_i) + 2\nu.
+\end{align*}
+The previous chain of inequalities also give 
+\begin{align*}
+B \left( \max_{(w,a,a')}T(w,a,\hat{h}) - T(w,a',\hat{h}) -\eps + 4\gamma_1 \right)\le \sum_{i=1}^n w^0_i \ell(h^*(x_i,a_i),y_i) + 2\nu \le M + 2\nu.
+\end{align*}
+This implies that for all weights $w \in N(\gamma_1,\WW)$ the maximum violation of the fairness constraint is $(M + 2\nu)/ B$, which in turn implies a bound of at most $(M + 2\nu)/B + \eps$ on the fairness constraint with respect to any weight $w \in \WW$. 
 \end{proof}
 \section{Conclusion}
 In this paper, we introduce tools to verify whether an algorithm satisfies fairness for the well-known group fairness properties of Demographic Parity and Equalized Odds. We run experiments with these tools on simple weighted empirical distributions of the data. By allowing the weights of the distribution to change within a small $\gamma$ window, we found $\gamma$ such that our new distribution violates fairness by $\epsilon = 0.1$ Upon comparing the marginal distributions of the "unfair," re-weighted distribution to the original "fair" distribution, we found small differences. That is, with small perturbations to the distribution of data, we can get our classifier to violate group fairness. There are several directions for future work.

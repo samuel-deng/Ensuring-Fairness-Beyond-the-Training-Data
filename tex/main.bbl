@@ -297,6 +297,38 @@
     \field{year}{2011}
   \endentry
 
+  \entry{FS96}{inproceedings}{}
+    \name{author}{2}{}{%
+      {{hash=FY}{%
+         family={Freund},
+         familyi={F\bibinitperiod},
+         given={Yoav},
+         giveni={Y\bibinitperiod},
+      }}%
+      {{hash=SRE}{%
+         family={Schapire},
+         familyi={S\bibinitperiod},
+         given={Robert\bibnamedelima E},
+         giveni={R\bibinitperiod\bibinitdelim E\bibinitperiod},
+      }}%
+    }
+    \list{organization}{1}{%
+      {Citeseer}%
+    }
+    \strng{namehash}{FYSRE1}
+    \strng{fullhash}{FYSRE1}
+    \field{labelnamesource}{author}
+    \field{labeltitlesource}{title}
+    \field{labelalpha}{FS96}
+    \field{sortinit}{F}
+    \field{sortinithash}{F}
+    \field{booktitle}{COLT}
+    \field{pages}{325\bibrangedash 332}
+    \field{title}{Game theory, on-line prediction and boosting}
+    \field{volume}{96}
+    \field{year}{1996}
+  \endentry
+
   \entry{Hazan16}{article}{}
     \true{moreauthor}
     \name{author}{1}{}{%
