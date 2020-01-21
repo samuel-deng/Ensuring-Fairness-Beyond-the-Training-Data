@@ -3,5 +3,13 @@
 \BOOKMARK [2][-]{subsection.2.1}{Setup}{section.2}% 3
 \BOOKMARK [2][-]{subsection.2.2}{Checking Demographic Parity \(DP\)}{section.2}% 4
 \BOOKMARK [2][-]{subsection.2.3}{Checking Equalized Odds \(EO\)}{section.2}% 5
-\BOOKMARK [1][-]{section.3}{Result}{}% 6
-\BOOKMARK [1][-]{section.4}{Conclusion}{}% 7
+\BOOKMARK [1][-]{section.3}{Evaluation}{}% 6
+\BOOKMARK [2][-]{subsection.3.1}{Datasets}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.2}{Experimental Setup}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.3}{Results}{section.3}% 9
+\BOOKMARK [1][-]{section.4}{Robust and Fair Classification}{}% 10
+\BOOKMARK [1][-]{section.5}{Conclusion}{}% 11
+\BOOKMARK [2][-]{subsection.5.1}{COMPAS DP Marginal Distributions}{section.5}% 12
+\BOOKMARK [2][-]{subsection.5.2}{COMPAS EO Marginal Distributions}{section.5}% 13
+\BOOKMARK [2][-]{subsection.5.3}{Adult DP Marginal Distributions}{section.5}% 14
+\BOOKMARK [2][-]{subsection.5.4}{Adult EO Marginal Distributions}{section.5}% 15
