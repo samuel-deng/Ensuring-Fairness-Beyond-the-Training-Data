@@ -4,6 +4,7 @@ import itertools
 import cvxpy as cp
 import math
 import pulp
+import concurrent.futures
 from joblib import dump, load
 from tqdm import tqdm
 import time
@@ -85,8 +86,7 @@ class LambdaBestResponse:
         # Objective Function
         objective = cp.Maximize((1/pi[0] * (w @ h_xi_a)) - (1/pi[1] * (w @ h_xi_ap)))
         prob = cp.Problem(objective, constraints)        
-        print(prob.is_dcp())
-        prob.solve(solver='GUROBI', verbose=False, warm_start=True)
+        prob.solve(solver='GUROBI', verbose=False)
         
         return prob.value, w.value
 
@@ -98,15 +98,16 @@ class LambdaBestResponse:
         a_a_p = list(itertools.permutations(['a0', 'a1']))
 
         start = time.time()
-        total_LP = 0
-        num_LP = 0
-        for pi in N_gamma_2_A:
-            for (a, a_p) in a_a_p:
-                start_LP = time.time()
-                max_lp, argmax_lp = self._best_response_LP_cvxpy(pi, a, a_p)
-                end_LP = time.time()
-                total_LP += end_LP - start_LP
-                num_LP += 1
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            futures = []
+            for pi in N_gamma_2_A:
+                for (a, a_p) in a_a_p:
+                    # max_lp, argmax_lp = self._best_response_LP_cvxpy(pi, a, a_p)
+                    f = executor.submit(self._best_response_LP_cvxpy, pi, a, a_p)
+                    futures.append(f)
+            
+            for f in concurrent.futures.as_completed(futures):
+                max_lp, argmax_lp = f.result()
 
                 # some < 0 entries in the argmax
                 argmax_lp[argmax_lp < 0] = 0
@@ -117,10 +118,9 @@ class LambdaBestResponse:
                     val_dict[dict_key] = max_lp
                 else: # when objective value is null 
                     raise ValueError("LP Failed.")
+
         end = time.time()
         print("LP TIME: " + str(end - start))
-        print("Total LP TIME: " + str(total_LP))
-        print("num LPs: " + str(num_LP))
 
         optimal_tuple = max(val_dict, key=val_dict.get)
 

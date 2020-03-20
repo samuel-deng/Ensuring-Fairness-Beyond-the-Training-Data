@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score
 from collections import defaultdict
 from fairlearn.reductions import ExponentiatedGradient, DemographicParity, EqualizedOdds
 from sklearn.linear_model import LogisticRegression
-from lambda_best_response import LambdaBestResponse
+from lambda_best_response_parallel import LambdaBestResponse
 import random as ran
 from tqdm import tqdm
 
@@ -110,7 +110,6 @@ class BayesianOracle:
             delta_i_weights[i] = delta_i_weights[i]/self._weights_a1_sum
         self._delta_i_weights = delta_i_weights
 
-        self.lambda_dict = defaultdict(int)
         self.lambda_sum = np.zeros(len(self.weights)) # chosen to be lambda_0_1 - lambda_1_0 
         self.constraint_used = constraint_used
     
@@ -153,9 +152,8 @@ class BayesianOracle:
         # Learning becomes a weighted classification problem, dependent on L_i as weights
         final_weights = self.eta * self._L_i() + 0.5
 
-        logreg = LogisticRegression(class_weight='balanced')
+        logreg = LogisticRegression(class_weight='balanced', solver='lbfgs')
         logreg.fit(self.X, self.y, sample_weight=final_weights)
-        print(accuracy_score(logreg.predict(self.X), self.y))
         return logreg
     
     def _uniform_choice(self, hypotheses):
@@ -166,6 +164,7 @@ class BayesianOracle:
         h = 0
         h_pred = [0 for i in range(len(self.X))]
         for t in tqdm(range(int(self.T_1))):
+            start = time.time()
             lambda_best_response = LambdaBestResponse(h_pred, 
                                         self.X, 
                                         self.y, 
@@ -185,17 +184,21 @@ class BayesianOracle:
 
             lambda_t = lambda_best_response.best_response()
             if(lambda_t != (0, 0, 0)):
-                self.lambda_dict[lambda_t] += self.B
                 if(lambda_t[0] == 'a0'):
                     self.lambda_sum[self.a_indices['a0']] += self.B
                     self.lambda_sum[self.a_indices['a1']] -= self.B
                 else:
                     self.lambda_sum[self.a_indices['a0']] -= self.B
                     self.lambda_sum[self.a_indices['a1']] += self.B
+
+            else:
+                print("####DONE!!!!!####")
                     
             h_t = self._weighted_classification()
             h_pred = h_t.predict(self.X)
             hypotheses.append(h_t)
+            end = time.time()
+            print("oracle step TIME: " + str(end - start))
     
         return self._uniform_choice(hypotheses)
 

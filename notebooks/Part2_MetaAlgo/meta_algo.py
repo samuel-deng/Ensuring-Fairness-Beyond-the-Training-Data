@@ -137,7 +137,7 @@ class MetaAlgorithm:
         objective = cp.Minimize(0.5 * cp.sum_squares(w - x))
         constraints = [0 <= x, x <= 1, cp.sum(x) == 1]
         prob = cp.Problem(objective, constraints)
-        prob.solve()
+        prob.solve(solver='GUROBI', verbose=False)
         
         return x.value
 
@@ -200,6 +200,7 @@ class MetaAlgorithm:
         hypotheses = []
         for t in tqdm(range(self.T)):
             w += self.eta * self._zero_one_loss_grad_w(h_t_pred, y)
+            print(type(w))
             w = self._project_W(w)
             oracle = BayesianOracle(X, y, w, sensitive_features, a_indices,
                                 self.card_A, 
