@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score
 from collections import defaultdict
 from fairlearn.reductions import ExponentiatedGradient, DemographicParity, EqualizedOdds
 from sklearn.linear_model import LogisticRegression
-from lambda_best_response_parallel import LambdaBestResponse
+from lambda_best_response_param_parallel import LambdaBestResponse
 import random as ran
 from tqdm import tqdm
 
