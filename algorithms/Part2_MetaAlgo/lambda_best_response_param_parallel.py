@@ -19,9 +19,9 @@ class LinearProgram():
 
         # Problem constants
         self._h_xi_a = h_pred.copy()
-        self._h_xi_a[a_indices[a]] = 0
-        self._h_xi_ap = h_pred.copy()
-        self._h_xi_ap[a_indices[a_p]] = 0
+        self._h_xi_a[a_indices[a_p]] = 0 # SWITCHED as intended (we only want indices of a)
+        self._h_xi_ap = h_pred.copy() 
+        self._h_xi_ap[a_indices[a]] = 0 # SWITCHED as intended (we only want indices of a_p)
         self.pi_0 = cp.Parameter(nonneg=True)
         self.pi_1 = cp.Parameter(nonneg=True)
 
@@ -107,6 +107,7 @@ class LambdaBestResponse:
 
         N_gamma_2_A = self.gamma_2_buckets
         a_a_p = list(itertools.permutations(['a0', 'a1']))
+        print(N_gamma_2_A)
 
         start = time.time()
         solved_results = []
@@ -121,6 +122,9 @@ class LambdaBestResponse:
         max_lp = -1e5
         argmax_lp = np.zeros
         for result in solved_results:
+            print(result[0])
+            print(result[1][result[1] > 0])
+            print(result[1].nonzero())
             if result[0] > max_lp:
                 max_lp = result[0]
                 argmax_lp = result[1]

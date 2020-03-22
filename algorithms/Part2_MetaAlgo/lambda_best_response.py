@@ -39,7 +39,7 @@ class LambdaBestResponse:
     def _discretize_weights_bsearch(self, w):
         for i, w_i in enumerate(w):
             bucket = self._binary_search_buckets(w_i)
-            w[i] = bucket[1]
+            w[i] = bucket[1] # upper endpoint
         
         return w 
     
@@ -94,7 +94,7 @@ class LambdaBestResponse:
         w_dict = dict()
         val_dict = dict()
 
-        N_gamma_2_A = self.gamma_2_buckets # REMOVE THIS WHEN ACTUALLY RUNNING (just for testing)
+        N_gamma_2_A = self.gamma_2_buckets 
         a_a_p = list(itertools.permutations(['a0', 'a1']))
 
         start = time.time()

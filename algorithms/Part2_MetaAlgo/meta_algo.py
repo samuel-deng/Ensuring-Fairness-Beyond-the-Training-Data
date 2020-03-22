@@ -85,13 +85,13 @@ class MetaAlgorithm:
             bucket_lower = ((1 + self.gamma_1) ** i) * (1/delta_1)
             bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (1/delta_1)
             gamma_1_buckets.append((bucket_lower, bucket_upper))
-
         return gamma_1_buckets
 
     def _gamma_2_buckets(self):
         # Initialize N(gamma_1, W)
         # delta_2 = (2 * self.card_A) / self.gamma_2
-        delta_2 = 1/self.gamma_2
+        delta_2 = 2/self.gamma_2
+        print(delta_2)
         c = .1 # the constant in front of the log (EXPERIMENT WITH THIS)
 
         gamma_2_num_buckets = np.ceil(c * math.log(delta_2, 1 + self.gamma_2)) 
@@ -101,15 +101,14 @@ class MetaAlgorithm:
             bucket = ((1/delta_2) ** c) * (1 + self.gamma_2)**j
             gamma_2_buckets.append(bucket)
             
-        pi = []
-        for element in itertools.product(gamma_2_buckets, gamma_2_buckets):
-            pi.append(element)
+        pi = list(itertools.product(gamma_2_buckets, gamma_2_buckets))
 
         N_gamma_2_A = []
         for i in range(len(pi)):
             if ((1 - (2 * self.gamma_2)) < pi[i][0] + pi[i][1] < (1 + (2 * self.gamma_2))):
                 N_gamma_2_A.append(pi[i])
-
+        
+        print(N_gamma_2_A)
         return N_gamma_2_A
 
     def _zero_one_loss_grad_w(self, pred, y):
@@ -172,7 +171,6 @@ class MetaAlgorithm:
         :return: list 'hypotheses' which is a list of the T hypotheses.
         """
         constraint_used = 'dp' # dp, eo
-
         a_indices = self._set_a_indices(sensitive_features)
         w = np.full((X.shape[0],), 1/X.shape[0]) # each weight starts as 1/n
 
@@ -183,7 +181,7 @@ class MetaAlgorithm:
         if(constraint_used =='dp'):
             postprocessed_predictor = ThresholdOptimizer(
                 unconstrained_predictor=unconstrained_predictor_wrapper,
-                constraints="equalized_odds")
+                constraints="demographic_parity")
         elif(constraint_used == 'eo'):
             postprocessed_predictor = ThresholdOptimizer(
                 unconstrained_predictor=unconstrained_predictor_wrapper,
@@ -200,7 +198,6 @@ class MetaAlgorithm:
         hypotheses = []
         for t in tqdm(range(self.T)):
             w += self.eta * self._zero_one_loss_grad_w(h_t_pred, y)
-            print(type(w))
             w = self._project_W(w)
             oracle = BayesianOracle(X, y, w, sensitive_features, a_indices,
                                 self.card_A, 

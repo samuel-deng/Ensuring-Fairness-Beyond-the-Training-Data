@@ -145,7 +145,7 @@ class BayesianOracle:
         return np.multiply(loss, self.weights)
 
     def _delta_i_fast(self):
-        delta_i_vec = np.multiply(self._delta_i_weights, self.lambda_sum)
+        delta_i_vec = np.multiply(self._delta_i_weights, self.lambda_sum) # elementwise multiply
         return delta_i_vec
 
     def _weighted_classification(self):
@@ -190,64 +190,12 @@ class BayesianOracle:
                 else:
                     self.lambda_sum[self.a_indices['a0']] -= self.B
                     self.lambda_sum[self.a_indices['a1']] += self.B
-
-            else:
-                print("####DONE!!!!!####")
                     
             h_t = self._weighted_classification()
             h_pred = h_t.predict(self.X)
             hypotheses.append(h_t)
+
             end = time.time()
             print("oracle step TIME: " + str(end - start))
     
         return self._uniform_choice(hypotheses)
-
-    
-    '''
-    def _delta_i(self):
-        start = time.time()
-        """
-        Returns delta_i, the quantity completing c_1_i which incorporates the Lambda best response
-        vector.
-
-        :return: float. the value for delta_i (for single sample)
-        """
-        delta_i_vector = []
-
-        for i in range(len(self.y)):
-            # get a_i
-            if(self.a_indices['all'][i] == 0):
-                a_i = 'a0'
-                a_p = 'a1'
-                weights_sum = self._weights_a0_sum
-            else:
-                a_i = 'a1'
-                a_p = 'a0'
-                weights_sum = self._weights_a1_sum
-                
-            # weights quotient
-            quotient = self.weights[i]/weights_sum
-            
-            # lambda difference. iterate over all keys of lambda_dict (the rest are 0)
-            final_sum = 0
-            for tup in self.lambda_dict:
-                if(tup[0] == a_i):
-                    if (tup[1], tup[0], tup[2]) in self.lambda_dict:
-                        diff = self.lambda_dict[tup] - self.lambda_dict[(tup[1], tup[0], tup[2])]
-                    else:
-                        diff = self.lambda_dict[tup] # Else here because accessing defaultdict adds a value otherwise
-                        
-                elif(tup[0] == a_p):
-                    if (tup[1], tup[0], tup[2]) in self.lambda_dict:
-                        diff = self.lambda_dict[(tup[1], tup[0], tup[2])] - self.lambda_dict[tup] 
-                    else:
-                        diff = - self.lambda_dict[tup] # Else here because accessing defaultdict adds a value otherwise
-
-                final_sum += diff*quotient
-            
-            delta_i_vector.append(final_sum)
-
-        end = time.time()
-        print("DELTA i TIME: " + str(end - start))
-        return np.asarray(delta_i_vector)
-    '''
