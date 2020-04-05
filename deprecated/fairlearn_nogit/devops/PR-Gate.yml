@@ -1,0 +1,52 @@
+variables:
+  FreezeArtifactStem: 'freeze'
+  FreezeFileStem: 'requirements-freeze'
+
+pr:
+- master
+- release/*
+
+trigger: none # No CI build
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+jobs:
+- template: templates/all-tests-job-template.yml
+  parameters:
+    name: Linux
+    vmImage: 'ubuntu-16.04'
+    pyVersions: [3.6]
+    freezeArtifactStem: $(FreezeArtifactStem)
+    freezeFileStem: $(FreezeFileStem)
+
+- template: templates/all-tests-job-template.yml
+  parameters:
+    name: Windows
+    vmImage:  'vs2017-win2016'
+    pyVersions: [3.5]
+    freezeArtifactStem: $(FreezeArtifactStem)
+    freezeFileStem: $(FreezeFileStem)
+    
+- template: templates/all-tests-job-template.yml
+  parameters:
+    name: MacOS
+    vmImage:  'macos-latest'
+    pyVersions: [3.7]
+    freezeArtifactStem: $(FreezeArtifactStem)
+    freezeFileStem: $(FreezeFileStem)
+
+- template: templates/notebook-job-template.yml
+  parameters:
+    name: LinuxNotebooks
+    pyVersions: [3.5]
+
+- template: templates/notebook-job-template.yml
+  parameters:
+    name: WindowsNotebooks
+    vmImage: 'vs2017-win2016'
+    pyVersions: [3.7]
+
+- template: templates/build-widget-job-template.yml
+
+- template: templates/limited-installation-job-template.yml

@@ -1,8 +1,7 @@
 import pandas as pd
 import time
 from meta_algo import MetaAlgorithm
-from sklearn.metrics import accuracy_score
-import cvxopt
+import pickle
 
 dataset_used = 'compas'
 
@@ -43,7 +42,19 @@ elif(dataset_used == 'adult'):
 else:
     print('Invalid dataset_used variable.')
 
-algo = MetaAlgorithm(T=5, T_1=len(X_train), gamma_2 = 0.05)
-h = algo.meta_algorithm(X_train, y_train, sensitive_features_train)
-print(h[0].predict(X_test))
-print(accuracy_score(h[0].predict(X_test), y_test))
+algo = MetaAlgorithm(B = 100, T=2, T_inner=2, gamma_1 = 0.05, gamma_2 = 0.3, eta=0.05)
+list_hypotheses, final_ensemble = algo.meta_algorithm(X_train, y_train, sensitive_features_train)
+
+with open('list_hypotheses.pkl', 'wb') as f:
+    pickle.dump(list_hypotheses, f)
+
+with open("final_ensemble.pkl", "wb") as f:
+    pickle.dump(final_ensemble, f)
+
+
+'''
+loaded_list = pickle.load(open('list_hypotheses.pkl', 'rb'))
+print(loaded_list)
+final_ensemble = pickle.load(open('final_ensemble.pckl', 'rb'))
+print(final_ensemble.predict(X_test))
+'''

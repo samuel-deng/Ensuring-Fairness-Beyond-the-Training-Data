@@ -3,11 +3,8 @@ import numpy as np
 import math
 import time 
 import itertools
-from fairlearn.reductions import ExponentiatedGradient, DemographicParity, EqualizedOdds
-from fairlearn.postprocessing import ThresholdOptimizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-from bayesian_oracle_broadcasting import BayesianOracle, LogisticRegressionAsRegression
+from bayesian_oracle import BayesianOracle
+from voting_classifier import VotingClassifier
 from tqdm import tqdm
 
 class MetaAlgorithm:
@@ -17,7 +14,7 @@ class MetaAlgorithm:
     :param T: the number of steps to run the Meta-Algo
     :type int
 
-    :param T_1: the number of steps to run the Bayesian Oracle
+    :param T_inner: the number of steps to run the Bayesian Oracle
     :type int:
 
     :param card_A: the cardinality of A, the set of protected attributes
@@ -47,10 +44,10 @@ class MetaAlgorithm:
     :type float:
     """
 
-    def __init__(self, T, T_1, card_A = 2, nu = 0.01, M = 1, epsilon = 0.1, 
+    def __init__(self, T, T_inner, card_A = 2, nu = 0.01, M = 1, epsilon = 0.1, 
                 B = None, eta = None, gamma_1 = None, gamma_2 = None):
         self.T = T
-        self.T_1 = T_1
+        self.T_inner = T_inner
         self.card_A = card_A
         self.nu = nu
         self.B = B
@@ -61,7 +58,7 @@ class MetaAlgorithm:
         self.epsilon = epsilon
         
         if B is None:
-            self.B = M
+            self.B = 50/self.epsilon
         if eta is None:
             self.eta = 1/np.sqrt(2*T)
         if gamma_1 is None:
@@ -85,30 +82,30 @@ class MetaAlgorithm:
             bucket_lower = ((1 + self.gamma_1) ** i) * (1/delta_1)
             bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (1/delta_1)
             gamma_1_buckets.append((bucket_lower, bucket_upper))
+        
         return gamma_1_buckets
 
     def _gamma_2_buckets(self):
         # Initialize N(gamma_1, W)
         # delta_2 = (2 * self.card_A) / self.gamma_2
         delta_2 = 2/self.gamma_2
-        print(delta_2)
-        c = .1 # the constant in front of the log (EXPERIMENT WITH THIS)
 
-        gamma_2_num_buckets = np.ceil(c * math.log(delta_2, 1 + self.gamma_2)) 
+        gamma_2_num_buckets = np.ceil(math.log(delta_2, 1 + self.gamma_2)) 
         gamma_2_buckets = []
         gamma_2_buckets.append(1e-6)
         for j in range(int(gamma_2_num_buckets)):
-            bucket = ((1/delta_2) ** c) * (1 + self.gamma_2)**j
+            bucket = (1/delta_2) * (1 + self.gamma_2)**j
             gamma_2_buckets.append(bucket)
-            
-        pi = list(itertools.product(gamma_2_buckets, gamma_2_buckets))
+        
+        pi = list(itertools.product(gamma_2_buckets, gamma_2_buckets)) # kinda expensive
 
         N_gamma_2_A = []
         for i in range(len(pi)):
-            if ((1 - (2 * self.gamma_2)) < pi[i][0] + pi[i][1] < (1 + (2 * self.gamma_2))):
+            if (((1 - (2 * self.gamma_2)) < pi[i][0] + pi[i][1] < (1 + (2 * self.gamma_2))) and
+            pi[i][0] >= 0.1 and
+            pi[i][1] >= 0.1):
                 N_gamma_2_A.append(pi[i])
         
-        print(N_gamma_2_A)
         return N_gamma_2_A
 
     def _zero_one_loss_grad_w(self, pred, y):
@@ -133,11 +130,12 @@ class MetaAlgorithm:
         :return: nparray 'x.value' which is the projected weight vector.
         """
         x = cp.Variable(len(w))
-        objective = cp.Minimize(0.5 * cp.sum_squares(w - x))
-        constraints = [0 <= x, x <= 1, cp.sum(x) == 1]
+        objective = cp.Minimize(cp.sum_squares(w - x))
+        constraints = [0 <= x, 
+                        x <= 1, 
+                        cp.sum(x) == 1]
         prob = cp.Problem(objective, constraints)
         prob.solve(solver='GUROBI', verbose=False)
-        
         return x.value
 
     def _set_a_indices(self, sensitive_features):
@@ -164,7 +162,7 @@ class MetaAlgorithm:
         """
         Runs the meta-algorithm, calling the Bayesian oracle at each time step (which itself calls
         the Lambda Best Response algorithm). Meta-algorithm runs for T steps, and the Bayesian oracle
-        runs for T_1 many steps. 
+        runs for T_inner many steps. 
 
         Returns a list of T hypotheses; a uniform distribution over the T hypotheses should be robust.
 
@@ -173,7 +171,62 @@ class MetaAlgorithm:
         constraint_used = 'dp' # dp, eo
         a_indices = self._set_a_indices(sensitive_features)
         w = np.full((X.shape[0],), 1/X.shape[0]) # each weight starts as 1/n
+        gamma_1_buckets = self._gamma_1_buckets(X)
+        gamma_2_buckets = self._gamma_2_buckets()
 
+        # h_t_pred = self._fair_prediction(X, y, sensitive_features, constraint_used)
+        # Start off with oracle prediction, uniform weights
+        oracle = BayesianOracle(X, y, w, sensitive_features, a_indices,
+                                self.card_A, 
+                                self.nu, 
+                                self.M, 
+                                self.B, 
+                                self.T_inner,
+                                self.gamma_1,
+                                gamma_1_buckets, 
+                                gamma_2_buckets, 
+                                self.epsilon,
+                                self.eta)
+
+        h_t = oracle.execute_oracle()
+        h_t_pred = h_t.predict(X)
+
+        hypotheses = []
+        start_outer = time.time()
+        # hypotheses.append(h_t)
+        for t in tqdm(range(self.T)):
+            start_inner = time.time()
+
+            w += self.eta * self._zero_one_loss_grad_w(h_t_pred, y)
+            w = self._project_W(w)
+            oracle = BayesianOracle(X, y, w, sensitive_features, a_indices,
+                                self.card_A, 
+                                self.nu, 
+                                self.M, 
+                                self.B, 
+                                self.T_inner,
+                                self.gamma_1,
+                                gamma_1_buckets, 
+                                gamma_2_buckets, 
+                                self.epsilon,
+                                self.eta)
+            
+            h_t = oracle.execute_oracle()
+            h_t_pred = h_t.predict(X)
+            hypotheses.append(h_t)
+
+            end_inner = time.time()
+            print("ALGORITHM 1 (Meta Algorithm) Time/loop: " + str(end_inner - start_inner))
+        
+        end_outer = time.time()
+        print("ALGORITHM 1 (Meta Algorithm) Total Executiion Time: " + str(end_outer - start_outer))
+
+        
+        self._hypotheses = hypotheses
+        return hypotheses, VotingClassifier(hypotheses) # (list of Oracle majority vote classifiers, majority vote classifier out of those)
+    
+    '''
+    def _fair_prediction(self, X, y, sensitive_features, constraint_used):
         unconstrained_predictor = LogisticRegression(class_weight='balanced')
         unconstrained_predictor.fit(X, y)
         unconstrained_predictor_wrapper = LogisticRegressionAsRegression(unconstrained_predictor)
@@ -187,34 +240,7 @@ class MetaAlgorithm:
                 unconstrained_predictor=unconstrained_predictor_wrapper,
                 constraints="equalized_odds")
         
-        postprocessed_predictor.fit(X, y, 
-            sensitive_features=sensitive_features, sample_weights=w)
+        postprocessed_predictor.fit(X, y, sensitive_features=sensitive_features)
 
-        h_t_pred = postprocessed_predictor.predict(X, sensitive_features=sensitive_features)
-
-        gamma_1_buckets = self._gamma_1_buckets(X)
-        gamma_2_buckets = self._gamma_2_buckets()
-
-        hypotheses = []
-        for t in tqdm(range(self.T)):
-            w += self.eta * self._zero_one_loss_grad_w(h_t_pred, y)
-            w = self._project_W(w)
-            oracle = BayesianOracle(X, y, w, sensitive_features, a_indices,
-                                self.card_A, 
-                                self.nu, 
-                                self.M, 
-                                self.B, 
-                                self.T_1,
-                                self.gamma_1,
-                                gamma_1_buckets, 
-                                gamma_2_buckets, 
-                                self.epsilon,
-                                self.eta)
-            
-            h_t = oracle.execute_oracle()
-            h_t_pred = h_t.predict(X)
-            hypotheses.append(h_t)
-        
-        self._hypotheses = hypotheses
-        return hypotheses
-    
+        return postprocessed_predictor.predict(X, sensitive_features=sensitive_features)
+    '''

@@ -1,11 +1,7 @@
-import pandas as pd
 import numpy as np
 import itertools
 import cvxpy as cp
 import math
-import pulp
-import concurrent.futures
-from joblib import dump, load
 from tqdm import tqdm
 import time
 from multiprocessing import Pool
@@ -19,9 +15,9 @@ class LinearProgram():
 
         # Problem constants
         self._h_xi_a = h_pred.copy()
-        self._h_xi_a[a_indices[a_p]] = 0 # SWITCHED as intended (we only want indices of a)
+        self._h_xi_a[a_indices[a_p]] = 0 # (we only want indices of a)
         self._h_xi_ap = h_pred.copy() 
-        self._h_xi_ap[a_indices[a]] = 0 # SWITCHED as intended (we only want indices of a_p)
+        self._h_xi_ap[a_indices[a]] = 0 # (we only want indices of a_p)
         self.pi_0 = cp.Parameter(nonneg=True)
         self.pi_1 = cp.Parameter(nonneg=True)
 
@@ -29,8 +25,10 @@ class LinearProgram():
         self._constraints = [
             cp.sum(self._w[a_indices[a]]) == self.pi_0,
             cp.sum(self._w[a_indices[a_p]]) == self.pi_1,
-            cp.sum(self._w) == self.pi_0 + self.pi_1,
-            0 <= self._w
+            cp.sum(self._w) == self.pi_0 + self.pi_1, # don't exactly sum to 1 sometimes
+            0 <= self._w,
+            cp.sum(self._w[a_indices[a]]) >= 0.1,
+            cp.sum(self._w[a_indices[a_p]]) >= 0.1
         ]
 
         # Objective Function
@@ -53,7 +51,7 @@ class LambdaBestResponse:
     :type 
     """
     def __init__(self, h_pred, X, y, weights, sensitive_features, a_indices, 
-                card_A, nu, M, B, T_1, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, eta):
+                card_A, nu, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, eta):
         self.h_pred = np.asarray(h_pred)
         self.X = X
         self.y = y 
@@ -64,7 +62,7 @@ class LambdaBestResponse:
         self.nu = nu
         self.M = M
         self.B = B
-        self.T_1 = T_1
+        self.T_inner = T_inner
         self.gamma_1 = gamma_1
         self.gamma_1_buckets = gamma_1_buckets
         self.gamma_2_buckets = gamma_2_buckets
@@ -101,13 +99,13 @@ class LambdaBestResponse:
 
     def best_response(self):
         num_cores = multiprocessing.cpu_count()
+        print("Number of cores: " + str(num_cores))
 
         w_dict = dict()
         val_dict = dict()
-
         N_gamma_2_A = self.gamma_2_buckets
         a_a_p = list(itertools.permutations(['a0', 'a1']))
-        print(N_gamma_2_A)
+        print("ALGORITHM 2 (Best Response) Solving " + str(2 * len(N_gamma_2_A)) + " LPs...") # twice because a, a_p
 
         start = time.time()
         solved_results = []
@@ -116,26 +114,23 @@ class LambdaBestResponse:
             pool = Pool(processes = num_cores)
             solved_results.extend(pool.map(problem.solve, N_gamma_2_A))
         end = time.time()
-        print("LP TIME: " + str(end - start))
+        print("ALGORITHM 2 (Best Response) Time (" + str(2 *len(N_gamma_2_A)) + " LPs):" + str(end - start))
 
         # max over the objective values
         max_lp = -1e5
         argmax_lp = np.zeros
         for result in solved_results:
-            print(result[0])
-            print(result[1][result[1] > 0])
-            print(result[1].nonzero())
             if result[0] > max_lp:
                 max_lp = result[0]
                 argmax_lp = result[1]
-                argmax_lp[argmax_lp < 0] = 0 # might be some < 0 entries for argmax
+                argmax_lp[argmax_lp < 0] = 0 # might be some slightly < 0 entries for argmax
                 optimal_tuple = result[2]
         
         # Violation of fairness
         if(max_lp > self.epsilon - 4*self.gamma_1):
             optimal_w = argmax_lp
             optimal_w[optimal_w < 0] = 0
-            optimal_w = self._discretize_weights_bsearch(optimal_w)
+            optimal_w = self._discretize_weights_bsearch(optimal_w) # let w_i be the upper end-point of bucket
             
             lambda_w_a_ap = self.B
             lambda_entry = (optimal_tuple[0], optimal_tuple[1], tuple(optimal_w)) # lists aren't hashable
