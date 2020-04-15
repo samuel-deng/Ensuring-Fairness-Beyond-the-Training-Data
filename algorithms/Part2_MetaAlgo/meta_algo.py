@@ -6,49 +6,51 @@ import itertools
 from bayesian_oracle import BayesianOracle
 from voting_classifier import VotingClassifier
 
+""" The Meta-Algorithm (Algorithm 1) that performs gradient descent on the weights and  
+calls the Bayesian oracle at each time step t. The main function here is meta_algorithm().
+
+:param T: the number of steps to run the Meta-Algo
+:type int
+
+:param T_inner: the number of steps to run the Bayesian Oracle
+:type int:
+
+:param card_A: the cardinality of A, the set of protected attributes
+:type int:
+
+:param M: the bound on the loss
+:type float:
+
+:param epsilon: the desired "fairness gap" between the protected attributes
+:type float:
+
+:param num_cores: the number of cores to use for multiprocessing in LPs
+:type int:
+
+:param solver: the LP solver designated
+:type str:
+
+:param B: the bound on each Lambda 
+:type float:
+
+:param eta: the learning/gradient descent rate for the weights in Meta-Algo
+:type float:
+
+:param gamma_1: a parameter that sets how many "buckets" to discretize the weight 
+vectors in the Bayesian Oracle and Lambda Best Response step.
+:type float:
+
+:param gamma_2: a parameter that sets how many "buckets" to discretize the weight 
+vectors pi in the Lambda Best Response step.
+:type float:
+"""
+
 class MetaAlgorithm:
-    """ The Meta-Algorithm (Algorithm 1) that performs gradient descent on the weights and  
-    calls the Bayesian oracle at each time step t.
-    
-    :param T: the number of steps to run the Meta-Algo
-    :type int
-
-    :param T_inner: the number of steps to run the Bayesian Oracle
-    :type int:
-
-    :param card_A: the cardinality of A, the set of protected attributes
-    :type int:
-
-    :param nu: the desired accuracy to the Bayesian oracle guarantee (Theorem 4)
-    :type float:
-
-    :param M: the bound on the loss
-    :type float:
-
-    :param epsilon: the desired "fairness gap" between the protected attributes
-    :type float:
-
-    :param B: the bound on each Lambda 
-    :type float:
-
-    :param eta: the learning/gradient descent rate for the weights in Meta-Algo
-    :type float:
-
-    :param gamma_1: a parameter that sets how many "buckets" to discretize the weight 
-    vectors in the Bayesian Oracle and Lambda Best Response step. Depends on nu.
-    :type float:
-
-    :param gamma_2: a parameter that sets how many "buckets" to discretize the weight 
-    vectors pi in the Lambda Best Response step. Depends on nu.
-    :type float:
-    """
-
-    def __init__(self, T, T_inner, card_A = 2, nu = 0.01, M = 1, epsilon = 0.1, num_cores = 2, solver = 'ECOS',
-                B = None, eta = None, gamma_1 = None, gamma_2 = None):
+    def __init__(self, T, T_inner, card_A = 2, M = 1, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
+                B = 10, eta = 0.05, gamma_1 = 0.01, gamma_2 = 0.05, constraint_used='dp'):
         self.T = T
         self.T_inner = T_inner
         self.card_A = card_A
-        self.nu = nu
         self.B = B
         self.eta = eta
         self.gamma_1 = gamma_1
@@ -57,44 +59,48 @@ class MetaAlgorithm:
         self.epsilon = epsilon
         self.num_cores = num_cores
         self.solver = solver
-        
-        if B is None:
-            self.B = 10
+        self.constraint_used = constraint_used
+
+        if(self.epsilon - 4 * self.gamma_1 < 0):
+            raise(ValueError("epsilon - 4 * gamma_1 must be positive for LPs."))
         if eta is None:
             self.eta = 1/np.sqrt(2*T)
-        if gamma_1 is None:
-            self.gamma_1 = nu/self.B
-        if gamma_2 is None:
-            self.gamma_2 = nu/self.B
         
         print("=== HYPERPARAMETERS ===")
         print("T=" + str(self.T))
         print("T_inner=" + str(self.T_inner))
         print("B=" + str(self.B))
         print("eta=" + str(self.eta))
+        print("epsilon=" + str(self.epsilon))
         print("Cores in use=" + str(self.num_cores))
+        print("Fairness Definition=" + str(self.constraint_used))
 
     def _gamma_1_buckets(self, X):
         """
-        Returns the discretized buckets for each weight vector.
+        Returns the discretized buckets for each weight vector N(gamma_1, W).
 
-        :return: list 'gamma_1_buckets' of 2-tuples describing the range of each bucket.
+        :return: list 'N_gamma_1_W' of 2-tuples for the range of each bucket.
         """
-        # Initialize N(gamma_1, W)
         delta_1 = (2 * len(X)) / self.gamma_1
 
-        gamma_1_num_buckets = np.ceil(math.log(delta_1, 1 + self.gamma_1))
-        gamma_1_buckets = []
-        gamma_1_buckets.append((0, 1/delta_1))
-        for i in range(int(gamma_1_num_buckets)):
+        N_gamma_1_W = np.ceil(math.log(delta_1, 1 + self.gamma_1))
+        N_gamma_1_W = []
+        N_gamma_1_W.append((0, 1/delta_1))
+        for i in range(len(N_gamma_1_W)):
             bucket_lower = ((1 + self.gamma_1) ** i) * (1/delta_1)
             bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (1/delta_1)
-            gamma_1_buckets.append((bucket_lower, bucket_upper))
+            N_gamma_1_W.append((bucket_lower, bucket_upper))
                 
-        return gamma_1_buckets
+        return N_gamma_1_W
 
     def _gamma_2_buckets(self):
-        delta_2 = 0.05 # FIXED
+        """
+        Returns the pi_a0 and pi_a1 for the LPs, N(gamma_2, A). Number of LPs
+        depends on this.
+
+        :return: list 'N_gamma_2_A' of 2-tuples for pairs of pi_a0 and pi_a1.
+        """
+        delta_2 = 0.05 
 
         gamma_2_num_buckets = np.ceil(math.log((1/delta_2), 1 + self.gamma_2)) 
         gamma_2_buckets = []
@@ -102,21 +108,11 @@ class MetaAlgorithm:
             bucket = (delta_2) * (1 + self.gamma_2)**j
             gamma_2_buckets.append(bucket)
 
-        pi  = []
+        N_gamma_2_A  = []
         for pi_a in gamma_2_buckets:
             pi_ap = 1 - pi_a
-            pi.append((pi_a, pi_ap))
-        
-        '''
-        N_gamma_2_A = []
-        for i in range(len(pi)):
-            if (((1 - (2 * self.gamma_2)) < pi[i][0] + pi[i][1] < (1 + (2 * self.gamma_2))) and
-            pi[i][0] >= 0.1 and
-            pi[i][1] >= 0.1):
-                N_gamma_2_A.append(pi[i])
-        '''
-        N_gamma_2_A = pi
-                
+            N_gamma_2_A.append((pi_a, pi_ap))
+                        
         return N_gamma_2_A
 
 
@@ -137,7 +133,7 @@ class MetaAlgorithm:
 
     def _project_W(self, w):
         """
-        Solves an LP to project w back onto the feasible set of weights
+        Project w back onto the feasible set of weights
 
         :return: nparray 'x.value' which is the projected weight vector.
         """
@@ -148,6 +144,10 @@ class MetaAlgorithm:
                         cp.sum(x) == 1]
         prob = cp.Problem(objective, constraints)
         prob.solve(solver=self.solver, verbose=False)
+
+        if prob.status in ["infeasible", "unbounded"]:
+            raise(cp.SolverError("project_W failed to find feasible solution."))
+
         return x.value
 
     def _set_a_indices(self, sensitive_features):
@@ -169,29 +169,31 @@ class MetaAlgorithm:
         a_indices['all'] = sensitive_features.tolist()
         return a_indices
 
-    def meta_algorithm(self, X, y, sensitive_features):
-
+    def meta_algorithm(self, X, y, sensitive_features, X_test, y_test, sensitive_features_test):
         """
-        Runs the meta-algorithm, calling the Bayesian oracle at each time step (which itself calls
-        the Lambda Best Response algorithm). Meta-algorithm runs for T steps, and the Bayesian oracle
+        Runs the meta-algorithm, calling the bayesian_oracle at each time step (which itself calls
+        the lambda_best_response_param_parallel). Meta-algorithm runs for T steps, and the Bayesian oracle
         runs for T_inner many steps. 
+        
+        NOTE: X, y, sensitive_features are given as Pandas dataframes here. Also note that
+        X_test, y_test are only used to get some statistics on how well each Bayesian oracle 
+        step is doing w.r.t. the fairness constraint.
 
-        Returns a list of T hypotheses; a uniform distribution over the T hypotheses should be robust.
-
-        :return: list 'hypotheses' which is a list of the T hypotheses.
+        :return: 
+        list 'hypotheses' the actual list of (T_inner * T) hypotheses
+        VotingClassifier, an object that takes a majority vote over (T_inner * T) hypotheses
         """
-        constraint_used = 'dp' # dp, eo
-        a_indices = self._set_a_indices(sensitive_features)
-        w = np.full((X.shape[0],), 1/X.shape[0]) # each weight starts as 1/n
+         # dp, eo
+        a_indices = self._set_a_indices(sensitive_features) # dictionary with a value information
+        w = np.full((X.shape[0],), 1/X.shape[0]) # each weight starts as uniform 1/n
         gamma_1_buckets = self._gamma_1_buckets(X)
         gamma_2_buckets = self._gamma_2_buckets()
 
-        # h_t_pred = self._fair_prediction(X, y, sensitive_features, constraint_used)
-        # Start off with oracle prediction, uniform weights
+        # Start off with oracle prediction over uniform weights
         print("=== Initializing h_0... ===")
-        oracle = BayesianOracle(X, y, w, sensitive_features, a_indices,
+        oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
+                                a_indices,
                                 self.card_A, 
-                                self.nu, 
                                 self.M, 
                                 self.B, 
                                 self.T_inner,
@@ -201,23 +203,24 @@ class MetaAlgorithm:
                                 self.epsilon,
                                 self.eta,
                                 self.num_cores,
-                                self.solver)
+                                self.solver,
+                                self.constraint_used,
+                                0)
 
-        h_t = oracle.execute_oracle()
+        h_t, inner_hypotheses = oracle.execute_oracle()
         h_t_pred = h_t.predict(X)
 
         hypotheses = []
         start_outer = time.time()
-        # hypotheses.append(h_t)
         print("=== ALGORITHM 1 EXECUTION ===")
         for t in range(self.T):
             start_inner = time.time()
 
             w += self.eta * self._zero_one_loss_grad_w(h_t_pred, y)
             w = self._project_W(w)
-            oracle = BayesianOracle(X, y, w, sensitive_features, a_indices,
+            oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
+                                a_indices,
                                 self.card_A, 
-                                self.nu, 
                                 self.M, 
                                 self.B, 
                                 self.T_inner,
@@ -227,11 +230,13 @@ class MetaAlgorithm:
                                 self.epsilon,
                                 self.eta,
                                 self.num_cores,
-                                self.solver)
+                                self.solver,
+                                self.constraint_used,
+                                t + 1) # just to print which outer loop T we're on
             
-            h_t = oracle.execute_oracle()
-            h_t_pred = h_t.predict(X)
-            hypotheses.append(h_t)
+            h_t, inner_hypotheses = oracle.execute_oracle()
+            h_t_pred = h_t.predict(X)           # majority vote over current oracle step hypotheses
+            hypotheses.extend(inner_hypotheses) # concatenate all of the inner loop hypotheses 
 
             end_inner = time.time()
             print("ALGORITHM 1 (Meta Algorithm) Loop " + str(t  + 1) + " Completed!")
@@ -239,54 +244,4 @@ class MetaAlgorithm:
         
         end_outer = time.time()
         print("ALGORITHM 1 (Meta Algorithm) Total Execution Time: " + str(end_outer - start_outer))
-        
-        self._hypotheses = hypotheses
-        return hypotheses, VotingClassifier(hypotheses) # (list of Oracle majority vote classifiers, majority vote classifier out of those)
-    
-    '''
-    def _fair_prediction(self, X, y, sensitive_features, constraint_used):
-        unconstrained_predictor = LogisticRegression(class_weight='balanced')
-        unconstrained_predictor.fit(X, y)
-        unconstrained_predictor_wrapper = LogisticRegressionAsRegression(unconstrained_predictor)
-
-        if(constraint_used =='dp'):
-            postprocessed_predictor = ThresholdOptimizer(
-                unconstrained_predictor=unconstrained_predictor_wrapper,
-                constraints="demographic_parity")
-        elif(constraint_used == 'eo'):
-            postprocessed_predictor = ThresholdOptimizer(
-                unconstrained_predictor=unconstrained_predictor_wrapper,
-                constraints="equalized_odds")
-        
-        postprocessed_predictor.fit(X, y, sensitive_features=sensitive_features)
-
-        return postprocessed_predictor.predict(X, sensitive_features=sensitive_features)
-    '''
-
-    '''
-    def _gamma_2_buckets(self):
-        # Initialize N(gamma_1, W)
-        # delta_2 = (2 * self.card_A) / self.gamma_2
-        delta_2 = 2/self.gamma_2
-
-        gamma_2_num_buckets = np.ceil(math.log(delta_2, 1 + self.gamma_2)) 
-        gamma_2_buckets = []
-        gamma_2_buckets.append(1e-6)
-        for j in range(int(gamma_2_num_buckets)):
-            bucket = (1/delta_2) * (1 + self.gamma_2)**j
-            gamma_2_buckets.append(bucket)
-        
-        pi = list(itertools.product(gamma_2_buckets, gamma_2_buckets)) # kinda expensive
-
-        N_gamma_2_A = []
-        for i in range(len(pi)):
-            if (((1 - (2 * self.gamma_2)) < pi[i][0] + pi[i][1] < (1 + (2 * self.gamma_2))) and
-            pi[i][0] >= 0.1 and
-            pi[i][1] >= 0.1):
-                N_gamma_2_A.append(pi[i])
-        
-        print(str(len(N_gamma_2_A)))
-        print(str(N_gamma_2_A))
-        
-        return N_gamma_2_A
-    '''
+        return hypotheses, VotingClassifier(hypotheses) 

@@ -55,6 +55,7 @@ if __name__ == '__main__':
     parser.add_argument("--B", help="upper bound on the Lambda value")
     parser.add_argument("--T", help="number of iterations for outer loop")
     parser.add_argument("--T_inner", help="number of iterations for inner loop")
+    parser.add_argument("--epsilon", help="epsilon fairness constraint")
     parser.add_argument("--gamma_1", help="gamma_1 param for weight discretization")
     parser.add_argument("--gamma_2", help="gamma_2 param for LP buckets")
     parser.add_argument("--eta", help="eta param")
@@ -62,6 +63,7 @@ if __name__ == '__main__':
     parser.add_argument("--solver", help="solver for the LPs: [ECOS, OSQP, SCS, GUROBI]")
     parser.add_argument("--output_list", help="output file name for list of hypotheses")
     parser.add_argument("--output", help="output file name for final ensemble")
+    parser.add_argument("--constraint", help="constraint (dp or eo)")
 
     now = datetime.datetime.now()
     args = parser.parse_args()
@@ -77,6 +79,10 @@ if __name__ == '__main__':
         arg_T_inner = int(args.T_inner)
     else:
         arg_T_inner = 200
+    if(args.epsilon):
+        arg_epsilon = float(args.epsilon)
+    else:
+        arg_epsilon = 0.05
     if(args.gamma_1):
         arg_gamma_1 = float(args.gamma_1)
     else:
@@ -105,15 +111,20 @@ if __name__ == '__main__':
         arg_output = args.output
     else:
         arg_output = 'hypotheses_ensemble_' + now.strftime("%Y-%m-%d_%H:%M:%S") + '.pkl'
+    if(args.constraint):
+        arg_constraint = args.constraint
+    else:
+        arg_constraint = 'dp'
 
     print("=== OUTPUT FILES ===")
     print("List of Hypotheses: " + str(arg_output_list))
     print("Ensemble Classifier: " + str(arg_output))
-    algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, 
-                        gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, 
-                        eta = arg_eta, num_cores = arg_num_cores, solver = arg_solver)
+    algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, epsilon=arg_epsilon,
+                        gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, eta = arg_eta, 
+                        num_cores = arg_num_cores, solver = arg_solver, constraint_used=arg_constraint)
 
-    list_hypotheses, final_ensemble = algo.meta_algorithm(X_train, y_train, sensitive_features_train)
+    list_hypotheses, final_ensemble = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
+                                                            X_test, y_test, sensitive_features_test)
 
     with open(arg_output_list, 'wb') as f:
         pickle.dump(list_hypotheses, f)
