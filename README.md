@@ -14,4 +14,11 @@ Can be safely ignored/helper files:
 1. *lp_test.py*: just a file I used to check the LPs were working and how fast they were.
 1. *voting_classifier.py*: the helper file that contains the VotingClassifier class I use to wrap multiple hypotheses into a majority vote classifier. this is called in the functions above, but no need to look into it.
 
+## How To Run
+Get off the ground by setting up the basic environment just using the included `environment.yml` file:
+`conda env create -f environment.yml`
+This should be sufficient to start running `main.py.` An example run:
 
+`python main.py --T_inner 50 --T 200 --epsilon 0.05`
+
+There are a lot more tweakable hyperparameters than can be changed through command line; just check the `main.py` file to see all of those flags.
