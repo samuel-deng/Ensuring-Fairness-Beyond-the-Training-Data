@@ -2,16 +2,16 @@ import numpy as np
 import itertools
 import cvxpy as cp
 import math
-from tqdm import tqdm
 import time
 from multiprocessing import Pool
 import multiprocessing
 
 class LinearProgram():
-    def __init__(self, n, h_pred, a_indices, a, a_p):
+    def __init__(self, n, h_pred, a_indices, a, a_p, solver):
         self._w = cp.Variable(n)
         self._a = a
         self._a_p = a_p
+        self.solver = solver
 
         # Problem constants
         self._h_xi_a = h_pred.copy()
@@ -26,9 +26,9 @@ class LinearProgram():
             cp.sum(self._w[a_indices[a]]) == self.pi_0,
             cp.sum(self._w[a_indices[a_p]]) == self.pi_1,
             cp.sum(self._w) == self.pi_0 + self.pi_1, # don't exactly sum to 1 sometimes
-            0 <= self._w,
-            cp.sum(self._w[a_indices[a]]) >= 0.1,
-            cp.sum(self._w[a_indices[a_p]]) >= 0.1
+            0 <= self._w
+            #cp.sum(self._w[a_indices[a]]) >= 0.1,
+            #cp.sum(self._w[a_indices[a_p]]) >= 0.1
         ]
 
         # Objective Function
@@ -38,7 +38,7 @@ class LinearProgram():
     def solve(self, pi):
         self.pi_0.value = pi[0]
         self.pi_1.value = pi[1]
-        self._prob.solve(solver='GUROBI', verbose=False, warm_start = True)
+        self._prob.solve(solver = self.solver, verbose=False, warm_start = True)
         return self._prob.value, self._w.value, (self._a, self._a_p, (pi[0], pi[1]))
 
 class LambdaBestResponse:
@@ -51,7 +51,7 @@ class LambdaBestResponse:
     :type 
     """
     def __init__(self, h_pred, X, y, weights, sensitive_features, a_indices, 
-                card_A, nu, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, eta):
+                card_A, nu, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, eta, num_cores, solver):
         self.h_pred = np.asarray(h_pred)
         self.X = X
         self.y = y 
@@ -68,6 +68,8 @@ class LambdaBestResponse:
         self.gamma_2_buckets = gamma_2_buckets
         self.epsilon = epsilon
         self.eta = eta
+        self.num_cores = num_cores
+        self.solver = solver
 
     def _discretize_weights_bsearch(self, w):
         for i, w_i in enumerate(w):
@@ -99,22 +101,20 @@ class LambdaBestResponse:
 
     def best_response(self):
         num_cores = multiprocessing.cpu_count()
-        print("Number of cores: " + str(num_cores))
 
         w_dict = dict()
         val_dict = dict()
         N_gamma_2_A = self.gamma_2_buckets
         a_a_p = list(itertools.permutations(['a0', 'a1']))
-        print("ALGORITHM 2 (Best Response) Solving " + str(2 * len(N_gamma_2_A)) + " LPs...") # twice because a, a_p
 
         start = time.time()
         solved_results = []
         for (a, a_p) in a_a_p:
-            problem = LinearProgram(len(self.X), self.h_pred, self.a_indices, a, a_p)
-            pool = Pool(processes = num_cores)
+            problem = LinearProgram(len(self.X), self.h_pred, self.a_indices, a, a_p, self.solver)
+            pool = Pool(processes = self.num_cores)
             solved_results.extend(pool.map(problem.solve, N_gamma_2_A))
+            pool.close()
         end = time.time()
-        print("ALGORITHM 2 (Best Response) Time (" + str(2 *len(N_gamma_2_A)) + " LPs):" + str(end - start))
 
         # max over the objective values
         max_lp = -1e5

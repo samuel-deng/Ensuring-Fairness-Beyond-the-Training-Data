@@ -5,7 +5,6 @@ import time
 from sklearn.linear_model import LogisticRegression 
 from sklearn.metrics import accuracy_score
 from lambda_best_response_param_parallel import LambdaBestResponse
-from tqdm import tqdm
 from voting_classifier import VotingClassifier
 
 class BayesianOracle:
@@ -64,7 +63,7 @@ class BayesianOracle:
     :type str:
     """
 
-    def __init__(self, X, y, weights, sensitive_features, a_indices, card_A, nu, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, eta, constraint_used = 'dp'):
+    def __init__(self, X, y, weights, sensitive_features, a_indices, card_A, nu, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, eta, num_cores, solver, constraint_used = 'dp'):
         self.X = X
         self.y = y 
         self.weights = weights
@@ -80,6 +79,8 @@ class BayesianOracle:
         self.gamma_2_buckets = gamma_2_buckets
         self.epsilon = epsilon
         self.eta = eta
+        self.num_cores = num_cores
+        self.solver = solver
 
         # speedup for delta_i function
         self._weights_a0_sum = self.weights[self.a_indices['a0']].sum()
@@ -145,7 +146,9 @@ class BayesianOracle:
         h_pred = [0 for i in range(len(self.X))]
         start_outer = time.time()
 
-        for t in tqdm(range(int(self.T_inner))):
+        print("Executing ALGORITHM 4 (Learning Algoirthm)...")
+        print("ALGORITHM 2 (Best Response) will solve: " + str(2 * len(self.gamma_2_buckets)) + " LPs...") # twice because a, a_p
+        for t in range(int(self.T_inner)):
             start_inner = time.time()
 
             lambda_best_response = LambdaBestResponse(h_pred, 
@@ -163,7 +166,9 @@ class BayesianOracle:
                                         self.gamma_1_buckets,
                                         self.gamma_2_buckets, 
                                         self.epsilon, 
-                                        self.eta)
+                                        self.eta,
+                                        self.num_cores,
+                                        self.solver)
 
             lambda_t = lambda_best_response.best_response()
             if(lambda_t != (0, 0, 0)):
@@ -179,7 +184,9 @@ class BayesianOracle:
             hypotheses.append(h_t)
 
             end_inner = time.time()
-            print("ALGORITHM 4 (Learning Algorithm) Time/loop: " + str(end_inner - start_inner))
+            if(t % 50 == 0):
+                print("ALGORITHM 4 (Meta Algorithm) Loop " + str(t + 1) + " Completed!")
+                print("ALGORITHM 4 (Learning Algorithm) Time/loop: " + str(end_inner - start_inner))
 
         end_outer = time.time()
         print("ALGORITHM 4 (Learning Algorithm) Total Execution Time: " + str(end_outer - start_outer))

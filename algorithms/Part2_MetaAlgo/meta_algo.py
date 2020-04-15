@@ -5,7 +5,6 @@ import time
 import itertools
 from bayesian_oracle import BayesianOracle
 from voting_classifier import VotingClassifier
-from tqdm import tqdm
 
 class MetaAlgorithm:
     """ The Meta-Algorithm (Algorithm 1) that performs gradient descent on the weights and  
@@ -44,7 +43,7 @@ class MetaAlgorithm:
     :type float:
     """
 
-    def __init__(self, T, T_inner, card_A = 2, nu = 0.01, M = 1, epsilon = 0.1, 
+    def __init__(self, T, T_inner, card_A = 2, nu = 0.01, M = 1, epsilon = 0.1, num_cores = 2, solver = 'ECOS',
                 B = None, eta = None, gamma_1 = None, gamma_2 = None):
         self.T = T
         self.T_inner = T_inner
@@ -56,15 +55,24 @@ class MetaAlgorithm:
         self.gamma_2 = gamma_2
         self.M = M
         self.epsilon = epsilon
+        self.num_cores = num_cores
+        self.solver = solver
         
         if B is None:
-            self.B = 50/self.epsilon
+            self.B = 10
         if eta is None:
             self.eta = 1/np.sqrt(2*T)
         if gamma_1 is None:
             self.gamma_1 = nu/self.B
         if gamma_2 is None:
             self.gamma_2 = nu/self.B
+        
+        print("=== HYPERPARAMETERS ===")
+        print("T=" + str(self.T))
+        print("T_inner=" + str(self.T_inner))
+        print("B=" + str(self.B))
+        print("eta=" + str(self.eta))
+        print("Cores in use=" + str(self.num_cores))
 
     def _gamma_1_buckets(self, X):
         """
@@ -82,31 +90,35 @@ class MetaAlgorithm:
             bucket_lower = ((1 + self.gamma_1) ** i) * (1/delta_1)
             bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (1/delta_1)
             gamma_1_buckets.append((bucket_lower, bucket_upper))
-        
+                
         return gamma_1_buckets
 
     def _gamma_2_buckets(self):
-        # Initialize N(gamma_1, W)
-        # delta_2 = (2 * self.card_A) / self.gamma_2
-        delta_2 = 2/self.gamma_2
+        delta_2 = 0.05 # FIXED
 
-        gamma_2_num_buckets = np.ceil(math.log(delta_2, 1 + self.gamma_2)) 
+        gamma_2_num_buckets = np.ceil(math.log((1/delta_2), 1 + self.gamma_2)) 
         gamma_2_buckets = []
-        gamma_2_buckets.append(1e-6)
         for j in range(int(gamma_2_num_buckets)):
-            bucket = (1/delta_2) * (1 + self.gamma_2)**j
+            bucket = (delta_2) * (1 + self.gamma_2)**j
             gamma_2_buckets.append(bucket)
-        
-        pi = list(itertools.product(gamma_2_buckets, gamma_2_buckets)) # kinda expensive
 
+        pi  = []
+        for pi_a in gamma_2_buckets:
+            pi_ap = 1 - pi_a
+            pi.append((pi_a, pi_ap))
+        
+        '''
         N_gamma_2_A = []
         for i in range(len(pi)):
             if (((1 - (2 * self.gamma_2)) < pi[i][0] + pi[i][1] < (1 + (2 * self.gamma_2))) and
             pi[i][0] >= 0.1 and
             pi[i][1] >= 0.1):
                 N_gamma_2_A.append(pi[i])
-        
+        '''
+        N_gamma_2_A = pi
+                
         return N_gamma_2_A
+
 
     def _zero_one_loss_grad_w(self, pred, y):
         """
@@ -135,7 +147,7 @@ class MetaAlgorithm:
                         x <= 1, 
                         cp.sum(x) == 1]
         prob = cp.Problem(objective, constraints)
-        prob.solve(solver='GUROBI', verbose=False)
+        prob.solve(solver=self.solver, verbose=False)
         return x.value
 
     def _set_a_indices(self, sensitive_features):
@@ -176,6 +188,7 @@ class MetaAlgorithm:
 
         # h_t_pred = self._fair_prediction(X, y, sensitive_features, constraint_used)
         # Start off with oracle prediction, uniform weights
+        print("=== Initializing h_0... ===")
         oracle = BayesianOracle(X, y, w, sensitive_features, a_indices,
                                 self.card_A, 
                                 self.nu, 
@@ -186,7 +199,9 @@ class MetaAlgorithm:
                                 gamma_1_buckets, 
                                 gamma_2_buckets, 
                                 self.epsilon,
-                                self.eta)
+                                self.eta,
+                                self.num_cores,
+                                self.solver)
 
         h_t = oracle.execute_oracle()
         h_t_pred = h_t.predict(X)
@@ -194,7 +209,8 @@ class MetaAlgorithm:
         hypotheses = []
         start_outer = time.time()
         # hypotheses.append(h_t)
-        for t in tqdm(range(self.T)):
+        print("=== ALGORITHM 1 EXECUTION ===")
+        for t in range(self.T):
             start_inner = time.time()
 
             w += self.eta * self._zero_one_loss_grad_w(h_t_pred, y)
@@ -209,18 +225,20 @@ class MetaAlgorithm:
                                 gamma_1_buckets, 
                                 gamma_2_buckets, 
                                 self.epsilon,
-                                self.eta)
+                                self.eta,
+                                self.num_cores,
+                                self.solver)
             
             h_t = oracle.execute_oracle()
             h_t_pred = h_t.predict(X)
             hypotheses.append(h_t)
 
             end_inner = time.time()
+            print("ALGORITHM 1 (Meta Algorithm) Loop " + str(t  + 1) + " Completed!")
             print("ALGORITHM 1 (Meta Algorithm) Time/loop: " + str(end_inner - start_inner))
         
         end_outer = time.time()
-        print("ALGORITHM 1 (Meta Algorithm) Total Executiion Time: " + str(end_outer - start_outer))
-
+        print("ALGORITHM 1 (Meta Algorithm) Total Execution Time: " + str(end_outer - start_outer))
         
         self._hypotheses = hypotheses
         return hypotheses, VotingClassifier(hypotheses) # (list of Oracle majority vote classifiers, majority vote classifier out of those)
@@ -243,4 +261,32 @@ class MetaAlgorithm:
         postprocessed_predictor.fit(X, y, sensitive_features=sensitive_features)
 
         return postprocessed_predictor.predict(X, sensitive_features=sensitive_features)
+    '''
+
+    '''
+    def _gamma_2_buckets(self):
+        # Initialize N(gamma_1, W)
+        # delta_2 = (2 * self.card_A) / self.gamma_2
+        delta_2 = 2/self.gamma_2
+
+        gamma_2_num_buckets = np.ceil(math.log(delta_2, 1 + self.gamma_2)) 
+        gamma_2_buckets = []
+        gamma_2_buckets.append(1e-6)
+        for j in range(int(gamma_2_num_buckets)):
+            bucket = (1/delta_2) * (1 + self.gamma_2)**j
+            gamma_2_buckets.append(bucket)
+        
+        pi = list(itertools.product(gamma_2_buckets, gamma_2_buckets)) # kinda expensive
+
+        N_gamma_2_A = []
+        for i in range(len(pi)):
+            if (((1 - (2 * self.gamma_2)) < pi[i][0] + pi[i][1] < (1 + (2 * self.gamma_2))) and
+            pi[i][0] >= 0.1 and
+            pi[i][1] >= 0.1):
+                N_gamma_2_A.append(pi[i])
+        
+        print(str(len(N_gamma_2_A)))
+        print(str(N_gamma_2_A))
+        
+        return N_gamma_2_A
     '''
