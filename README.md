@@ -1,6 +1,6 @@
 # FairnessChecking
 
-# What is what
+## What is what
 Everything (Algorithms 1, 2, and 4) can be found in the `algorithms` directory. The main files here are:
 1. **main.py**: The file that runs everything. Hyperparameters can be tweaked using this file and the command line arguments specified in the file. For instance, if I want `T_inner = 50` and `T = 200` with `epsilon = 0.05`, I would run:
 `python main.py --T_inner 50 --T 200 --epsilon 0.05`
