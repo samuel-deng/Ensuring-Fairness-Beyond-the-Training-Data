@@ -83,14 +83,15 @@ class MetaAlgorithm:
         """
         delta_1 = (2 * len(X)) / self.gamma_1
 
-        N_gamma_1_W = np.ceil(math.log(delta_1, 1 + self.gamma_1))
+        gamma_1_num_buckets = int(np.ceil(math.log(delta_1, 1 + self.gamma_1)))
         N_gamma_1_W = []
         N_gamma_1_W.append((0, 1/delta_1))
-        for i in range(len(N_gamma_1_W)):
+        for i in range(gamma_1_num_buckets):
             bucket_lower = ((1 + self.gamma_1) ** i) * (1/delta_1)
             bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (1/delta_1)
             N_gamma_1_W.append((bucket_lower, bucket_upper))
                 
+        print(N_gamma_1_W)
         return N_gamma_1_W
 
     def _gamma_2_buckets(self):

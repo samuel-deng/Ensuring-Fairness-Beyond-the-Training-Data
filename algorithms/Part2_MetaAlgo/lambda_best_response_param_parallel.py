@@ -108,6 +108,7 @@ class LambdaBestResponse:
         found = False
         while(first<=last and not found):
             mid = (first + last)//2
+
             if self.gamma_1_buckets[mid][0] <= x <= self.gamma_1_buckets[mid][1]:
                 found = True
                 bucket = self.gamma_1_buckets[mid]
