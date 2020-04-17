@@ -91,7 +91,6 @@ class MetaAlgorithm:
             bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (1/delta_1)
             N_gamma_1_W.append((bucket_lower, bucket_upper))
                 
-        print(N_gamma_1_W)
         return N_gamma_1_W
 
     def _gamma_2_buckets(self):
