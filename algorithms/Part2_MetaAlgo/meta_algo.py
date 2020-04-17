@@ -206,9 +206,7 @@ class MetaAlgorithm:
                                 self.solver,
                                 self.constraint_used,
                                 0)
-
-        h_t, inner_hypotheses = oracle.execute_oracle()
-        h_t_pred = h_t.predict(X)
+        h_t, inner_hypotheses_t = oracle.execute_oracle()
 
         hypotheses = []
         start_outer = time.time()
@@ -216,7 +214,12 @@ class MetaAlgorithm:
         for t in range(self.T):
             start_inner = time.time()
 
-            w += self.eta * self._zero_one_loss_grad_w(h_t_pred, y)
+            # compute the loss of each of the T_inner classifiers (to avg. over)
+            T_inner_sum_loss = np.zeros(len(X))
+            for h in inner_hypotheses_t:
+                T_inner_sum_loss += self._zero_one_loss_grad_w(h.predict(X), y)
+            
+            w += self.eta * (1/len(inner_hypotheses_t)) * T_inner_sum_loss # avg. over the T_inner classifiers
             w = self._project_W(w)
             oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
                                 a_indices,
@@ -234,9 +237,8 @@ class MetaAlgorithm:
                                 self.constraint_used,
                                 t + 1) # just to print which outer loop T we're on
             
-            h_t, inner_hypotheses = oracle.execute_oracle()
-            h_t_pred = h_t.predict(X)           # majority vote over current oracle step hypotheses
-            hypotheses.extend(inner_hypotheses) # concatenate all of the inner loop hypotheses 
+            h_t, inner_hypotheses_t = oracle.execute_oracle()
+            hypotheses.extend(inner_hypotheses_t) # concatenate all of the inner loop hypotheses 
 
             end_inner = time.time()
             print("ALGORITHM 1 (Meta Algorithm) Loop " + str(t  + 1) + " Completed!")
