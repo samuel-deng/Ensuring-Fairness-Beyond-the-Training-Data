@@ -1,0 +1,49 @@
+This is BibTeX, Version 0.99d (TeX Live 2018)
+Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
+The top-level auxiliary file: main.aux
+The style file: plain.bst
+Database file #1: newrefs.bib
+Warning--to sort, need author or key in COMPAS
+Warning--empty publisher in CWVN+17
+You've used 7 entries,
+            2118 wiz_defined-function locations,
+            540 strings with 5320 characters,
+and the built_in function-call counts, 3208 in all, are:
+= -- 317
+> -- 149
+< -- 5
++ -- 60
+- -- 52
+* -- 206
+:= -- 471
+add.period$ -- 22
+call.type$ -- 7
+change.case$ -- 46
+chr.to.int$ -- 0
+cite$ -- 9
+duplicate$ -- 137
+empty$ -- 252
+format.name$ -- 52
+if$ -- 715
+int.to.chr$ -- 0
+int.to.str$ -- 7
+missing$ -- 6
+newline$ -- 38
+num.names$ -- 12
+pop$ -- 69
+preamble$ -- 1
+purify$ -- 39
+quote$ -- 0
+skip$ -- 118
+stack$ -- 0
+substring$ -- 212
+swap$ -- 60
+text.length$ -- 5
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 28
+warning$ -- 2
+while$ -- 27
+width$ -- 8
+write$ -- 76
+(There were 2 warnings)

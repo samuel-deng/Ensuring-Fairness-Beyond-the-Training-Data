@@ -1,0 +1,215 @@
+\documentclass{article}
+
+\usepackage[preprint]{neurips_2020}
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{booktabs}
+\usepackage{caption}
+
+\usepackage{booktabs} % For formal tables
+\usepackage{tabulary}
+\usepackage{makecell}
+\usepackage{xfrac}
+%\let\comment\relax
+%\usepackage[authormarkup=none]{changes}
+
+\usepackage{thm-restate}
+
+\usepackage[ruled]{algorithm2e} % For algorithms
+\renewcommand{\algorithmcfname}{ALGORITHM}
+\newcommand\mycommfont[1]{\footnotesize\ttfamily\textcolor{blue}{#1}}
+\SetCommentSty{mycommfont}
+
+\SetKwInput{KwInput}{Input}                % Set the Input
+\SetKwInput{KwOutput}{Output}  
+
+\SetAlFnt{\small}
+\SetAlCapFnt{\small}
+\SetAlCapNameFnt{\small}
+\SetAlCapHSkip{0pt}
+\SetKwInput{KwEl}{Elicitation Rule}
+\SetKwInput{KwAgg}{Aggregation Rule}
+\SetKwInput{KwComm}{Communication Complexity}
+\SetKwInput{KwDist}{Distortion}
+\IncMargin{-\parindent}
+
+\usepackage{color}
+\usepackage{amsmath,amsthm,amsfonts,amssymb,bbm}
+\usepackage{enumitem}
+\usepackage[english]{babel}
+\usepackage{multirow}
+\renewcommand*\ttdefault{cmtt}
+
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
+\newtheorem{conjecture}{Conjecture}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\usepackage{graphicx}
+\usepackage{cleveref}
+
+
+% COMMENTS
+\newcount\Comments  % 0 suppresses notes to selves in text
+\Comments = 1
+\newcommand{\kibitz}[2]{\ifnum\Comments=1{\color{#1}{#2}}\fi}
+\newcommand{\dm}[1]{\kibitz{magenta}{[Deb: #1]}}
+\newcommand{\sd}[1]{\kibitz{blue}{[Sam: #1]}}
+
+%\renewcommand{\citet}[1]{\citeauthor{#1}~\cite{#1}}
+
+% MATH - GENERIC
+\newcommand{\ceil}[1]{\lceil #1 \rceil}
+\newcommand{\floor}[1]{\lfloor #1 \rfloor}
+\newcommand{\sign}{\textrm{sign}}
+\newcommand{\supp}{\textrm{supp}}
+\renewcommand{\hat}{\widehat}
+\newcommand{\E}{\mathbb{E}}
+\renewcommand{\tilde}{\widetilde}
+%\renewcommand{\vec}{\mathbf}
+\newcommand{\set}[1]{\{#1\}}
+
+\newcommand{\calC}{\mathcal{C}}
+\newcommand{\calE}{\mathcal{E}}
+\newcommand{\calH}{\mathcal{H}}
+\newcommand{\calL}{\mathcal{L}}
+\newcommand{\calP}{\mathcal{P}}
+\newcommand{\calQ}{\mathcal{Q}}
+\newcommand{\calS}{\mathcal{S}}
+\newcommand{\calX}{\mathcal{X}}
+\newcommand{\calY}{\mathcal{Y}}
+
+\newcommand{\bbR}{\mathbb{R}}
+\newcommand{\bbN}{\mathbb{N}}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% CS - COMPLEXITY
+\newcommand{\bigo}[1]{O\left(#1\right)}%
+\newcommand{\bigom}[1]{\Omega\left(#1\right)}%
+\newcommand{\bigolog}[1]{\tilde{O}\left(#1\right)}%
+
+% PAPER SPECIFIC
+\newcommand{\query}{\calQ}
+\newcommand{\complist}{\calP}
+\newcommand{\comp}{P}
+\newcommand{\eli}{\Pi}
+\newcommand{\agg}{\Gamma}
+\newcommand{\comm}{\textrm{C}}
+\newcommand{\dist}{\textrm{dist}}
+\renewcommand{\sc}{\textrm{sc}}
+\newcommand{\nsw}{\textrm{nsw}}
+\newcommand{\sw}{\textrm{sw}}
+\newcommand{\hsw}{\hat{\sw}}
+\newcommand{\hvi}{\hat{v}_i}
+\newcommand{\id}{\mathbbm{1}}
+\newcommand{\vv}{\vec{v}}
+\newcommand{\vrho}{\vec{\rho}}
+\newcommand{\vsigma}{\vec{\sigma}}
+
+\newcommand{\ov}{\vv}
+\newcommand{\vis}{\tilde{v}_i(S)}
+
+
+\newcommand{\hata}{\hat{a}}
+\newcommand{\WW}{\mathcal{W}}
+
+
+\newcommand{\nhi}{N_{\text{high}}}
+\newcommand{\nlo}{N_{\text{low}}}
+\newcommand{\ahat}{\hat{a}}
+\newcommand{\astar}{a^*}
+\newcommand{\atilde}{\tilde{a}}
+\newcommand{\qstar}{q^*}
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\UX}{\mathcal{X}}
+\newcommand{\GFDISJ}{\mathrm{GFDISJ}}
+\newcommand{\FDISJ}{\mathrm{FDISJ}}
+\newcommand{\DISJ}{\mathrm{DISJ}}
+\newcommand{\ent}{\mathrm{H}}
+\newcommand{\mi}{\mathrm{I}}
+\newcommand{\KL}{\mathrm{D_{KL}}}
+\newcommand{\ic}{\mathrm{IC}}
+\newcommand{\bstp}{\bar{s}_t'}
+\newcommand{\ou}{\vec{u}}
+\newcommand{\os}{\vec{\sigma}}
+\newcommand{\low}{\textrm{low}}
+\newcommand{\high}{\textrm{high}}
+\newcommand{\RD}{R_{\delta}}
+
+\newcommand{\Xc}{\mathcal{X}}
+\newcommand{\Ac}{\mathcal{A}}
+\newcommand{\Yc}{\mathcal{Y}}
+\newcommand{\dd}{\mathcal{D}}
+\newcommand{\reg}{\mathrm{Reg}}
+\newcommand{\poi}{\mathrm{Poi}}
+\newcommand{\eye}{\mathbf{1}}
+\newcommand{\HH}{\mathcal{H}}
+\newcommand{\YY}{\mathcal{Y}}
+\newcommand{\Kc}{\mathcal{K}}
+\newcommand{\eps}{\varepsilon}
+
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\hypersetup{
+	colorlinks,
+	linkcolor=red,
+	citecolor=blue,
+	urlcolor=green
+}
+
+\renewcommand\theequation{{\color{red}\arabic{equation}}}
+%bib
+%\usepackage[style=alphabetic,natbib=true,backend=bibtex,backref=true,maxbibnames=10]{biblatex}
+%\addbibresource{./newrefs.bib}
+%\renewcommand{\cite}{\parencite}
+
+\title{{\bfseries Fairness Checking} }
+\begin{document}
+
+\maketitle
+
+
+\section{Introduction}
+\dm{
+	Rough sketch of the introduction:
+\begin{itemize}
+\item Usual Motivation for fairness
+\item Why do we care about distributional robustness in this setting?
+\item Connection with verification literature
+\item Related work -- (a) fairness in classification, (b) distributionally robust optimization,
+\item Contributions -- (a) distributional robustness for fairness, (b) general framework to design such a classifier, (c) faster approximate minmax solution, (d) simulation results
+\end{itemize}
+}
+Nowadays, AI systems are increasingly used in various high-stakes decision making scenarios. Applications include bail decision, credit approval, and housing allocation, to name a few. Often these applications use learning algorithms trained on past biased data, and such bias is often reflected in the eventual decision. For example, \cite{BCZS+16} show that popular word embeddings implicitly encode societal biases, such as gender norms. Similarly, \cite{BG18} evaluate existing facial recognition systems and find that they perform better on lighter-skinned subjects as a whole than on darker-skinned subjects as a whole with an 11.8\% - 19.2\% difference in error rates. To mitigate these biases, there have been several approaches in the ML fairness community to design fair classifiers \cite{ZWSP+13,HPS16,ABDL+18}. 
+
+However, the literature has largely ignored the robustness of such fair classifiers. As an example, we consider the performance of the optimized pre-processing algorithm \cite{CWVN+17} on the popular COMPAS dataset \cite{COMPAS}. As a metric of fairness we consider the notion of \emph{demographic parity} (DP), which measures the difference in accuracy between two protected groups. Figure shows two situations -- (1) unweighted training distribution (in blue), and (2) weighted training distributions. The optimized pre-processing algorithm \cite{CWVN+17} is almost fair on the unweighted training dataset ($\textrm{DP} \leq 0.02$). However, it shows demographic parity of at least $0.1$ on the weighted dataset, despite the fact that the marginal distributions of the features look almost the same for the two scenarios. This example motivates our work and we aim to design a fair classifier that is robust to such perturbations. We also show how to construct such reweighted examples.
+
+
+Nonetheless, since different algorithms adopt different definitions of fairness and provide different trade-offs with respect to accuracy and utility, it is neither legal nor ethical to enforce businesses to use such algorithms. In this paper, we approach this problem with a perspective from the literature of automated verification, and aim to build tools that can verify whether an algorithm satisfies a given fairness criteria irrespective of the particular algorithm or dataset used. We show using these tools that, although current group fairness algorithms may mitigate fairness for a specific distribution of data, slight perturbations to that data's distribution result in violations of the fairness criteria. 
+
+\section{Problem and Definitions}
+
+\section{Meta Algorithm}
+
+\section{Approximate Fair Classifier}
+
+\section{Faster Approximate Fair Classifier}
+
+\section{Experiment}
+
+\section{Conclusion}
+
+\bibliographystyle{plain}
+\bibliography{newrefs}
+
+\end{document}

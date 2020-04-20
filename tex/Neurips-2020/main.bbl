@@ -1,0 +1,49 @@
+\begin{thebibliography}{1}
+
+\bibitem{COMPAS}
+Compas dataset.
+\newblock
+  \url{https://www.propublica.org/datastore/dataset/compas-recidivism-risk-score-data-and-analysis}.
+\newblock Accessed: 2019-10-26.
+
+\bibitem{ABDL+18}
+Alekh Agarwal, Alina Beygelzimer, Miroslav Dud{\'\i}k, John Langford, and Hanna
+  Wallach.
+\newblock A reductions approach to fair classification.
+\newblock {\em arXiv preprint arXiv:1803.02453}, 2018.
+
+\bibitem{BCZS+16}
+Tolga Bolukbasi, Kai-Wei Chang, James~Y Zou, Venkatesh Saligrama, and Adam~T
+  Kalai.
+\newblock {Man is to Computer Programmer as Woman is to Homemaker? Debiasing
+  Word Embeddings}.
+\newblock In {\em Advances in neural information processing systems}, pages
+  4349--4357, 2016.
+
+\bibitem{BG18}
+Joy Buolamwini and Timnit Gebru.
+\newblock {Gender Shades: Intersectional Accuracy Disparities in Commercial
+  Gender Classification}.
+\newblock In {\em Conference on fairness, accountability and transparency},
+  pages 77--91, 2018.
+
+\bibitem{CWVN+17}
+Flavio Calmon, Dennis Wei, Bhanukiran Vinzamuri, Karthikeyan
+  Natesan~Ramamurthy, and Kush~R Varshney.
+\newblock Optimized pre-processing for discrimination prevention.
+\newblock In {\em Advances in Neural Information Processing Systems 30}, pages
+  3992--4001. 2017.
+
+\bibitem{HPS16}
+Moritz Hardt, Eric Price, Nati Srebro, et~al.
+\newblock {Equality of Opportunity in Supervised Learning}.
+\newblock In {\em Advances in neural information processing systems}, pages
+  3315--3323, 2016.
+
+\bibitem{ZWSP+13}
+Rich Zemel, Yu~Wu, Kevin Swersky, Toni Pitassi, and Cynthia Dwork.
+\newblock {Learning Fair Representations}.
+\newblock In {\em International Conference on Machine Learning}, pages
+  325--333, 2013.
+
+\end{thebibliography}
