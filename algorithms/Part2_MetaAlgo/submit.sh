@@ -2,7 +2,7 @@
 #
 #
 #SBATCH --account=free # The account name for the job.
-#SBATCH --job-name=Fairness_Checking_T400 # The job name.
+#SBATCH --job-name=Fairness_Checking_T50 # The job name.
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=sd3013@columbia.edu
 #SBATCH --exclusive
@@ -13,6 +13,6 @@ module load anaconda/3-2019.03
 source activate /rigel/home/sd3013/.conda/envs/fairness_checking
 
 #Command to execute Python program
-python ./../main.py --solver ECOS --num_cores 22 --T_inner 400 --T 1
+python main.py --solver ECOS --num_cores 22 --T_inner 200 --T 1
 
 #End of script

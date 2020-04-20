@@ -46,13 +46,14 @@ vectors pi in the Lambda Best Response step.
 """
 
 class MetaAlgorithm:
-    def __init__(self, T, T_inner, card_A = 2, M = 1, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
-                B = 10, eta = 0.05, gamma_1 = 0.01, gamma_2 = 0.05, constraint_used='dp'):
+    def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, M = 1, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
+                B = 10, gamma_1 = 0.01, gamma_2 = 0.05, constraint_used='dp'):
         self.T = T
         self.T_inner = T_inner
         self.card_A = card_A
         self.B = B
         self.eta = eta
+        self.eta_inner = eta_inner
         self.gamma_1 = gamma_1
         self.gamma_2 = gamma_2
         self.M = M
@@ -64,13 +65,16 @@ class MetaAlgorithm:
         if(self.epsilon - 4 * self.gamma_1 < 0):
             raise(ValueError("epsilon - 4 * gamma_1 must be positive for LPs."))
         if eta is None:
-            self.eta = 1/np.sqrt(2*T)
+            self.eta = 1/np.sqrt(2*self.T)
+        if eta_inner is None:
+            self.eta_inner = 1/np.sqrt(2*self.T_inner)
         
         print("=== HYPERPARAMETERS ===")
         print("T=" + str(self.T))
         print("T_inner=" + str(self.T_inner))
         print("B=" + str(self.B))
         print("eta=" + str(self.eta))
+        print("eta_inner=" + str(self.eta_inner))
         print("epsilon=" + str(self.epsilon))
         print("Cores in use=" + str(self.num_cores))
         print("Fairness Definition=" + str(self.constraint_used))
@@ -84,14 +88,14 @@ class MetaAlgorithm:
         delta_1 = (2 * len(X)) / self.gamma_1
 
         gamma_1_num_buckets = int(np.ceil(math.log(delta_1, 1 + self.gamma_1)))
-        N_gamma_1_W = []
-        N_gamma_1_W.append((0, 1/delta_1))
+        gamma_1_buckets = []
+        gamma_1_buckets.append((0, 1/delta_1))
         for i in range(gamma_1_num_buckets):
             bucket_lower = ((1 + self.gamma_1) ** i) * (1/delta_1)
             bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (1/delta_1)
-            N_gamma_1_W.append((bucket_lower, bucket_upper))
-                
-        return N_gamma_1_W
+            gamma_1_buckets.append((bucket_lower, bucket_upper))
+                            
+        return gamma_1_buckets
 
     def _gamma_2_buckets(self):
         """
@@ -114,7 +118,6 @@ class MetaAlgorithm:
             N_gamma_2_A.append((pi_a, pi_ap))
                         
         return N_gamma_2_A
-
 
     def _zero_one_loss_grad_w(self, pred, y):
         """
@@ -201,7 +204,7 @@ class MetaAlgorithm:
                                 gamma_1_buckets, 
                                 gamma_2_buckets, 
                                 self.epsilon,
-                                self.eta,
+                                self.eta_inner,
                                 self.num_cores,
                                 self.solver,
                                 self.constraint_used,
@@ -231,7 +234,7 @@ class MetaAlgorithm:
                                 gamma_1_buckets, 
                                 gamma_2_buckets, 
                                 self.epsilon,
-                                self.eta,
+                                self.eta_inner,
                                 self.num_cores,
                                 self.solver,
                                 self.constraint_used,

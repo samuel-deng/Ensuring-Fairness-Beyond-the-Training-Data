@@ -161,7 +161,7 @@ class LambdaBestResponse:
             optimal_w = self._discretize_weights_bsearch(optimal_w) # let w_i be the upper end-point of bucket
             
             # lambda_w_a_ap = self.B
-            lambda_entry = (optimal_tuple[0], optimal_tuple[1], tuple(optimal_w)) # lists aren't hashable
+            lambda_entry = (optimal_tuple[0], optimal_tuple[1], optimal_w) 
             # return of form ('a0', 'a1', weight_vector) or ('a1', 'a0', weight_vector)
         else:
             # lambda_w_a_ap = 0
