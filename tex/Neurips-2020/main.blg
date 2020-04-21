@@ -5,45 +5,45 @@ The style file: plain.bst
 Database file #1: newrefs.bib
 Warning--to sort, need author or key in COMPAS
 Warning--empty publisher in CWVN+17
-You've used 7 entries,
+You've used 11 entries,
             2118 wiz_defined-function locations,
-            540 strings with 5320 characters,
-and the built_in function-call counts, 3208 in all, are:
-= -- 317
-> -- 149
-< -- 5
-+ -- 60
-- -- 52
-* -- 206
-:= -- 471
-add.period$ -- 22
-call.type$ -- 7
-change.case$ -- 46
+            568 strings with 5980 characters,
+and the built_in function-call counts, 4869 in all, are:
+= -- 488
+> -- 221
+< -- 8
++ -- 88
+- -- 76
+* -- 315
+:= -- 726
+add.period$ -- 35
+call.type$ -- 11
+change.case$ -- 69
 chr.to.int$ -- 0
-cite$ -- 9
-duplicate$ -- 137
-empty$ -- 252
-format.name$ -- 52
-if$ -- 715
+cite$ -- 13
+duplicate$ -- 206
+empty$ -- 381
+format.name$ -- 76
+if$ -- 1080
 int.to.chr$ -- 0
-int.to.str$ -- 7
-missing$ -- 6
-newline$ -- 38
-num.names$ -- 12
-pop$ -- 69
+int.to.str$ -- 11
+missing$ -- 10
+newline$ -- 58
+num.names$ -- 20
+pop$ -- 95
 preamble$ -- 1
-purify$ -- 39
+purify$ -- 58
 quote$ -- 0
-skip$ -- 118
+skip$ -- 176
 stack$ -- 0
-substring$ -- 212
-swap$ -- 60
-text.length$ -- 5
+substring$ -- 329
+swap$ -- 87
+text.length$ -- 8
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 28
+type$ -- 44
 warning$ -- 2
-while$ -- 27
-width$ -- 8
-write$ -- 76
+while$ -- 43
+width$ -- 13
+write$ -- 121
 (There were 2 warnings)

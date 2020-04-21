@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 
 \bibitem{COMPAS}
 Compas dataset.
@@ -34,11 +34,34 @@ Flavio Calmon, Dennis Wei, Bhanukiran Vinzamuri, Karthikeyan
 \newblock In {\em Advances in Neural Information Processing Systems 30}, pages
   3992--4001. 2017.
 
+\bibitem{CLSS17}
+Robert~S Chen, Brendan Lucier, Yaron Singer, and Vasilis Syrgkanis.
+\newblock {Robust Optimization for Non-Convex Objectives}.
+\newblock In {\em Advances in Neural Information Processing Systems}, pages
+  4705--4714, 2017.
+
+\bibitem{FS96}
+Yoav Freund and Robert~E Schapire.
+\newblock Game theory, on-line prediction and boosting.
+\newblock In {\em COLT}, volume~96, pages 325--332. Citeseer, 1996.
+
 \bibitem{HPS16}
 Moritz Hardt, Eric Price, Nati Srebro, et~al.
 \newblock {Equality of Opportunity in Supervised Learning}.
 \newblock In {\em Advances in neural information processing systems}, pages
   3315--3323, 2016.
+
+\bibitem{Hazan16}
+Elad Hazan et~al.
+\newblock Introduction to online convex optimization.
+\newblock {\em Foundations and Trends{\textregistered} in Optimization},
+  2(3-4):157--325, 2016.
+
+\bibitem{KNRZ17}
+Michael Kearns, Seth Neel, Aaron Roth, and Zhiwei~Steven Wu.
+\newblock Preventing fairness gerrymandering: Auditing and learning for
+  subgroup fairness.
+\newblock {\em arXiv preprint arXiv:1711.05144}, 2017.
 
 \bibitem{ZWSP+13}
 Rich Zemel, Yu~Wu, Kevin Swersky, Toni Pitassi, and Cynthia Dwork.
