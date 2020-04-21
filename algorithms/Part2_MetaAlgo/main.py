@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import time
 from meta_algo import MetaAlgorithm
 import pickle
@@ -59,11 +60,13 @@ if __name__ == '__main__':
     parser.add_argument("--gamma_1", help="gamma_1 param for weight discretization")
     parser.add_argument("--gamma_2", help="gamma_2 param for LP buckets")
     parser.add_argument("--eta", help="eta param")
+    parser.add_argument("--eta_inner", help="eta param for inner loop")
     parser.add_argument("--num_cores", help="number of cores for multiprocessing")
     parser.add_argument("--solver", help="solver for the LPs: [ECOS, OSQP, SCS, GUROBI]")
     parser.add_argument("--output_list", help="output file name for list of hypotheses")
     parser.add_argument("--output", help="output file name for final ensemble")
     parser.add_argument("--constraint", help="constraint (dp or eo)")
+    parser.add_argument("--no_output", help="disable outputting pkl files")
 
     now = datetime.datetime.now()
     args = parser.parse_args()
@@ -74,7 +77,7 @@ if __name__ == '__main__':
     if(args.T):
         arg_T = int(args.T)
     else:
-        arg_T = 25
+        arg_T = 50
     if(args.T_inner):
         arg_T_inner = int(args.T_inner)
     else:
@@ -94,7 +97,11 @@ if __name__ == '__main__':
     if(args.eta):
         arg_eta = float(args.eta)
     else:
-        arg_eta = 0.05
+        arg_eta = float(1/np.sqrt(2*arg_T))
+    if(args.eta_inner):
+        arg_eta_inner = float(args.eta_inner)
+    else:
+        arg_eta_inner = float(1/np.sqrt(2*arg_T_inner))
     if(args.num_cores):
         arg_num_cores = int(args.num_cores)
     else:
@@ -115,22 +122,27 @@ if __name__ == '__main__':
         arg_constraint = args.constraint
     else:
         arg_constraint = 'dp'
+    if(args.no_output):
+        arg_no_output = True
+    else:
+        arg_no_output = False
 
     print("=== OUTPUT FILES ===")
     print("List of Hypotheses: " + str(arg_output_list))
     print("Ensemble Classifier: " + str(arg_output))
-    algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, epsilon=arg_epsilon,
-                        gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, eta = arg_eta, 
+    algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
+                         epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, 
                         num_cores = arg_num_cores, solver = arg_solver, constraint_used=arg_constraint)
 
     list_hypotheses, final_ensemble = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
                                                             X_test, y_test, sensitive_features_test)
 
-    with open(arg_output_list, 'wb') as f:
-        pickle.dump(list_hypotheses, f)
+    if(not arg_no_output):
+        with open(arg_output_list, 'wb') as f:
+            pickle.dump(list_hypotheses, f)
 
-    with open(arg_output, "wb") as f:
-        pickle.dump(final_ensemble, f)
+        with open(arg_output, "wb") as f:
+            pickle.dump(final_ensemble, f)
 
 '''
 loaded_list = pickle.load(open('list_hypotheses.pkl', 'rb'))

@@ -61,22 +61,17 @@ class BayesianOracle:
         self.constraint_used = constraint_used
         self.current_t = current_t
 
-        # the denominator in the Delta_i term (pg. 8)
-        self._weights_a0_sum = self.weights[self.a_indices['a0']].sum()
-        self._weights_a1_sum = self.weights[self.a_indices['a1']].sum()
+        # preset for the delta_i computation
+        self.delta_i = np.zeros(len(self.weights))
 
-        # element-wise divide was acting funny, so did it this way
-        # entire rational term (w_i/sum w_j) in Delta_i term (pg. 8), as a vector for each example
-        delta_i_weights = self.weights.copy()
-        for i in self.a_indices['a0']:
-            delta_i_weights[i] = delta_i_weights[i]/self._weights_a0_sum
-        for i in self.a_indices['a1']:
-            delta_i_weights[i] = delta_i_weights[i]/self._weights_a1_sum
-        self._delta_i_weights = delta_i_weights
-
-        # left term in the Delta_i term, the double-sum
-        # we choose to use the ordering: lambda_0_1 - lambda_1_0 
-        self.lambda_sum = np.zeros(len(self.weights)) 
+        # the B vector is the LHS of the Delta_i term (Lambda_w^{a_i, a'} - Lambda_w^{a', a_i})
+        # this can be either B or -B, depending on the subgroup of example i
+        self.B_vec_a0a1 = np.zeros(len(self.weights))
+        self.B_vec_a0a1[self.a_indices['a0']] += self.B
+        self.B_vec_a0a1[self.a_indices['a1']] -= self.B
+        self.B_vec_a1a0 = np.zeros(len(self.weights))
+        self.B_vec_a1a0[self.a_indices['a1']] += self.B
+        self.B_vec_a1a0[self.a_indices['a0']] -= self.B
     
     def _L_i(self):
         """
@@ -96,7 +91,7 @@ class BayesianOracle:
         """
         # NOTE: the zero-one loss for the 1-vector and y is just 1-vector minus y
         loss = np.ones(len(self.y)) - self.y
-        return np.multiply(loss, self.weights) + self._delta_i_fast()
+        return np.multiply(loss, self.weights) + self.delta_i
         
     def _c_0_i(self):
         """
@@ -109,14 +104,31 @@ class BayesianOracle:
         loss = self.y
         return np.multiply(loss, self.weights)
 
-    def _delta_i_fast(self):
+    def _update_delta_i(self, lambda_tuple):
         """
-        Returns delta_i_vec, a vector that includes delta_i for each sample i in [n]
+        Updates our current Delta_i vector based on Lambda Best Response
 
-        :return: nparray. delta_i_vec vector.
+        :return: none.
         """
-        delta_i_vec = np.multiply(self._delta_i_weights, self.lambda_sum) # elementwise multiply
-        return delta_i_vec
+        weights = lambda_tuple[2]
+
+        # compute the denominator (sum_{j:a_j = a_i} w_j)
+        a0_denominator = weights[self.a_indices['a0']].sum()
+        a1_denominator = weights[self.a_indices['a1']].sum()
+
+        # divide element-wise by the denominator (right term of Delta_i)
+        for i in self.a_indices['a0']:
+            weights[i] = weights[i]/a0_denominator
+        for i in self.a_indices['a1']:
+            weights[i] = weights[i]/a1_denominator
+
+        # then, multiply by the B term (left term of Delta_i)
+        if(lambda_tuple[0] == 'a0'): # a = a0, a' = a1
+            new_delta_i = np.multiply(self.B_vec_a0a1, weights)
+        else:                        # a = a1, a' = a0
+            new_delta_i = np.multiply(self.B_vec_a1a0, weights)
+        
+        self.delta_i = self.delta_i + new_delta_i
 
     def _weighted_classification(self):
         """
@@ -126,6 +138,7 @@ class BayesianOracle:
         """
         # Learning becomes a weighted classification problem, dependent on L_i as weights
         final_weights = self.eta * self._L_i() + 0.5
+        final_weights = np.asarray(final_weights)
 
         logreg = LogisticRegression(class_weight='balanced', solver='lbfgs')
         logreg.fit(self.X, self.y, sample_weight=final_weights)
@@ -198,20 +211,15 @@ class BayesianOracle:
 
             lambda_t = lambda_best_response.best_response()
             if(lambda_t != (0, 0, 0)):
-                if(lambda_t[0] == 'a0'):
-                    self.lambda_sum[self.a_indices['a0']] += self.B
-                    self.lambda_sum[self.a_indices['a1']] -= self.B
-                else:
-                    self.lambda_sum[self.a_indices['a0']] -= self.B
-                    self.lambda_sum[self.a_indices['a1']] += self.B
-                    
+                self._update_delta_i(lambda_t)
+                                
             h_t = self._weighted_classification()
             h_pred = h_t.predict(self.X)
             hypotheses.append(h_t)
 
             end_inner = time.time()
             if(t % 50 == 0):
-                print("ALGORITHM 4 (Meta Algorithm) Loop " + str(t + 1) + " Completed!")
+                print("ALGORITHM 4 (Learning Algorithm) Loop " + str(t + 1) + " Completed!")
                 print("ALGORITHM 4 (Learning Algorithm) Time/loop: " + str(end_inner - start_inner))
 
         end_outer = time.time()

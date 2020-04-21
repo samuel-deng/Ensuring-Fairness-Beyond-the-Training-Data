@@ -1,0 +1,36 @@
+=== OUTPUT FILES ===
+List of Hypotheses: list_hypotheses_2020-04-17_20:12:54.pkl
+Ensemble Classifier: hypotheses_ensemble_2020-04-17_20:12:54.pkl
+=== HYPERPARAMETERS ===
+T=1
+T_inner=50
+B=10
+eta=0.05
+epsilon=0.05
+Cores in use=22
+Fairness Definition=dp
+=== Initializing h_0... ===
+Executing ALGORITHM 4 (Learning Algorithm)...
+ALGORITHM 2 (Best Response) will solve: 124 LPs...
+ALGORITHM 4 (Meta Algorithm) Loop 1 Completed!
+ALGORITHM 4 (Learning Algorithm) Time/loop: 1.8208518028259277
+ALGORITHM 4 (Learning Algorithm) Total Execution Time: 37.35782313346863
+=== ALGORITHM 4 (Learning Algorithm) T=0 Statistics ===
+Accuracy = 0.6571969696969697
+P[h(X) = 1 | African-American] = 0.5709876543209876
+P[h(X) = 1 | Caucasian] = 0.2647058823529412
+Delta_DP = 0.30628177196804646
+=== ALGORITHM 1 EXECUTION ===
+Executing ALGORITHM 4 (Learning Algorithm)...
+ALGORITHM 2 (Best Response) will solve: 124 LPs...
+ALGORITHM 4 (Meta Algorithm) Loop 1 Completed!
+ALGORITHM 4 (Learning Algorithm) Time/loop: 0.6010677814483643
+ALGORITHM 4 (Learning Algorithm) Total Execution Time: 35.316099643707275
+=== ALGORITHM 4 (Learning Algorithm) T=1 Statistics ===
+Accuracy = 0.6571969696969697
+P[h(X) = 1 | African-American] = 0.5709876543209876
+P[h(X) = 1 | Caucasian] = 0.2647058823529412
+Delta_DP = 0.30628177196804646
+ALGORITHM 1 (Meta Algorithm) Loop 1 Completed!
+ALGORITHM 1 (Meta Algorithm) Time/loop: 35.62154197692871
+ALGORITHM 1 (Meta Algorithm) Total Execution Time: 35.62155628204346

@@ -1,0 +1,48 @@
+=== OUTPUT FILES ===
+List of Hypotheses: list_hypotheses_2020-04-17_20:15:52.pkl
+Ensemble Classifier: hypotheses_ensemble_2020-04-17_20:15:52.pkl
+=== HYPERPARAMETERS ===
+T=1
+T_inner=200
+B=10
+eta=0.05
+epsilon=0.05
+Cores in use=22
+Fairness Definition=dp
+=== Initializing h_0... ===
+Executing ALGORITHM 4 (Learning Algorithm)...
+ALGORITHM 2 (Best Response) will solve: 124 LPs...
+ALGORITHM 4 (Meta Algorithm) Loop 1 Completed!
+ALGORITHM 4 (Learning Algorithm) Time/loop: 1.2992112636566162
+ALGORITHM 4 (Meta Algorithm) Loop 51 Completed!
+ALGORITHM 4 (Learning Algorithm) Time/loop: 0.748837947845459
+ALGORITHM 4 (Meta Algorithm) Loop 101 Completed!
+ALGORITHM 4 (Learning Algorithm) Time/loop: 0.7096655368804932
+ALGORITHM 4 (Meta Algorithm) Loop 151 Completed!
+ALGORITHM 4 (Learning Algorithm) Time/loop: 0.748621940612793
+ALGORITHM 4 (Learning Algorithm) Total Execution Time: 148.44859099388123
+=== ALGORITHM 4 (Learning Algorithm) T=0 Statistics ===
+Accuracy = 0.6571969696969697
+P[h(X) = 1 | African-American] = 0.5709876543209876
+P[h(X) = 1 | Caucasian] = 0.2647058823529412
+Delta_DP = 0.30628177196804646
+=== ALGORITHM 1 EXECUTION ===
+Executing ALGORITHM 4 (Learning Algorithm)...
+ALGORITHM 2 (Best Response) will solve: 124 LPs...
+ALGORITHM 4 (Meta Algorithm) Loop 1 Completed!
+ALGORITHM 4 (Learning Algorithm) Time/loop: 0.6325559616088867
+ALGORITHM 4 (Meta Algorithm) Loop 51 Completed!
+ALGORITHM 4 (Learning Algorithm) Time/loop: 0.7458395957946777
+ALGORITHM 4 (Meta Algorithm) Loop 101 Completed!
+ALGORITHM 4 (Learning Algorithm) Time/loop: 0.8597526550292969
+ALGORITHM 4 (Meta Algorithm) Loop 151 Completed!
+ALGORITHM 4 (Learning Algorithm) Time/loop: 0.7384414672851562
+ALGORITHM 4 (Learning Algorithm) Total Execution Time: 149.9228527545929
+=== ALGORITHM 4 (Learning Algorithm) T=1 Statistics ===
+Accuracy = 0.6571969696969697
+P[h(X) = 1 | African-American] = 0.5709876543209876
+P[h(X) = 1 | Caucasian] = 0.2647058823529412
+Delta_DP = 0.30628177196804646
+ALGORITHM 1 (Meta Algorithm) Loop 1 Completed!
+ALGORITHM 1 (Meta Algorithm) Time/loop: 150.78889632225037
+ALGORITHM 1 (Meta Algorithm) Total Execution Time: 150.78891253471375
