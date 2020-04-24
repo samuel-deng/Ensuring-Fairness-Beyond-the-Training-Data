@@ -81,9 +81,9 @@ class MetaAlgorithm:
 
     def _gamma_1_buckets(self, X):
         """
-        Returns the discretized buckets for each weight vector N(gamma_1, W).
+        Returns the discretized buckets for each weight vector in N(gamma_1, W).
 
-        :return: list 'N_gamma_1_W' of 2-tuples for the range of each bucket.
+        :return: list 'gamma_1_buckets' of 2-tuples for the range of each bucket.
         """
         delta_1 = (2 * len(X)) / self.gamma_1
 
@@ -209,7 +209,7 @@ class MetaAlgorithm:
                                 self.solver,
                                 self.constraint_used,
                                 0)
-        h_t, inner_hypotheses_t = oracle.execute_oracle()
+        h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
 
         hypotheses = []
         start_outer = time.time()

@@ -44,12 +44,12 @@ class LinearProgram():
 
         # Objective Function
         # NOTE: @ is dot product between w and the h prediction vector with all a or a_p zero'd out
-        self._objective = cp.Maximize((1/self.pi_0 * (self._w @ self._h_xi_a)) - (1/self.pi_1 * (self._w @ self._h_xi_ap)))
+        self._objective = cp.Maximize(((1/self.pi_0) * (self._w @ self._h_xi_a)) - ((1/self.pi_1) * (self._w @ self._h_xi_ap)))
         self._prob = cp.Problem(self._objective, self._constraints) 
 
     def solve(self, pi):
-        self.pi_0.value = pi[0] # fixed from the Algorithm 2 loop
-        self.pi_1.value = pi[1] # fixed from the Algorithm 2 loop
+        self.pi_0.value = pi[0] # fixed as constant from the Algorithm 2 loop
+        self.pi_1.value = pi[1] # fixed as constant from the Algorithm 2 loop
         self._prob.solve(solver = self.solver, verbose=False, warm_start = True)
         return self._prob.value, self._w.value, (self._a, self._a_p, (pi[0], pi[1]))
 
@@ -64,23 +64,13 @@ where a is either 'a0' or 'a1' (string), a_p (read: a prime) is 'a0' or 'a1' (th
 of a), and w is the discretized (based on N(gamma_1, W)) weight vector that maximizes the LP.
 """
 class LambdaBestResponse:
-    def __init__(self, h_pred, X, y, weights, sensitive_features, a_indices, 
-                card_A, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, eta, num_cores, solver):
+    def __init__(self, h_pred, a_indices, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, num_cores, solver):
         self.h_pred = np.asarray(h_pred)
-        self.X = X
-        self.y = y 
-        self.weights = weights
-        self.sensitive_features = sensitive_features
         self.a_indices = a_indices
-        self.card_A = card_A
-        self.M = M
-        self.B = B
-        self.T_inner = T_inner
         self.gamma_1 = gamma_1
         self.gamma_1_buckets = gamma_1_buckets
         self.gamma_2_buckets = gamma_2_buckets
         self.epsilon = epsilon
-        self.eta = eta
         self.num_cores = num_cores
         self.solver = solver
 
@@ -138,7 +128,7 @@ class LambdaBestResponse:
         start = time.time()
         solved_results = []
         for (a, a_p) in a_a_p: # either a = 'a0' and a_p = 'a1' or vice versa 
-            problem = LinearProgram(len(self.X), self.h_pred, self.a_indices, a, a_p, self.solver)
+            problem = LinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, self.solver)
             pool = Pool(processes = self.num_cores)
             solved_results.extend(pool.map(problem.solve, N_gamma_2_A)) # multiprocessing maps each pi to new process
             pool.close()
@@ -151,7 +141,7 @@ class LambdaBestResponse:
             if result[0] > max_lp:
                 max_lp = result[0]
                 argmax_lp = result[1]
-                argmax_lp[argmax_lp < 0] = 0 # somtimes some slightly < 0 entries for argmax
+                argmax_lp[argmax_lp < 0] = 0 # sometimes some slightly < 0 entries for argmax
                 optimal_tuple = result[2]
         
         # Violation of fairness
@@ -168,5 +158,3 @@ class LambdaBestResponse:
             lambda_entry = (0, 0, 0)
 
         return lambda_entry
-
-    

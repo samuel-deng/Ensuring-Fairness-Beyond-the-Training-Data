@@ -101,7 +101,7 @@ class BayesianOracle:
         :return: float. the value for c_0_i (for single sample)
         """
         # NOTE: the zero-one loss for the 0-vector and y is just y itself
-        loss = self.y
+        loss = self.y        
         return np.multiply(loss, self.weights)
 
     def _update_delta_i(self, lambda_tuple):
@@ -127,7 +127,6 @@ class BayesianOracle:
             new_delta_i = np.multiply(self.B_vec_a0a1, weights)
         else:                        # a = a1, a' = a0
             new_delta_i = np.multiply(self.B_vec_a1a0, weights)
-        
         self.delta_i = self.delta_i + new_delta_i
 
     def _weighted_classification(self):
@@ -138,11 +137,10 @@ class BayesianOracle:
         """
         # Learning becomes a weighted classification problem, dependent on L_i as weights
         final_weights = self.eta * self._L_i() + 0.5
-        final_weights = np.asarray(final_weights)
 
-        logreg = LogisticRegression(class_weight='balanced', solver='lbfgs')
-        logreg.fit(self.X, self.y, sample_weight=final_weights)
-        return logreg
+        logreg = LogisticRegression(penalty='none', solver='lbfgs')
+        logreg.fit(self.X, self.y, sample_weight=final_weights)        
+        return logreg, final_weights
 
     def _evaluate_fairness(self, y_pred, sensitive_features):
         """
@@ -192,20 +190,11 @@ class BayesianOracle:
             start_inner = time.time()
 
             lambda_best_response = LambdaBestResponse(h_pred, 
-                                        self.X, 
-                                        self.y, 
-                                        self.weights, 
-                                        self.sensitive_features, 
                                         self.a_indices, 
-                                        self.card_A, 
-                                        self.M, 
-                                        self.B, 
-                                        self.T_inner,
                                         self.gamma_1,
                                         self.gamma_1_buckets,
                                         self.gamma_2_buckets, 
                                         self.epsilon, 
-                                        self.eta,
                                         self.num_cores,
                                         self.solver)
 
@@ -213,7 +202,7 @@ class BayesianOracle:
             if(lambda_t != (0, 0, 0)):
                 self._update_delta_i(lambda_t)
                                 
-            h_t = self._weighted_classification()
+            h_t, final_weights = self._weighted_classification()
             h_pred = h_t.predict(self.X)
             hypotheses.append(h_t)
 
@@ -221,6 +210,8 @@ class BayesianOracle:
             if(t % 50 == 0):
                 print("ALGORITHM 4 (Learning Algorithm) Loop " + str(t + 1) + " Completed!")
                 print("ALGORITHM 4 (Learning Algorithm) Time/loop: " + str(end_inner - start_inner))
+                print("First 50 entries of weight vector:")
+                print(final_weights[:49])
 
         end_outer = time.time()
 
