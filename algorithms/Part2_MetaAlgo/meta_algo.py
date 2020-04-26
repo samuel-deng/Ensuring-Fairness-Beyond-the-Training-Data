@@ -66,15 +66,12 @@ class MetaAlgorithm:
             raise(ValueError("epsilon - 4 * gamma_1 must be positive for LPs."))
         if eta is None:
             self.eta = 1/np.sqrt(2*self.T)
-        if eta_inner is None:
-            self.eta_inner = 1/np.sqrt(2*self.T_inner)
         
         print("=== HYPERPARAMETERS ===")
         print("T=" + str(self.T))
         print("T_inner=" + str(self.T_inner))
         print("B=" + str(self.B))
         print("eta=" + str(self.eta))
-        print("eta_inner=" + str(self.eta_inner))
         print("epsilon=" + str(self.epsilon))
         print("Cores in use=" + str(self.num_cores))
         print("Fairness Definition=" + str(self.constraint_used))
@@ -192,6 +189,10 @@ class MetaAlgorithm:
         gamma_1_buckets = self._gamma_1_buckets(X)
         gamma_2_buckets = self._gamma_2_buckets()
 
+        # initialize eta_inner (depends on n)
+        eta_inner = (1/(1 + self.B)) * np.sqrt(len(X)/self.T_inner)
+        print("eta_inner = " + str(eta_inner))
+
         # Start off with oracle prediction over uniform weights
         print("=== Initializing h_0... ===")
         oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
@@ -204,7 +205,7 @@ class MetaAlgorithm:
                                 gamma_1_buckets, 
                                 gamma_2_buckets, 
                                 self.epsilon,
-                                self.eta_inner,
+                                eta_inner,
                                 self.num_cores,
                                 self.solver,
                                 self.constraint_used,

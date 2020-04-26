@@ -127,6 +127,7 @@ class BayesianOracle:
             new_delta_i = np.multiply(self.B_vec_a0a1, weights)
         else:                        # a = a1, a' = a0
             new_delta_i = np.multiply(self.B_vec_a1a0, weights)
+
         self.delta_i = self.delta_i + new_delta_i
 
     def _weighted_classification(self):
@@ -136,11 +137,21 @@ class BayesianOracle:
         :return: LogisticRegression. sklearn logistic regression object.
         """
         # Learning becomes a weighted classification problem, dependent on L_i as weights
-        final_weights = self.eta * self._L_i() + 0.5
+        print(self.weights)
+        w = self.eta * self._L_i() + 0.5
+        print(self._L_i())
+        print(self.eta * self._L_i())
+        pos_indices = np.where(w >= 0)
+        neg_indices = np.where(w < 0)
+
+        redY = 1 * (w < 0)
+        redW = w.abs()
+        print(redW)
+        print(redY)
 
         logreg = LogisticRegression(penalty='none', solver='lbfgs')
-        logreg.fit(self.X, self.y, sample_weight=final_weights)        
-        return logreg, final_weights
+        logreg.fit(self.X, redY, sample_weight=redW)        
+        return logreg, redW
 
     def _evaluate_fairness(self, y_pred, sensitive_features):
         """
