@@ -3,6 +3,7 @@ import numpy as np
 import math
 import time
 from sklearn.linear_model import LogisticRegression 
+from sklearn.dummy import DummyClassifier
 from sklearn.metrics import accuracy_score
 from lambda_best_response_param_parallel import LambdaBestResponse
 from voting_classifier import VotingClassifier
@@ -72,37 +73,12 @@ class BayesianOracle:
         self.B_vec_a1a0 = np.zeros(len(self.weights))
         self.B_vec_a1a0[self.a_indices['a1']] += self.B
         self.B_vec_a1a0[self.a_indices['a0']] -= self.B
-    
-    def _L_i(self):
-        """
-        Returns L_i, which is a sample weight for some sample i, dependent on zero-one-loss, the
-        weight vector from the Meta-Algo, and delta_i.
 
-        :return: float. the value for L_i (for single sample)
-        """
-        return self._c_1_i() - self._c_0_i()
-
-    def _c_1_i(self):
-        """
-        Returns c_1_i, which is the cost of classifying on a 1, dependent on the weights from
-        the Meta-Algo and delta_i.
-
-        :return: float. the value for c_1_i (for single sample)
-        """
-        # NOTE: the zero-one loss for the 1-vector and y is just 1-vector minus y
-        loss = np.ones(len(self.y)) - self.y
-        return np.multiply(loss, self.weights) + self.delta_i
-        
-    def _c_0_i(self):
-        """
-        Returns c_0_i, which is the cost of classifying on a 0, dependent on the weights from
-        the Meta-Algo.
-
-        :return: float. the value for c_0_i (for single sample)
-        """
-        # NOTE: the zero-one loss for the 0-vector and y is just y itself
-        loss = self.y        
-        return np.multiply(loss, self.weights)
+        # c_1_i (without the Delta_i) and c_0_i can be set only knowing the weights vector and y
+        loss_1 = np.ones(len(self.y)) - self.y
+        self.c_1_i = np.multiply(loss_1, self.weights)
+        loss_0 = self.y
+        self.c_0_i = np.multiply(loss_0, self.weights)
 
     def _update_delta_i(self, lambda_tuple):
         """
@@ -130,27 +106,31 @@ class BayesianOracle:
 
         self.delta_i = self.delta_i + new_delta_i
 
-    def _weighted_classification(self):
+    def _weighted_classification(self, t):
         """
         Returns LogisticRegression classifier that uses the weights L_i(lambda).
 
         :return: LogisticRegression. sklearn logistic regression object.
         """
         # Learning becomes a weighted classification problem, dependent on L_i as weights
-        print(self.weights)
-        w = self.eta * self._L_i() + 0.5
-        print(self._L_i())
-        print(self.eta * self._L_i())
+        # NOTE: c_1_i does NOT have the Delta_i here (just the loss * weight term). just named it that for convenience.
+        random_eta = np.random.uniform(0, self.eta/10)
+        w = self.eta * t * (self.c_1_i - self.c_0_i) + self.eta * self.delta_i + random_eta
         pos_indices = np.where(w >= 0)
         neg_indices = np.where(w < 0)
 
         redY = 1 * (w < 0)
+        redY = np.asarray(redY)
         redW = w.abs()
-        print(redW)
-        print(redY)
+        redW = np.asarray(redW)
 
-        logreg = LogisticRegression(penalty='none', solver='lbfgs')
-        logreg.fit(self.X, redY, sample_weight=redW)        
+        if(neg_indices[0].size):
+            logreg = LogisticRegression(penalty='none', solver='lbfgs')
+            logreg.fit(self.X, redY, sample_weight=redW)
+        else:
+            logreg = DummyClassifier(strategy="constant", constant=0)
+            logreg.fit(self.X, redY, sample_weight=redW)
+
         return logreg, redW
 
     def _evaluate_fairness(self, y_pred, sensitive_features):
@@ -185,7 +165,7 @@ class BayesianOracle:
         
         (1) a VotingClassifier object for majority vote over T_inner-many hypotheses, 
         which is just used to check for fairness violation and get the loss vector for the outer loop.
-        (2) a list of T_inner-many hypotheses that is appended to the outer loop hypotheses.
+        (2) a list of T_inner-m any hypotheses that is appended to the outer loop hypotheses.
 
         :return: VotingClassifier. majority vote classifier object (details in voting_classifier.py)
         :return: list. a list of hypotheses to append to our big list in the outer loop.
@@ -212,8 +192,8 @@ class BayesianOracle:
             lambda_t = lambda_best_response.best_response()
             if(lambda_t != (0, 0, 0)):
                 self._update_delta_i(lambda_t)
-                                
-            h_t, final_weights = self._weighted_classification()
+                                            
+            h_t, final_weights = self._weighted_classification(t)
             h_pred = h_t.predict(self.X)
             hypotheses.append(h_t)
 

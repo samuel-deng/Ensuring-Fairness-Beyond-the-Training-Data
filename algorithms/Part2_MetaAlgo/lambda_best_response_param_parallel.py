@@ -38,8 +38,8 @@ class LinearProgram():
             cp.sum(self._w[a_indices[a_p]]) == self.pi_1,
             cp.sum(self._w) == self.pi_0 + self.pi_1, # don't EXACTLY sum to 1 sometimes
             0 <= self._w,
-            #cp.sum(self._w[a_indices[a]]) >= 0.1,     # extra constraint for non-trivial distributions
-            #cp.sum(self._w[a_indices[a_p]]) >= 0.1    # extra constraint for non-trivial distributions
+            #cp.sum(self._w[a_indices[a]]) >= 0.25,     # extra constraint for non-trivial distributions
+            #cp.sum(self._w[a_indices[a_p]]) >= 0.25    # extra constraint for non-trivial distributions
         ]
 
         # Objective Function
