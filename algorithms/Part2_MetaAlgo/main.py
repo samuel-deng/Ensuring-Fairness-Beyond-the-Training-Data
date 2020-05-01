@@ -101,7 +101,7 @@ if __name__ == '__main__':
     if(args.eta_inner):
         arg_eta_inner = float(args.eta_inner)
     else:
-        arg_eta_inner = float(1/np.sqrt(2*arg_T_inner))
+        arg_eta_inner = None
     if(args.num_cores):
         arg_num_cores = int(args.num_cores)
     else:

@@ -190,8 +190,12 @@ class MetaAlgorithm:
         gamma_2_buckets = self._gamma_2_buckets()
 
         # initialize eta_inner (depends on n)
-        eta_inner = (1/(1 + self.B)) * np.sqrt(len(X)/self.T_inner)
-        print("eta_inner = " + str(eta_inner))
+        if(self.eta_inner == None):
+            eta_inner = (1/(1 + self.B)) * np.sqrt(len(X)/self.T_inner)
+            self.eta_inner = eta_inner
+            print("eta_inner = " + str(eta_inner))
+        else:
+            print("eta_inner = " + str(self.eta_inner))
 
         # Start off with oracle prediction over uniform weights
         print("=== Initializing h_0... ===")
@@ -205,7 +209,7 @@ class MetaAlgorithm:
                                 gamma_1_buckets, 
                                 gamma_2_buckets, 
                                 self.epsilon,
-                                eta_inner,
+                                self.eta_inner,
                                 self.num_cores,
                                 self.solver,
                                 self.constraint_used,

@@ -134,7 +134,7 @@ if __name__ == '__main__':
                          epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, 
                         num_cores = arg_num_cores, solver = arg_solver, constraint_used=arg_constraint)
 
-    X_train_subset = X_train.sample(n = 100, random_state = 1)
+    X_train_subset = X_train.sample(n = 200, random_state = 1)
     X_train_subset = X_train_subset.reset_index(drop=True)
     y_train_subset = y_train.iloc[X_train_subset.index]
     y_train_subset = y_train_subset.reset_index(drop=True)
