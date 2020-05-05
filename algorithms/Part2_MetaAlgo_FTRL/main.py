@@ -5,13 +5,39 @@ from meta_algo import MetaAlgorithm
 import pickle
 import argparse
 import datetime
+from sklearn.metrics import accuracy_score
+
 
 dataset_used = 'compas'
 
+def evaluate_fairness(y_pred, sensitive_features):
+        """
+        Evaluates fairness of the final majority vote classifier over T_inner hypotheses
+        on the test set.
+        #TODO: add equalized odds option
+        #NOTE: defined in the meta_algo file, but we chose:
+        a0 := African-American (COMPAS), Female (Adult)
+        a1 := Caucasian (COMPAS), Male (Adult)
+
+        :return: list. subgroups in sensitive_features.
+        :return: dict. recidivism_pct for each group.
+        """
+        groups = np.unique(sensitive_features.values)
+        indices = {}
+        recidivism_count = {}
+        recidivism_pct = {}
+        for index, group in enumerate(groups):
+            indices[group] = sensitive_features.index[sensitive_features == group]
+            recidivism_count[group] = sum(y_pred[indices[group]])
+            recidivism_pct[group] = recidivism_count[group]/len(indices[group])
+        
+        gap = abs(recidivism_pct[groups[0]] - recidivism_pct[groups[1]])
+        return groups, recidivism_pct, gap
+
 if(dataset_used == 'compas'):
-    compas_train = pd.read_csv('./../../data/compas_train_subset_1.csv')
-    compas_val = pd.read_csv('./../../data/compas_val.csv')
-    compas_test = pd.read_csv('./../../data/compas_test.csv')
+    compas_train = pd.read_csv('./data/compas_train_subset_2.csv')
+    compas_val = pd.read_csv('./data/compas_val.csv')
+    compas_test = pd.read_csv('./data/compas_test.csv')
 
     y_train = compas_train.pop('two_year_recid') 
     y_test = compas_test.pop('two_year_recid')
@@ -20,6 +46,7 @@ if(dataset_used == 'compas'):
     X_train = compas_train
     X_test = compas_test
 
+
     X_train = X_train.drop('Unnamed: 0', axis=1)
     X_test = X_test.drop('Unnamed: 0', axis=1)
     
@@ -27,7 +54,7 @@ if(dataset_used == 'compas'):
     sensitive_features_train = sensitive_features_train.replace(1, 'Caucasian')
     sensitive_features_test = sensitive_features_test.replace(0, 'African-American')
     sensitive_features_test = sensitive_features_test.replace(1, 'Caucasian')
-    
+
 elif(dataset_used == 'adult'):
     adult_train = pd.read_csv('./../../data/adult_train.csv')
     adult_val = pd.read_csv('./../../data/adult_val.csv')
@@ -66,6 +93,7 @@ if __name__ == '__main__':
     parser.add_argument("--output_list", help="output file name for list of hypotheses")
     parser.add_argument("--output", help="output file name for final ensemble")
     parser.add_argument("--constraint", help="constraint (dp or eo)")
+    parser.add_argument("--lbd_group_weights", help="lower bound on group weights")
     parser.add_argument("--no_output", help="disable outputting pkl files")
 
     now = datetime.datetime.now()
@@ -101,7 +129,7 @@ if __name__ == '__main__':
     if(args.eta_inner):
         arg_eta_inner = float(args.eta_inner)
     else:
-        arg_eta_inner = None
+        arg_eta_inner = float(1/np.sqrt(2*arg_T_inner))
     if(args.num_cores):
         arg_num_cores = int(args.num_cores)
     else:
@@ -122,6 +150,10 @@ if __name__ == '__main__':
         arg_constraint = args.constraint
     else:
         arg_constraint = 'dp'
+    if(args.lbd_group_weights):
+        arg_lbd_g_wt = args.lbd_group_weights
+    else:
+        arg_lbd_g_wt = 0.35
     if(args.no_output):
         arg_no_output = True
     else:
@@ -132,17 +164,20 @@ if __name__ == '__main__':
     print("Ensemble Classifier: " + str(arg_output))
     algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
                          epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, 
-                        num_cores = arg_num_cores, solver = arg_solver, constraint_used=arg_constraint)
+                        num_cores = arg_num_cores, solver = arg_solver, constraint_used=arg_constraint, lbd_g_wt = arg_lbd_g_wt)
 
     list_hypotheses, final_ensemble = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
                                                             X_test, y_test, sensitive_features_test)
 
-    if(not arg_no_output):
-        with open(arg_output_list, 'wb') as f:
-            pickle.dump(list_hypotheses, f)
+    y_pred = final_ensemble.predict(X_test)
+    groups, recidivism_pct, gap = evaluate_fairness(y_pred, sensitive_features_test)
+    print("Accuracy = {}".format(accuracy_score(y_test, y_pred)))
+    for group in groups:
+        print("P[h(X) = 1 | {}] = {}".format(group, recidivism_pct[group]))
+    print("Delta_DP = {}".format(gap))
 
-        with open(arg_output, "wb") as f:
-            pickle.dump(final_ensemble, f)
+    output_file = 'final_y_pred' + now.strftime("%Y-%m-%d_%H:%M:%S") + '.pkl'
+    pickle.dump(y_pred, open(output_file, 'wb') )
 
 '''
 loaded_list = pickle.load(open('list_hypotheses.pkl', 'rb'))

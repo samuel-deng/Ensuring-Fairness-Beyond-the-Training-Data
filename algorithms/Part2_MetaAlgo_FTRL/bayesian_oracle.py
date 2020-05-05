@@ -3,11 +3,10 @@ import numpy as np
 import math
 import time
 from sklearn.linear_model import LogisticRegression 
-from sklearn.dummy import DummyClassifier
 from sklearn.metrics import accuracy_score
 from lambda_best_response_param_parallel import LambdaBestResponse
 from voting_classifier import VotingClassifier
-
+from sklearn.ensemble import RandomForestClassifier
 """ 
 The Bayesian Oracle step (Algorithm 4) that learns the actual classifier
 via cost-sensitive classification, calling lambda_best_response_param_parallel
@@ -37,14 +36,14 @@ instances are protected/non-protected
 """
 
 class BayesianOracle:
-    def __init__(self, X, y, X_test, y_test, weights, sensitive_features, sensitive_features_test, 
+    def __init__(self, X, y, X_test, y_test, weights_org, sensitive_features, sensitive_features_test, 
                 a_indices, card_A, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, 
                 epsilon, eta, num_cores, solver, constraint_used, current_t):
         self.X = X
         self.y = y 
         self.X_test = X_test
         self.y_test = y_test
-        self.weights = weights
+        self.weights_org = weights_org
         self.sensitive_features = sensitive_features
         self.sensitive_features_test = sensitive_features_test
         self.a_indices = a_indices
@@ -63,22 +62,19 @@ class BayesianOracle:
         self.current_t = current_t
 
         # preset for the delta_i computation
-        self.delta_i = np.zeros(len(self.weights))
+        self.delta_i = np.zeros(len(self.weights_org))
 
+        # weights that don't change over time
+        self.const_i = np.zeros(len(self.weights_org))
+        #self.const_i = np.multiply(self.weights_org, 1 - 2*self.y)
         # the B vector is the LHS of the Delta_i term (Lambda_w^{a_i, a'} - Lambda_w^{a', a_i})
         # this can be either B or -B, depending on the subgroup of example i
-        self.B_vec_a0a1 = np.zeros(len(self.weights))
+        self.B_vec_a0a1 = np.zeros(len(self.weights_org))
         self.B_vec_a0a1[self.a_indices['a0']] += self.B
         self.B_vec_a0a1[self.a_indices['a1']] -= self.B
-        self.B_vec_a1a0 = np.zeros(len(self.weights))
+        self.B_vec_a1a0 = np.zeros(len(self.weights_org))
         self.B_vec_a1a0[self.a_indices['a1']] += self.B
         self.B_vec_a1a0[self.a_indices['a0']] -= self.B
-
-        # c_1_i (without the Delta_i) and c_0_i can be set only knowing the weights vector and y
-        loss_1 = np.ones(len(self.y)) - self.y
-        self.c_1_i = np.multiply(loss_1, self.weights)
-        loss_0 = self.y
-        self.c_0_i = np.multiply(loss_0, self.weights)
 
     def _update_delta_i(self, lambda_tuple):
         """
@@ -86,6 +82,12 @@ class BayesianOracle:
 
         :return: none.
         """
+        new_delta_i = self._get_new_delta_i(lambda_tuple)
+
+        self.delta_i = self.delta_i + new_delta_i
+
+    def _get_new_delta_i(self, lambda_tuple):
+
         weights = lambda_tuple[2]
 
         # compute the denominator (sum_{j:a_j = a_i} w_j)
@@ -103,35 +105,32 @@ class BayesianOracle:
             new_delta_i = np.multiply(self.B_vec_a0a1, weights)
         else:                        # a = a1, a' = a0
             new_delta_i = np.multiply(self.B_vec_a1a0, weights)
+        return new_delta_i
 
-        self.delta_i = self.delta_i + new_delta_i
 
-    def _weighted_classification(self, t):
-        """
-        Returns LogisticRegression classifier that uses the weights L_i(lambda).
-
-        :return: LogisticRegression. sklearn logistic regression object.
-        """
-        # Learning becomes a weighted classification problem, dependent on L_i as weights
-        # NOTE: c_1_i does NOT have the Delta_i here (just the loss * weight term). just named it that for convenience.
-        random_eta = np.random.uniform(0, self.eta/10)
-        w = self.eta * t * (self.c_1_i - self.c_0_i) + self.eta * self.delta_i + random_eta
-        pos_indices = np.where(w >= 0)
-        neg_indices = np.where(w < 0)
-
-        redY = 1 * (w < 0)
-        redY = np.asarray(redY)
-        redW = w.abs()
-        redW = np.asarray(redW)
-
-        if(neg_indices[0].size):
-            logreg = LogisticRegression(penalty='none', solver='lbfgs')
-            logreg.fit(self.X, redY, sample_weight=redW)
+    def _randomized_classification(self, lambda_tuple):
+        
+        w = self.eta * (self.const_i + self.delta_i) 
+        if lambda_tuple != (0,0,0):
+            w = w + self.eta * ( np.multiply(self.weights_org, 1 - 2*self.y) +  self._get_new_delta_i(lambda_tuple) )
         else:
-            logreg = DummyClassifier(strategy="constant", constant=0)
-            logreg.fit(self.X, redY, sample_weight=redW)
+            w = w + self.eta * ( np.multiply(self.weights_org, 1 - 2*self.y) )
+        #print(np.max(self.const_i))
+        #print(np.max(self.delta_i))
+        #print('------')
+        nvar = len(w)
+        #print('inside randomized classification')
+        #print(nvar)
+        #solve a convex optimization problem
+        Q = cp.Variable(nvar)
+        objective = cp.Minimize( Q.T @ w + (0.05) * cp.sum_squares(Q))
+        constraints = [0.001 <= Q, Q <= 0.999]
+        prob = cp.Problem(objective, constraints)
+        prob.solve()
+        #print(Q.value)
+        #print(np.max(Q.value))
+        return Q.value
 
-        return logreg, redW
 
     def _evaluate_fairness(self, y_pred, sensitive_features):
         """
@@ -165,7 +164,7 @@ class BayesianOracle:
         
         (1) a VotingClassifier object for majority vote over T_inner-many hypotheses, 
         which is just used to check for fairness violation and get the loss vector for the outer loop.
-        (2) a list of T_inner-m any hypotheses that is appended to the outer loop hypotheses.
+        (2) a list of T_inner-many hypotheses that is appended to the outer loop hypotheses.
 
         :return: VotingClassifier. majority vote classifier object (details in voting_classifier.py)
         :return: list. a list of hypotheses to append to our big list in the outer loop.
@@ -173,11 +172,19 @@ class BayesianOracle:
         hypotheses = []
         h = 0
         h_pred = [0 for i in range(len(self.X))]
+        #h_pred = np.random.binomial(n=1,p=0.5,size=len(self.X))
+        #print('printing h_pred')
+        #print(h_pred)
         start_outer = time.time()
 
         print("Executing ALGORITHM 4 (Learning Algorithm)...")
         print("ALGORITHM 2 (Best Response) will solve: " + str(2 * len(self.gamma_2_buckets)) + " LPs...") # twice because a, a_p
         for t in range(int(self.T_inner)):
+            # if self.eta*0.99 < 0.01:
+            #     self.eta = 0.01
+            # else:
+            #     self.eta = self.eta * 0.99
+
             start_inner = time.time()
 
             lambda_best_response = LambdaBestResponse(h_pred, 
@@ -190,19 +197,34 @@ class BayesianOracle:
                                         self.solver)
 
             lambda_t = lambda_best_response.best_response()
+            #print('printing lambda t')
+            #print(lambda_t[2].size)
+            #print(lambda_t)
             if(lambda_t != (0, 0, 0)):
+                #print('non-zero case')
                 self._update_delta_i(lambda_t)
-                                            
-            h_t, final_weights = self._weighted_classification(t)
-            h_pred = h_t.predict(self.X)
-            hypotheses.append(h_t)
 
+            self.const_i += np.multiply(self.weights_org, 1 - 2*self.y)
+            #print(self.const_i)
+
+            Q_t = self._randomized_classification(lambda_t)
+            h_pred = [np.random.binomial(n=1,p=Q_t[i]) for i in range(len(Q_t))]
+            h_pred = [int(round(h_pred[v])) for v in range(len(Q_t))]
+            #get classifier that matches the prediction h_pred
+            #print(np.sum(h_pred))
+            #logreg = LogisticRegression(penalty='none', solver='lbfgs')
+            #logreg.fit(self.X, np.asarray(h_pred) )
+            forest = RandomForestClassifier(n_estimators=100,max_depth=50)
+            forest.fit(self.X, h_pred)
+            #print(h_pred)
+            hypotheses.append(forest)
+            new_h_pred = forest.predict(self.X)
+            #print(accuracy_score(np.asarray(self.y), np.asarray(new_h_pred) ) )
+            #print(self.const_i)
             end_inner = time.time()
             if(t % 50 == 0):
                 print("ALGORITHM 4 (Learning Algorithm) Loop " + str(t + 1) + " Completed!")
                 print("ALGORITHM 4 (Learning Algorithm) Time/loop: " + str(end_inner - start_inner))
-                print("First 50 entries of weight vector:")
-                print(final_weights[:49])
 
         end_outer = time.time()
 
@@ -215,5 +237,13 @@ class BayesianOracle:
         for group in groups:
             print("P[h(X) = 1 | {}] = {}".format(group, recidivism_pct[group]))
         print("Delta_DP = {}".format(gap))
+
+        #performance on training dataset
+        # y_pred = T_inner_ensemble.predict(self.X)
+        # groups, recidivism_pct, gap = self._evaluate_fairness(y_pred, self.sensitive_features)
+        # print("Accuracy (train) = {}".format(accuracy_score(np.asarray(self.y), np.asarray(y_pred) )))
+        # for group in groups:
+        #     print("P[h(X) = 1 | {}] = {}".format(group, recidivism_pct[group]))
+        # print("Delta_DP = {}".format(gap))
 
         return T_inner_ensemble, hypotheses
