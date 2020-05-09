@@ -38,7 +38,7 @@ instances are protected/non-protected
 class BayesianOracle:
     def __init__(self, X, y, X_test, y_test, weights_org, sensitive_features, sensitive_features_test, 
                 a_indices, card_A, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, 
-                epsilon, eta, num_cores, solver, constraint_used, current_t):
+                epsilon, eta, num_cores, solver, constraint_used, lbd_g_weight, current_t):
         self.X = X
         self.y = y 
         self.X_test = X_test
@@ -60,6 +60,7 @@ class BayesianOracle:
         self.solver = solver
         self.constraint_used = constraint_used
         self.current_t = current_t
+        self.lbd_g_weight = lbd_g_weight
 
         # preset for the delta_i computation
         self.delta_i = np.zeros(len(self.weights_org))
@@ -194,7 +195,8 @@ class BayesianOracle:
                                         self.gamma_2_buckets, 
                                         self.epsilon, 
                                         self.num_cores,
-                                        self.solver)
+                                        self.solver,
+                                        self.lbd_g_weight)
 
             lambda_t = lambda_best_response.best_response()
             #print('printing lambda t')
@@ -222,6 +224,12 @@ class BayesianOracle:
             #print(accuracy_score(np.asarray(self.y), np.asarray(new_h_pred) ) )
             #print(self.const_i)
             end_inner = time.time()
+            if((t + 1) % 5 == 0):
+                test_pred = forest.predict(self.X_test)
+                acc = accuracy_score(test_pred, self.y_test)
+                groups, recidivism_pct, gap = self._evaluate_fairness(test_pred, self.sensitive_features_test)
+                print("Accuracy of classifier {}: {}".format(t + 1, acc))
+                print("Delta_DP = {}".format(gap))
             if(t % 50 == 0):
                 print("ALGORITHM 4 (Learning Algorithm) Loop " + str(t + 1) + " Completed!")
                 print("ALGORITHM 4 (Learning Algorithm) Time/loop: " + str(end_inner - start_inner))
