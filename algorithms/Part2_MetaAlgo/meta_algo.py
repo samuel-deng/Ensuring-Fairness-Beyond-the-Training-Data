@@ -82,15 +82,18 @@ class MetaAlgorithm:
 
         :return: list 'gamma_1_buckets' of 2-tuples for the range of each bucket.
         """
-        delta_1 = (2 * len(X)) / self.gamma_1
+        delta_1 = self.gamma_1 / (2 * len(X))
 
-        gamma_1_num_buckets = int(np.ceil(math.log(delta_1, 1 + self.gamma_1)))
+        gamma_1_num_buckets = int(np.ceil(math.log((1/delta_1), 1 + self.gamma_1)))
         gamma_1_buckets = []
-        gamma_1_buckets.append((0, 1/delta_1))
+        gamma_1_buckets.append((0, delta_1))
         for i in range(gamma_1_num_buckets):
-            bucket_lower = ((1 + self.gamma_1) ** i) * (1/delta_1)
-            bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (1/delta_1)
+            bucket_lower = ((1 + self.gamma_1) ** i) * (delta_1)
+            bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (delta_1)
             gamma_1_buckets.append((bucket_lower, bucket_upper))
+        
+        print("First 5 entries of N_gamma_1:")
+        print(gamma_1_buckets[:4])
                             
         return gamma_1_buckets
 
@@ -103,9 +106,10 @@ class MetaAlgorithm:
         """
         delta_2 = 0.05 
 
-        gamma_2_num_buckets = np.ceil(math.log((1/delta_2), 1 + self.gamma_2)) 
+        gamma_2_num_buckets = int(np.ceil(math.log((1/delta_2), 1 + self.gamma_2)))
         gamma_2_buckets = []
-        for j in range(int(gamma_2_num_buckets)):
+        gamma_2_buckets.append(0)
+        for j in range(gamma_2_num_buckets):
             bucket = (delta_2) * (1 + self.gamma_2)**j
             gamma_2_buckets.append(bucket)
 
@@ -113,7 +117,11 @@ class MetaAlgorithm:
         for pi_a in gamma_2_buckets:
             pi_ap = 1 - pi_a
             N_gamma_2_A.append((pi_a, pi_ap))
-                        
+
+        print("First and last 5 entries of N_gamma_2:")
+        print(N_gamma_2_A[:4])
+        print(N_gamma_2_A[-4:])
+                                
         return N_gamma_2_A
 
     def _zero_one_loss_grad_w(self, pred, y):
@@ -153,7 +161,7 @@ class MetaAlgorithm:
     def _set_a_indices(self, sensitive_features):
         """
         Creates a dictionary a_indices that contains the necessary information for which indices
-        contain the sensitive/protected attributes.
+        contain the sensitive attributes.
 
         :return: dict 'a_indices' which contains a list of the a_0 indices, list of a_1 indices, and
         a list containing the a value of each sample.

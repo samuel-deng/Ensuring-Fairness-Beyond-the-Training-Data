@@ -63,8 +63,7 @@ if __name__ == '__main__':
     parser.add_argument("--eta_inner", help="eta param for inner loop")
     parser.add_argument("--num_cores", help="number of cores for multiprocessing")
     parser.add_argument("--solver", help="solver for the LPs: [ECOS, OSQP, SCS, GUROBI]")
-    parser.add_argument("--output_list", help="output file name for list of hypotheses")
-    parser.add_argument("--output", help="output file name for final ensemble")
+    parser.add_argument("--name", help="output file name for final ensemble")
     parser.add_argument("--constraint", help="constraint (dp or eo)")
     parser.add_argument("--no_output", help="disable outputting pkl files")
 
@@ -101,7 +100,7 @@ if __name__ == '__main__':
     if(args.eta_inner):
         arg_eta_inner = float(args.eta_inner)
     else:
-        arg_eta_inner = float(1/np.sqrt(2*arg_T_inner))
+        arg_eta_inner = None
     if(args.num_cores):
         arg_num_cores = int(args.num_cores)
     else:
@@ -110,14 +109,6 @@ if __name__ == '__main__':
         arg_solver = args.solver
     else:
         arg_solver = 'ECOS'
-    if(args.output_list):
-        arg_output_list = args.output_list
-    else:
-        arg_output_list = 'list_hypotheses_' + now.strftime("%Y-%m-%d_%H:%M:%S") + '.pkl'
-    if(args.output):
-        arg_output = args.output
-    else:
-        arg_output = 'hypotheses_ensemble_' + now.strftime("%Y-%m-%d_%H:%M:%S") + '.pkl'
     if(args.constraint):
         arg_constraint = args.constraint
     else:
@@ -127,9 +118,6 @@ if __name__ == '__main__':
     else:
         arg_no_output = False
 
-    print("=== OUTPUT FILES ===")
-    print("List of Hypotheses: " + str(arg_output_list))
-    print("Ensemble Classifier: " + str(arg_output))
     algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
                          epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, 
                         num_cores = arg_num_cores, solver = arg_solver, constraint_used=arg_constraint)
@@ -138,17 +126,21 @@ if __name__ == '__main__':
     X_train_subset = X_train_subset.reset_index(drop=True)
     y_train_subset = y_train.iloc[X_train_subset.index]
     y_train_subset = y_train_subset.reset_index(drop=True)
-    X_test_subset = X_test.sample(n = 20, random_state = 1)
-    X_test_subset = X_test_subset.reset_index(drop=True)
-    y_test_subset = y_test.iloc[X_test_subset.index]
-    y_test_subset = y_test_subset.reset_index(drop=True)
     sensitive_features_train_subset = sensitive_features_train.iloc[X_train_subset.index]
     sensitive_features_train_subset = sensitive_features_train_subset.reset_index(drop=True)
-    sensitive_features_test_subset = sensitive_features_test.iloc[X_test_subset.index]
-    sensitive_features_test_subset = sensitive_features_test_subset.reset_index(drop=True)
     
     list_hypotheses, final_ensemble = algo.meta_algorithm(X_train_subset, y_train_subset, sensitive_features_train_subset, 
-                                                            X_test_subset, y_test_subset, sensitive_features_test_subset)
+                                                            X_test, y_test, sensitive_features_test)
+
+    if(arg_eta_inner == None): # for the purposes of outputting the correct eta
+        arg_eta_inner = (1/(1 + arg_B)) * np.sqrt(len(X_train_subset)/arg_T_inner)
+        arg_eta_inner = str(round(arg_eta_inner, 3))
+    if (args.name):
+        arg_output = 'ensemble_' + args.name + '.pkl'
+        arg_output_list = 'list_' + args.name + '.pkl'
+    else:
+        arg_output = 'ensemble_B{}_Tinner{}_etainner{}.pkl'.format(arg_B, arg_T_inner, arg_eta_inner) 
+        arg_output_list = 'list_B{}_Tinner{}_etainner{}.pkl'.format(arg_B, arg_T_inner, arg_eta_inner)
 
     if(not arg_no_output):
         with open(arg_output_list, 'wb') as f:

@@ -6,6 +6,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.dummy import DummyClassifier
 from sklearn.metrics import accuracy_score
 from lambda_best_response_param_parallel import LambdaBestResponse
+from sklearn.metrics import accuracy_score
 from voting_classifier import VotingClassifier
 
 """ 
@@ -198,11 +199,15 @@ class BayesianOracle:
             hypotheses.append(h_t)
 
             end_inner = time.time()
+            if((t + 1) % 5 == 0):
+                test_pred = h_t.predict(self.X_test)
+                acc = accuracy_score(test_pred, self.y_test)
+                groups, recidivism_pct, gap = self._evaluate_fairness(test_pred, self.sensitive_features_test)
+                print("Accuracy of classifier {}: {}".format(t + 1, acc))
+                print("Delta_DP = {}".format(gap))
             if(t % 50 == 0):
-                print("ALGORITHM 4 (Learning Algorithm) Loop " + str(t + 1) + " Completed!")
+                print("ALGORITHM 4 (Learning Algorithm) Loop " + str(t) + " Completed!")
                 print("ALGORITHM 4 (Learning Algorithm) Time/loop: " + str(end_inner - start_inner))
-                print("First 50 entries of weight vector:")
-                print(final_weights[:49])
 
         end_outer = time.time()
 
