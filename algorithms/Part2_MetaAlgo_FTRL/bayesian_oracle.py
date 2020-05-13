@@ -133,11 +133,10 @@ class BayesianOracle:
         return Q.value
 
 
-    def _evaluate_fairness(self, y_pred, sensitive_features):
+    def _evaluate_fairness(self, y_true, y_pred, sensitive_features):
         """
         Evaluates fairness of the final majority vote classifier over T_inner hypotheses
         on the test set.
-        #TODO: add equalized odds option
         #NOTE: defined in the meta_algo file, but we chose:
         a0 := African-American (COMPAS), Female (Adult)
         a1 := Caucasian (COMPAS), Male (Adult)
@@ -146,16 +145,36 @@ class BayesianOracle:
         :return: dict. recidivism_pct for each group.
         """
         groups = np.unique(sensitive_features.values)
-        indices = {}
-        recidivism_count = {}
-        recidivism_pct = {}
-        for index, group in enumerate(groups):
-            indices[group] = sensitive_features.index[sensitive_features == group]
-            recidivism_count[group] = sum(y_pred[indices[group]])
-            recidivism_pct[group] = recidivism_count[group]/len(indices[group])
+        pos_count = {}
+        dp_pct = {}
+        eo_y0_pct = {}
+        eo_y1_pct = {}
         
-        gap = abs(recidivism_pct[groups[0]] - recidivism_pct[groups[1]])
-        return groups, recidivism_pct, gap
+        for index, group in enumerate(groups):
+            # Demographic Parity
+            indices = {}
+            indices[group] = sensitive_features.index[sensitive_features == group]
+            dp_pct[group] = sum(y_pred[indices[group]])/len(indices[group])
+
+            # Equalized Odds
+            y1_indices = {}
+            y0_indices = {}
+            y1_indices[group] = sensitive_features.index[(sensitive_features == group) & (y_true == 1)]
+            y0_indices[group] = sensitive_features.index[(sensitive_features == group) & (y_true == 0)]
+            eo_y0_pct[group] = sum(y_pred[y0_indices[group]])/len(y0_indices[group])   
+            eo_y1_pct[group] = sum(y_pred[y1_indices[group]])/len(y1_indices[group])
+        
+        gaps = {}
+        group_metrics = {} # a dictionary of dictionaries
+
+        gaps['dp'] = abs(dp_pct[groups[0]] - dp_pct[groups[1]])
+        gaps['eo_y0'] = abs(eo_y0_pct[groups[0]] - eo_y0_pct[groups[1]])
+        gaps['eo_y1'] = abs(eo_y1_pct[groups[0]] - eo_y1_pct[groups[1]])
+        group_metrics['dp'] = dp_pct
+        group_metrics['eo_y0'] = eo_y0_pct
+        group_metrics['eo_y1'] = eo_y1_pct
+        
+        return groups, group_metrics, gaps
     
     def execute_oracle(self):
         """
@@ -216,7 +235,7 @@ class BayesianOracle:
             #print(np.sum(h_pred))
             #logreg = LogisticRegression(penalty='none', solver='lbfgs')
             #logreg.fit(self.X, np.asarray(h_pred) )
-            forest = RandomForestClassifier(n_estimators=100,max_depth=50)
+            forest = RandomForestClassifier(n_estimators=100, max_depth=50)
             forest.fit(self.X, h_pred)
             #print(h_pred)
             hypotheses.append(forest)
@@ -227,9 +246,20 @@ class BayesianOracle:
             if((t + 1) % 5 == 0):
                 test_pred = forest.predict(self.X_test)
                 acc = accuracy_score(test_pred, self.y_test)
-                groups, recidivism_pct, gap = self._evaluate_fairness(test_pred, self.sensitive_features_test)
+                groups, group_metrics, gaps = self._evaluate_fairness(self.y_test, test_pred, self.sensitive_features_test)
                 print("Accuracy of classifier {}: {}".format(t + 1, acc))
-                print("Delta_DP = {}".format(gap))
+                if(self.constraint_used == 'dp'):
+                    for group in groups:
+                        print("P[h(X) = 1 | {}] = {}".format(group, group_metrics['dp'][group]))
+                    print("Delta_dp = {}".format(gaps['dp']))
+                elif(self.constraint_used == 'eo'):
+                    for group in groups:
+                        print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo1'][group]))
+                        print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo0'][group]))
+                    print("Delta_eo1 = {}".format(gaps['eo1']))
+                    print("Delta_eo0 = {}".format(gaps['eo0']))
+                else:
+                    raise ValueError("Invalid fairness constraint. Choose dp or eo.")
             if(t % 50 == 0):
                 print("ALGORITHM 4 (Learning Algorithm) Loop " + str(t + 1) + " Completed!")
                 print("ALGORITHM 4 (Learning Algorithm) Time/loop: " + str(end_inner - start_inner))
@@ -240,11 +270,20 @@ class BayesianOracle:
         print("ALGORITHM 4 (Learning Algorithm) Total Execution Time: " + str(end_outer - start_outer))
         print("=== ALGORITHM 4 (Learning Algorithm) T={} Statistics ===".format(self.current_t))
         y_pred = T_inner_ensemble.predict(self.X_test)
-        groups, recidivism_pct, gap = self._evaluate_fairness(y_pred, self.sensitive_features_test)
         print("Accuracy = {}".format(accuracy_score(self.y_test, y_pred)))
-        for group in groups:
-            print("P[h(X) = 1 | {}] = {}".format(group, recidivism_pct[group]))
-        print("Delta_DP = {}".format(gap))
+        groups, group_metrics, gaps = self._evaluate_fairness(self.y_test, y_pred, self.sensitive_features_test)
+        if(self.constraint_used == 'dp'):
+            for group in groups:
+                print("P[h(X) = 1 | {}] = {}".format(group, group_metrics['dp'][group]))
+            print("Delta_dp = {}".format(gaps['dp']))
+        elif(self.constraint_used == 'eo'):
+            for group in groups:
+                print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo1'][group]))
+                print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo0'][group]))
+            print("Delta_eo1 = {}".format(gaps['eo1']))
+            print("Delta_eo0 = {}".format(gaps['eo0']))
+        else:
+            raise ValueError("Invalid fairness constraint. Choose dp or eo.")
 
         #performance on training dataset
         # y_pred = T_inner_ensemble.predict(self.X)
