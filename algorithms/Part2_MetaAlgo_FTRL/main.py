@@ -82,6 +82,8 @@ elif(dataset_used == 'adult'):
     y = pd.read_csv('./../../data/adult_y.csv')
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    y_train = y_train.reset_index(drop=True)
+    y_train = y_train['income']
     y_test = y_test.reset_index(drop=True)
     y_test = y_test['income']
     sensitive_features_train = X_train['sex']
@@ -107,6 +109,8 @@ elif(dataset_used == 'lawschool'):
     lawschool_y = pd.read_csv('./data/lawschool_y.csv')
 
     X_train, X_test, y_train, y_test = train_test_split(lawschool_X, lawschool_y, test_size=0.2, random_state=42)
+    y_train = y_train.reset_index(drop=True)
+    y_train = y_train['bar1']
     y_test = y_test.reset_index(drop=True)
     y_test = y_test['bar1']
     sensitive_features_train = X_train['race7']
@@ -125,6 +129,8 @@ elif(dataset_used == 'communities'):
     communities_y = pd.read_csv('./data/communities_y.csv')
 
     X_train, X_test, y_train, y_test = train_test_split(communities_X, communities_y, test_size=0.2, random_state=42)
+    y_train = y_train.reset_index(drop=True)
+    y_train = y_train['ViolentCrimesPerPop']
     y_test = y_test.reset_index(drop=True)
     y_test = y_test['ViolentCrimesPerPop']
     sensitive_features_train = X_train['majority_white']
