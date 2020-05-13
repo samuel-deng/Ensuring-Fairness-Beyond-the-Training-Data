@@ -73,6 +73,7 @@ class MetaAlgorithm:
         print("T_inner=" + str(self.T_inner))
         print("B=" + str(self.B))
         print("eta=" + str(self.eta))
+        print("eta_inner=" + str(self.eta_inner))
         print("epsilon=" + str(self.epsilon))
         print("Cores in use=" + str(self.num_cores))
         print("Fairness Definition=" + str(self.constraint_used))
@@ -83,15 +84,18 @@ class MetaAlgorithm:
 
         :return: list 'gamma_1_buckets' of 2-tuples for the range of each bucket.
         """
-        delta_1 = (2 * len(X)) / self.gamma_1
+        delta_1 = self.gamma_1 / (2 * len(X))
 
-        gamma_1_num_buckets = int(np.ceil(math.log(delta_1, 1 + self.gamma_1)))
+        gamma_1_num_buckets = int(np.ceil(math.log((1/delta_1), 1 + self.gamma_1)))
         gamma_1_buckets = []
-        gamma_1_buckets.append((0, 1/delta_1))
+        gamma_1_buckets.append((0, delta_1))
         for i in range(gamma_1_num_buckets):
-            bucket_lower = ((1 + self.gamma_1) ** i) * (1/delta_1)
-            bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (1/delta_1)
+            bucket_lower = ((1 + self.gamma_1) ** i) * (delta_1)
+            bucket_upper = ((1 + self.gamma_1) ** (i + 1)) * (delta_1)
             gamma_1_buckets.append((bucket_lower, bucket_upper))
+        
+        print("First 5 entries of N_gamma_1:")
+        print(gamma_1_buckets[:4])
                             
         return gamma_1_buckets
 
@@ -115,6 +119,9 @@ class MetaAlgorithm:
         for pi_a in gamma_2_buckets:
             pi_ap = 1 - pi_a
             N_gamma_2_A.append((pi_a, pi_ap))
+
+        print("N_gamma_2_A (gamma_2_buckets): ")
+        print(N_gamma_2_A)
                         
         return N_gamma_2_A
 
@@ -194,7 +201,7 @@ class MetaAlgorithm:
         gamma_1_buckets = self._gamma_1_buckets(X)
         gamma_2_buckets = self._gamma_2_buckets()
 
-        print(a_indices)
+        # print(a_indices)
         # initialize eta_inner (depends on n)
         #eta_inner = (1/(1 + self.B)) * np.sqrt(len(X)/self.T_inner)
         #print("eta_inner = " + str(eta_inner))
@@ -215,6 +222,7 @@ class MetaAlgorithm:
                                 self.num_cores,
                                 self.solver,
                                 self.constraint_used,
+                                self.lbd_g_wt,
                                 0)
         h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
 
@@ -245,6 +253,7 @@ class MetaAlgorithm:
                                 self.num_cores,
                                 self.solver,
                                 self.constraint_used,
+                                self.lbd_g_wt,
                                 t + 1) # just to print which outer loop T we're on
             
             h_t, inner_hypotheses_t = oracle.execute_oracle()

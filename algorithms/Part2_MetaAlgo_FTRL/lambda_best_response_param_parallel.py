@@ -18,11 +18,12 @@ for the linear program. these are constants passed through the loop
 in Algorithm 2.
 """
 class LinearProgram():
-    def __init__(self, n, h_pred, a_indices, a, a_p, solver):
+    def __init__(self, n, h_pred, a_indices, a, a_p, solver, lbd_g_weight):
         self._w = cp.Variable(n)
         self._a = a
         self._a_p = a_p
         self.solver = solver
+        self.lbd_g_weight = lbd_g_weight
 
         # Problem constants
         self._h_xi_a = h_pred.copy()
@@ -38,8 +39,8 @@ class LinearProgram():
             cp.sum(self._w[a_indices[a_p]]) == self.pi_1,
             cp.sum(self._w) == self.pi_0 + self.pi_1, # don't EXACTLY sum to 1 sometimes
             0 <= self._w,
-            #cp.sum(self._w[a_indices[a]]) >= 0.2,     # extra constraint for non-trivial distributions
-            #cp.sum(self._w[a_indices[a_p]]) >= 0.2    # extra constraint for non-trivial distributions
+            cp.sum(self._w[a_indices[a]]) >= lbd_g_weight,     # extra constraint for non-trivial distributions
+            cp.sum(self._w[a_indices[a_p]]) >= lbd_g_weight    # extra constraint for non-trivial distributions
         ]
 
         # Objective Function
@@ -64,7 +65,7 @@ where a is either 'a0' or 'a1' (string), a_p (read: a prime) is 'a0' or 'a1' (th
 of a), and w is the discretized (based on N(gamma_1, W)) weight vector that maximizes the LP.
 """
 class LambdaBestResponse:
-    def __init__(self, h_pred, a_indices, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, num_cores, solver):
+    def __init__(self, h_pred, a_indices, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, num_cores, solver, lbd_g_weight):
         self.h_pred = np.asarray(h_pred)
         self.a_indices = a_indices
         self.gamma_1 = gamma_1
@@ -73,6 +74,7 @@ class LambdaBestResponse:
         self.epsilon = epsilon
         self.num_cores = num_cores
         self.solver = solver
+        self.lbd_g_weight = lbd_g_weight
 
     def _discretize_weights_bsearch(self, w):
         """
@@ -128,7 +130,7 @@ class LambdaBestResponse:
         start = time.time()
         solved_results = []
         for (a, a_p) in a_a_p: # either a = 'a0' and a_p = 'a1' or vice versa 
-            problem = LinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, self.solver)
+            problem = LinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, self.solver, self.lbd_g_weight)
             pool = Pool(processes = self.num_cores)
             solved_results.extend(pool.map(problem.solve, N_gamma_2_A)) # multiprocessing maps each pi to new process
             pool.close()
