@@ -9,9 +9,6 @@ from sklearn.metrics import accuracy_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
-
-dataset_used = 'adult'
-
 def evaluate_fairness(y_true, y_pred, sensitive_features):
         """
         Evaluates fairness of the final majority vote classifier over T_inner hypotheses
@@ -55,97 +52,100 @@ def evaluate_fairness(y_true, y_pred, sensitive_features):
         
         return groups, group_metrics, gaps
 
-if(dataset_used == 'compas'):
-    compas_train = pd.read_csv('./../../data/compas_train_subset_2.csv')
-    compas_test = pd.read_csv('./../../data/compas_test.csv')
+def pick_dataset(dataset_used):
+    if(dataset_used == 'compas'):
+        compas_train = pd.read_csv('./../../data/compas_subsets/compas_train_subset_2.csv')
+        compas_test = pd.read_csv('./../../data/compas_test.csv')
+ 
+        y_train = compas_train.pop('two_year_recid') 
+        y_test = compas_test.pop('two_year_recid')
+        sensitive_features_train = compas_train['race']
+        sensitive_features_test = compas_test['race']
+        X_train = compas_train
+        X_test = compas_test
 
-    y_train = compas_train.pop('two_year_recid') 
-    y_test = compas_test.pop('two_year_recid')
-    sensitive_features_train = compas_train['race']
-    sensitive_features_test = compas_test['race']
-    X_train = compas_train
-    X_test = compas_test
 
+        X_train = X_train.drop('Unnamed: 0', axis=1)
+        X_test = X_test.drop('Unnamed: 0', axis=1)
+        
+        '''
+        sensitive_features_train = sensitive_features_train.replace(0, 'African-American')
+        sensitive_features_train = sensitive_features_train.replace(1, 'Caucasian')
+        sensitive_features_test = sensitive_features_test.replace(0, 'African-American')
+        sensitive_features_test = sensitive_features_test.replace(1, 'Caucasian')
+        '''
 
-    X_train = X_train.drop('Unnamed: 0', axis=1)
-    X_test = X_test.drop('Unnamed: 0', axis=1)
-    
-    '''
-    sensitive_features_train = sensitive_features_train.replace(0, 'African-American')
-    sensitive_features_train = sensitive_features_train.replace(1, 'Caucasian')
-    sensitive_features_test = sensitive_features_test.replace(0, 'African-American')
-    sensitive_features_test = sensitive_features_test.replace(1, 'Caucasian')
-    '''
+    elif(dataset_used == 'adult'):
+        X = pd.read_csv('./../../data/adult_X.csv')
+        y = pd.read_csv('./../../data/adult_y.csv')
 
-elif(dataset_used == 'adult'):
-    X = pd.read_csv('./../../data/adult_X.csv')
-    y = pd.read_csv('./../../data/adult_y.csv')
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+        y_train = y_train.reset_index(drop=True)
+        y_train = y_train['income']
+        y_test = y_test.reset_index(drop=True)
+        y_test = y_test['income']
+        sensitive_features_train = X_train['sex']
+        sensitive_features_test = X_test['sex']
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    y_train = y_train.reset_index(drop=True)
-    y_train = y_train['income']
-    y_test = y_test.reset_index(drop=True)
-    y_test = y_test['income']
-    sensitive_features_train = X_train['sex']
-    sensitive_features_test = X_test['sex']
+        sensitive_features_train[sensitive_features_train < 0] = 0
+        sensitive_features_train[sensitive_features_train > 0] = 1
+        sensitive_features_train = sensitive_features_train.reset_index(drop=True)
 
-    sensitive_features_train[sensitive_features_train < 0] = 0
-    sensitive_features_train[sensitive_features_train > 0] = 1
-    sensitive_features_train = sensitive_features_train.reset_index(drop=True)
+        sensitive_features_test[sensitive_features_test < 0] = 0
+        sensitive_features_test[sensitive_features_test > 0] = 1
+        sensitive_features_test = sensitive_features_test.reset_index(drop=True)
+        
+        '''
+        sensitive_features_train = sensitive_features_train.replace(0, 'Female')
+        sensitive_features_train = sensitive_features_train.replace(1, 'Male')
+        sensitive_features_test = sensitive_features_test.replace(0, 'Female')
+        sensitive_features_test = sensitive_features_test.replace(1, 'Male')
+        '''
 
-    sensitive_features_test[sensitive_features_test < 0] = 0
-    sensitive_features_test[sensitive_features_test > 0] = 1
-    sensitive_features_test = sensitive_features_test.reset_index(drop=True)
-    
-    '''
-    sensitive_features_train = sensitive_features_train.replace(0, 'Female')
-    sensitive_features_train = sensitive_features_train.replace(1, 'Male')
-    sensitive_features_test = sensitive_features_test.replace(0, 'Female')
-    sensitive_features_test = sensitive_features_test.replace(1, 'Male')
-    '''
+    elif(dataset_used == 'lawschool'):
+        lawschool_X = pd.read_csv('./data/lawschool_X.csv')
+        lawschool_y = pd.read_csv('./data/lawschool_y.csv')
 
-elif(dataset_used == 'lawschool'):
-    lawschool_X = pd.read_csv('./data/lawschool_X.csv')
-    lawschool_y = pd.read_csv('./data/lawschool_y.csv')
+        X_train, X_test, y_train, y_test = train_test_split(lawschool_X, lawschool_y, test_size=0.2, random_state=42)
+        y_train = y_train.reset_index(drop=True)
+        y_train = y_train['bar1']
+        y_test = y_test.reset_index(drop=True)
+        y_test = y_test['bar1']
+        sensitive_features_train = X_train['race7']
+        sensitive_features_test = X_test['race7']
 
-    X_train, X_test, y_train, y_test = train_test_split(lawschool_X, lawschool_y, test_size=0.2, random_state=42)
-    y_train = y_train.reset_index(drop=True)
-    y_train = y_train['bar1']
-    y_test = y_test.reset_index(drop=True)
-    y_test = y_test['bar1']
-    sensitive_features_train = X_train['race7']
-    sensitive_features_test = X_test['race7']
+        sensitive_features_train[sensitive_features_train < 0] = 0
+        sensitive_features_train[sensitive_features_train > 0] = 1
+        sensitive_features_train = sensitive_features_train.reset_index(drop=True)
 
-    sensitive_features_train[sensitive_features_train < 0] = 0
-    sensitive_features_train[sensitive_features_train > 0] = 1
-    sensitive_features_train = sensitive_features_train.reset_index(drop=True)
+        sensitive_features_test[sensitive_features_test < 0] = 0
+        sensitive_features_test[sensitive_features_test > 0] = 1
+        sensitive_features_test = sensitive_features_test.reset_index(drop=True)
 
-    sensitive_features_test[sensitive_features_test < 0] = 0
-    sensitive_features_test[sensitive_features_test > 0] = 1
-    sensitive_features_test = sensitive_features_test.reset_index(drop=True)
+    elif(dataset_used == 'communities'):
+        communities_X = pd.read_csv('./data/communities_X.csv')
+        communities_y = pd.read_csv('./data/communities_y.csv')
 
-elif(dataset_used == 'communities'):
-    communities_X = pd.read_csv('./data/communities_X.csv')
-    communities_y = pd.read_csv('./data/communities_y.csv')
+        X_train, X_test, y_train, y_test = train_test_split(communities_X, communities_y, test_size=0.2, random_state=42)
+        y_train = y_train.reset_index(drop=True)
+        y_train = y_train['ViolentCrimesPerPop']
+        y_test = y_test.reset_index(drop=True)
+        y_test = y_test['ViolentCrimesPerPop']
+        sensitive_features_train = X_train['majority_white']
+        sensitive_features_test = X_test['majority_white']
 
-    X_train, X_test, y_train, y_test = train_test_split(communities_X, communities_y, test_size=0.2, random_state=42)
-    y_train = y_train.reset_index(drop=True)
-    y_train = y_train['ViolentCrimesPerPop']
-    y_test = y_test.reset_index(drop=True)
-    y_test = y_test['ViolentCrimesPerPop']
-    sensitive_features_train = X_train['majority_white']
-    sensitive_features_test = X_test['majority_white']
+        sensitive_features_train[sensitive_features_train < 0] = 0
+        sensitive_features_train[sensitive_features_train > 0] = 1
+        sensitive_features_train = sensitive_features_train.reset_index(drop=True)
 
-    sensitive_features_train[sensitive_features_train < 0] = 0
-    sensitive_features_train[sensitive_features_train > 0] = 1
-    sensitive_features_train = sensitive_features_train.reset_index(drop=True)
+        sensitive_features_test[sensitive_features_test < 0] = 0
+        sensitive_features_test[sensitive_features_test > 0] = 1
+        sensitive_features_test = sensitive_features_test.reset_index(drop=True)
+        
+    else:
+        raise ValueError("Invalid dataset. Please designate a correct dataset.")
 
-    sensitive_features_test[sensitive_features_test < 0] = 0
-    sensitive_features_test[sensitive_features_test > 0] = 1
-    sensitive_features_test = sensitive_features_test.reset_index(drop=True)
-    
-else:
-    print('Invalid dataset_used variable.')
+    return X_train, X_test, y_train, y_test, sensitive_features_train, sensitive_features_test
 
 if __name__ == '__main__':  
     parser = argparse.ArgumentParser()
@@ -163,6 +163,7 @@ if __name__ == '__main__':
     parser.add_argument("--constraint", help="constraint (dp or eo)")
     parser.add_argument("--lbd_group_weights", help="lower bound on group weights")
     parser.add_argument("--no_output", help="disable outputting pkl files")
+    parser.add_argument("--dataset", help="dataset in use for the experiment")
 
     now = datetime.datetime.now()
     args = parser.parse_args()
@@ -218,11 +219,16 @@ if __name__ == '__main__':
         arg_no_output = True
     else:
         arg_no_output = False
-
+    if(args.dataset):
+        arg_dataset = args.dataset
+    else:
+        arg_dataset = 'adult'
+   
     algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
                          epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, 
                         num_cores = arg_num_cores, solver = arg_solver, constraint_used=arg_constraint, lbd_g_wt = arg_lbd_g_wt)
 
+    X_train, X_test, y_train, y_test, sensitive_features_train, sensitive_features_test = pick_dataset(arg_dataset)
     list_hypotheses, final_ensemble = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
                                                             X_test, y_test, sensitive_features_test)
 
