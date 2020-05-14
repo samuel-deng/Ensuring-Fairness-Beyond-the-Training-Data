@@ -47,7 +47,7 @@ vectors pi in the Lambda Best Response step.
 
 class MetaAlgorithm:
     def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, M = 1, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
-                B = 10, gamma_1 = 0.01, gamma_2 = 0.05, constraint_used='dp', lbd_g_wt=0.25):
+                B = 10, gamma_1 = 0.001, gamma_2 = 0.05, constraint_used='dp', lbd_g_wt=0.25):
         self.T = T
         self.T_inner = T_inner
         self.card_A = card_A
@@ -96,6 +96,7 @@ class MetaAlgorithm:
         
         print("First 5 entries of N_gamma_1:")
         print(gamma_1_buckets[:4])
+        print("Number of gamma_1_buckets {}".format(len(gamma_1_buckets)))
                             
         return gamma_1_buckets
 
@@ -170,11 +171,6 @@ class MetaAlgorithm:
         :return: dict 'a_indices' which contains a list of the a_0 indices, list of a_1 indices, and
         a list containing the a value of each sample.
         """
-        sensitive_features = sensitive_features.replace('African-American', 0)
-        sensitive_features = sensitive_features.replace('Caucasian', 1)
-        sensitive_features = sensitive_features.replace('Female', 0)
-        sensitive_features = sensitive_features.replace('Male', 1)
-
         a_indices = dict()
         a_indices['a0'] = sensitive_features.index[sensitive_features.eq(0)].tolist()
         a_indices['a1'] = sensitive_features.index[sensitive_features.eq(1)].tolist()

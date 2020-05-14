@@ -18,7 +18,10 @@ def evaluate_fairness(y_true, y_pred, sensitive_features):
         a1 := Caucasian (COMPAS), Male (Adult)
 
         :return: list. subgroups in sensitive_features.
-        :return: dict. recidivism_pct for each group.
+        :return: list, dict, dict. groups is a list of the sensitive features in the dataset. 
+        group_metrics is a dictionary containing dictionaries that have Delta_dp, Delta_eoy0, 
+        and Delta_eoy1 for each group. gaps is a dictionary that contains the fairness gap
+        for dp, eo_y0 and eo_y1.
         """
         groups = np.unique(sensitive_features.values)
         pos_count = {}
@@ -64,7 +67,6 @@ def pick_dataset(dataset_used):
         X_train = compas_train
         X_test = compas_test
 
-
         X_train = X_train.drop('Unnamed: 0', axis=1)
         X_test = X_test.drop('Unnamed: 0', axis=1)
         
@@ -103,8 +105,8 @@ def pick_dataset(dataset_used):
         '''
 
     elif(dataset_used == 'lawschool'):
-        lawschool_X = pd.read_csv('./data/lawschool_X.csv')
-        lawschool_y = pd.read_csv('./data/lawschool_y.csv')
+        lawschool_X = pd.read_csv('./../../data/lawschool_X.csv')
+        lawschool_y = pd.read_csv('./../../data/lawschool_y.csv')
 
         X_train, X_test, y_train, y_test = train_test_split(lawschool_X, lawschool_y, test_size=0.2, random_state=42)
         y_train = y_train.reset_index(drop=True)
@@ -123,8 +125,8 @@ def pick_dataset(dataset_used):
         sensitive_features_test = sensitive_features_test.reset_index(drop=True)
 
     elif(dataset_used == 'communities'):
-        communities_X = pd.read_csv('./data/communities_X.csv')
-        communities_y = pd.read_csv('./data/communities_y.csv')
+        communities_X = pd.read_csv('./../../data/communities_X.csv')
+        communities_y = pd.read_csv('./../../data/communities_y.csv')
 
         X_train, X_test, y_train, y_test = train_test_split(communities_X, communities_y, test_size=0.2, random_state=42)
         y_train = y_train.reset_index(drop=True)
@@ -186,7 +188,7 @@ if __name__ == '__main__':
     if(args.gamma_1):
         arg_gamma_1 = float(args.gamma_1)
     else:
-        arg_gamma_1 = 0.01
+        arg_gamma_1 = 0.001
     if(args.gamma_2):
         arg_gamma_2 = float(args.gamma_2)
     else:
@@ -243,7 +245,6 @@ if __name__ == '__main__':
     y_pred = final_ensemble.predict(X_test)
     groups, group_metrics, gaps = evaluate_fairness(y_test, y_pred, sensitive_features_test)
     print("Accuracy = {}".format(accuracy_score(y_test, y_pred)))
-
     if(arg_constraint == 'dp'):
         for group in groups:
             print("P[h(X) = 1 | A = {}] = {}".format(group, group_metrics['dp'][group]))

@@ -243,21 +243,24 @@ class BayesianOracle:
             #print(accuracy_score(np.asarray(self.y), np.asarray(new_h_pred) ) )
             #print(self.const_i)
             end_inner = time.time()
-            if((t + 1) % 5 == 0):
+            if((t + 1) % 10 == 0):
+                train_pred = forest.predict(self.X)
                 test_pred = forest.predict(self.X_test)
-                acc = accuracy_score(test_pred, self.y_test)
+                train_acc = accuracy_score(train_pred, self.y)
+                test_acc = accuracy_score(test_pred, self.y_test)
                 groups, group_metrics, gaps = self._evaluate_fairness(self.y_test, test_pred, self.sensitive_features_test)
-                print("Accuracy of classifier {}: {}".format(t + 1, acc))
+                print("Train accuracy of classifier {}: {}".format(t + 1, train_acc))
+                print("Test accuracy of classifier {}: {}".format(t + 1, test_acc))
                 if(self.constraint_used == 'dp'):
                     for group in groups:
                         print("P[h(X) = 1 | {}] = {}".format(group, group_metrics['dp'][group]))
                     print("Delta_dp = {}".format(gaps['dp']))
                 elif(self.constraint_used == 'eo'):
                     for group in groups:
-                        print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo1'][group]))
-                        print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo0'][group]))
-                    print("Delta_eo1 = {}".format(gaps['eo1']))
-                    print("Delta_eo0 = {}".format(gaps['eo0']))
+                        print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
+                        print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo_y0'][group]))
+                    print("Delta_eo1 = {}".format(gaps['eo_y1']))
+                    print("Delta_eo0 = {}".format(gaps['eo_y0']))
                 else:
                     raise ValueError("Invalid fairness constraint. Choose dp or eo.")
             if(t % 50 == 0):
@@ -270,7 +273,7 @@ class BayesianOracle:
         print("ALGORITHM 4 (Learning Algorithm) Total Execution Time: " + str(end_outer - start_outer))
         print("=== ALGORITHM 4 (Learning Algorithm) T={} Statistics ===".format(self.current_t))
         y_pred = T_inner_ensemble.predict(self.X_test)
-        print("Accuracy = {}".format(accuracy_score(self.y_test, y_pred)))
+        print("Test Accuracy = {}".format(accuracy_score(self.y_test, y_pred)))
         groups, group_metrics, gaps = self._evaluate_fairness(self.y_test, y_pred, self.sensitive_features_test)
         if(self.constraint_used == 'dp'):
             for group in groups:
@@ -278,10 +281,10 @@ class BayesianOracle:
             print("Delta_dp = {}".format(gaps['dp']))
         elif(self.constraint_used == 'eo'):
             for group in groups:
-                print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo1'][group]))
-                print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo0'][group]))
-            print("Delta_eo1 = {}".format(gaps['eo1']))
-            print("Delta_eo0 = {}".format(gaps['eo0']))
+                print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
+                print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo_y0'][group]))
+            print("Delta_eo1 = {}".format(gaps['eo_y1']))
+            print("Delta_eo0 = {}".format(gaps['eo_y0']))
         else:
             raise ValueError("Invalid fairness constraint. Choose dp or eo.")
 
