@@ -320,6 +320,27 @@ Then the $h$-player's best response becomes the following cost-sensitive classif
 \end{equation}
 Therefore, as long as we have access to an oracle that solves the cost-sensitive classification problem, the $h$-player can solve it's best response problem.
 
+\subsection{Equalized Odds}
+
+We aim is to solve the following problem.
+\begin{align}
+&\min_{h \in \HH} \sum_{i=1}^n w^0_i \ell(h(x_i,a_i),y_i)\label{eq:final-objective}\\
+&\text{s.t.} T(w,a,h,y) - T(w,a',h,y) \le \eps - 4\gamma_1\ \forall w \in N(\gamma_1,\WW) \ \forall a,a' \in \Ac \ \forall y \in \set{0,1} \nonumber
+\end{align}
+Here $T(w,a,h,y) = \frac{\sum_{i:a_i=a,y_i=y} w_i f(x_i,a)}{\sum_{i:a_i=a,y_i=y} w_i}$.
+We form the following Lagrangian.
+\begin{align}\label{eq:lagrangian-eo}
+\min_{h \in \HH} \max_{\stackrel{\lambda }{ \norm{\lambda}_1 \le B} } \sum_{i=1}^n w^0_i \ell(h(x_i,a_i),y_i) + \sum_{w \in N(\gamma_1,\WW)} \sum_{a,a' \in \Ac} \sum_{y} \lambda_w^{a,a',y} ( T(w,a,h,y) - T(w,a',h,y) - \eps + 4\gamma_1)
+\end{align}
+
+As before, we convert equation \ref{eq:lagrangian-eo} into a two-player zero-sum game. Here the learner's pure strategy is to play a hypothesis $h$ in $\HH$. And the auditor's pure strategy is to play a vector $\lambda$ such that either all the coordinates of $\lambda$ are zero or exactly one is set to $B$. For any pair of actions $(h,\lambda)$, the payoff is defined as
+\[U(h,\lambda) = \sum_{i=1}^n w^0_i \ell(h(x_i,a_i),y_i) + \sum_{w \in N(\gamma_1,\WW)} \sum_{a,a' \in \Ac} \sum_y \lambda_w^{a,a',y} ( T(w,a,h,y) - T(w,a',h,y) - \eps + 4\gamma_1) \]
+
+For each $i \in [n]$, we introduce the following notation
+$$\Delta_i = \sum_{w \in N(\gamma_1,\WW)} \sum_{a' \neq a_i} \left(\lambda^{a_i,a',y_i}_w - \lambda^{a',a_i,y_i}_w \right) \frac{w_i}{\sum_{j:a_j = a_i, y_j = y_i}w_j}$$
+With this notation, the payoff becomes
+$$U(h,\lambda) = \sum_{i=1}^n w^0_i \ell(h(x_i,a_i),y_i) + \Delta_i h(x_i,a_i) - (\eps - 4\gamma_1)\sum_{w \in N(\eps/5,\WW)} \sum_{a,a' \in \Ac} \sum_y \lambda_w^{a,a',y}$$
+
 \noindent{\bfseries Best response of the $\lambda$-player}: We first discretize the simplex over $\abs{\Ac}$ groups, $\Delta_{\Ac} = \set{\pi \in \bbR^{\abs{\Ac}}_+: \sum_{a \in \Ac} \pi_a = 1}$. First, discretize $[0,1]$ as $0,\delta, (1+\gamma_2)^j \delta$ for $j=1,2,\ldots,M$ for $M = O(\log_{1+\gamma_2}(1/\delta))$. This discretizes $[0,1]^{\Ac}$ into $M^{\abs{\Ac} }$ points. Now we just retain the points for which $\sum_{a\in \Ac} \pi_a \in (1-2\gamma_2,1+2\gamma_2)$ and discard all other points. Let us denote the set of such points as $N(\gamma_2,\Ac)$. Algorithm \ref{algo:best-lambda} describes the best response of the $\lambda$-player for a given choice of $h$. It goes through all the points $\pi$ in $N(\gamma_2,\Ac)$ and for each such value and a pair of groups $a,a'$ finds the weight $w$ which maximizes $T(w,a,h) - T(w,a',h)$. Note that this can be solved using a Linear Program as the weights assigned to a group is fixed by the point $\pi$. Out of all the solutions, the algorithm finds the one with the maximum value. Then it checks whether the maximum violates the constraint i.e. greater than $\eps - 4\gamma_1$. If so, it sets the corresponding $\lambda$ value to $B$ and everything else to $0$. If not, it returns the zero vector. Note that, the weight returned by the linear program need not correspond to a weight in $N(\gamma_1, \WW)$. In that case, the algorithm rounds the weight to the nearest weight in $N(\gamma_1,\WW)$ and sets the corresponding $\lambda$ variable.
 
 \begin{algorithm}[H]

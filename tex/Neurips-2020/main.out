@@ -2,6 +2,7 @@
 \BOOKMARK [1][-]{section.2}{Problem and Definitions}{}% 2
 \BOOKMARK [1][-]{section.3}{Meta Algorithm}{}% 3
 \BOOKMARK [1][-]{section.4}{Approximate Fair Classifier}{}% 4
-\BOOKMARK [1][-]{section.5}{Faster Approximate Fair Classifier}{}% 5
-\BOOKMARK [1][-]{section.6}{Experiment}{}% 6
-\BOOKMARK [1][-]{section.7}{Conclusion}{}% 7
+\BOOKMARK [2][-]{subsection.4.1}{Equalized Odds}{section.4}% 5
+\BOOKMARK [1][-]{section.5}{Faster Approximate Fair Classifier}{}% 6
+\BOOKMARK [1][-]{section.6}{Experiment}{}% 7
+\BOOKMARK [1][-]{section.7}{Conclusion}{}% 8
