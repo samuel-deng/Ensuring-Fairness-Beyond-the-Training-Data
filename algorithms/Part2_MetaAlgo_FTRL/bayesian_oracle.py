@@ -38,7 +38,7 @@ instances are protected/non-protected
 class BayesianOracle:
     def __init__(self, X, y, X_test, y_test, weights_org, sensitive_features, sensitive_features_test, 
                 a_indices, card_A, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, 
-                epsilon, eta, num_cores, solver, constraint_used, lbd_g_weight, current_t):
+                epsilon, eta, num_cores, solver, constraint_used, lbd_dp_wt, lbd_eo_wt, current_t):
         self.X = X
         self.y = y 
         self.X_test = X_test
@@ -60,7 +60,8 @@ class BayesianOracle:
         self.solver = solver
         self.constraint_used = constraint_used
         self.current_t = current_t
-        self.lbd_g_weight = lbd_g_weight
+        self.lbd_dp_wt = lbd_dp_wt
+        self.lbd_eo_wt = lbd_eo_wt
 
         # preset for the delta_i computation
         self.delta_i = np.zeros(len(self.weights_org))
@@ -198,7 +199,11 @@ class BayesianOracle:
         start_outer = time.time()
 
         print("Executing ALGORITHM 4 (Learning Algorithm)...")
-        print("ALGORITHM 2 (Best Response) will solve: " + str(2 * len(self.gamma_2_buckets)) + " LPs...") # twice because a, a_p
+        if(self.constraint_used == 'dp'):
+            print("ALGORITHM 2 (Best Response) will solve: " + str(2 * len(self.gamma_2_buckets['dp'])) + " LPs...") # twice because a, a_p
+        else:
+            print("ALGORITHM 2 (Best Response) will solve: " + str(2 * len(self.gamma_2_buckets['eo_y0']) + 2 * len(self.gamma_2_buckets['eo_y1'])) + " LPs...")
+
         for t in range(int(self.T_inner)):
             # if self.eta*0.99 < 0.01:
             #     self.eta = 0.01
@@ -215,7 +220,9 @@ class BayesianOracle:
                                         self.epsilon, 
                                         self.num_cores,
                                         self.solver,
-                                        self.lbd_g_weight)
+                                        self.lbd_dp_wt,
+                                        self.lbd_eo_wt,
+                                        self.constraint_used)
 
             lambda_t = lambda_best_response.best_response()
             #print('printing lambda t')

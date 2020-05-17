@@ -65,7 +65,8 @@ where a is either 'a0' or 'a1' (string), a_p (read: a prime) is 'a0' or 'a1' (th
 of a), and w is the discretized (based on N(gamma_1, W)) weight vector that maximizes the LP.
 """
 class LambdaBestResponse:
-    def __init__(self, h_pred, a_indices, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, num_cores, solver, lbd_g_weight):
+    def __init__(self, h_pred, a_indices, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, num_cores, solver,
+                lbd_dp_wt, lbd_eo_wt, constraint_used):
         self.h_pred = np.asarray(h_pred)
         self.a_indices = a_indices
         self.gamma_1 = gamma_1
@@ -74,7 +75,9 @@ class LambdaBestResponse:
         self.epsilon = epsilon
         self.num_cores = num_cores
         self.solver = solver
-        self.lbd_g_weight = lbd_g_weight
+        self.lbd_dp_weight = lbd_dp_wt
+        self.lbd_eo_weight = lbd_eo_wt
+        self.constraint_used = constraint_used
 
     def _discretize_weights_bsearch(self, w):
         """
@@ -128,13 +131,14 @@ class LambdaBestResponse:
         a_a_p = list(itertools.permutations(['a0', 'a1'])) 
 
         start = time.time()
-        solved_results = []
-        for (a, a_p) in a_a_p: # either a = 'a0' and a_p = 'a1' or vice versa 
-            problem = LinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, self.solver, self.lbd_g_weight)
-            pool = Pool(processes = self.num_cores)
-            solved_results.extend(pool.map(problem.solve, N_gamma_2_A)) # multiprocessing maps each pi to new process
-            pool.close()
-        end = time.time()
+        if(self.constraint_used == 'dp'):
+            solved_results = []
+            for (a, a_p) in a_a_p: # either a = 'a0' and a_p = 'a1' or vice versa 
+                problem = LinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, self.solver, self.lbd_dp_weight)
+                pool = Pool(processes = self.num_cores)
+                solved_results.extend(pool.map(problem.solve, N_gamma_2_A['dp'])) # multiprocessing maps each pi to new process
+                pool.close()
+            end = time.time()
 
         # max over the objective values
         max_lp = -1e5
