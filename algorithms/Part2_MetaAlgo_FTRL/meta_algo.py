@@ -101,14 +101,6 @@ class MetaAlgorithm:
                             
         return gamma_1_buckets
 
-    def _gamma_2_discretize(self, num_buckets):
-        """
-        Helper function for gamma_2_buckets to discretize the range.
-
-        :return: list 'N_gamma_2_A' discretized set for a certain number of desired buckets.
-        """
-
-
     def _gamma_2_buckets(self, y):
         """
         Returns the pi_a0 and pi_a1 for the LPs, N(gamma_2, A). Number of LPs

@@ -47,7 +47,7 @@ vectors pi in the Lambda Best Response step.
 
 class MetaAlgorithm:
     def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, M = 1, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
-                B = 10, gamma_1 = 0.01, gamma_2 = 0.05, constraint_used='dp'):
+                B = 10, gamma_1 = 0.01, gamma_2 = 0.05, constraint_used='dp', lbd_dp_wt=0.35, lbd_eo_wt=0.15):
         self.T = T
         self.T_inner = T_inner
         self.card_A = card_A
@@ -61,6 +61,8 @@ class MetaAlgorithm:
         self.num_cores = num_cores
         self.solver = solver
         self.constraint_used = constraint_used
+        self.lbd_dp_wt = lbd_dp_wt
+        self.lbd_eo_wt = lbd_eo_wt
 
         if(self.epsilon - 4 * self.gamma_1 < 0):
             raise(ValueError("epsilon - 4 * gamma_1 must be positive for LPs."))
@@ -72,6 +74,7 @@ class MetaAlgorithm:
         print("T_inner=" + str(self.T_inner))
         print("B=" + str(self.B))
         print("eta=" + str(self.eta))
+        print("eta_inner=" + str(self.eta))
         print("epsilon=" + str(self.epsilon))
         print("Cores in use=" + str(self.num_cores))
         print("Fairness Definition=" + str(self.constraint_used))
@@ -97,31 +100,67 @@ class MetaAlgorithm:
                             
         return gamma_1_buckets
 
-    def _gamma_2_buckets(self):
+    def _gamma_2_buckets(self, y):
         """
         Returns the pi_a0 and pi_a1 for the LPs, N(gamma_2, A). Number of LPs
         depends on this.
 
-        :return: list 'N_gamma_2_A' of 2-tuples for pairs of pi_a0 and pi_a1.
+        :return: dict 'N_gamma_2_A' of lists, indexed by 'dp,' 'eo_y0,' and 'eo_y1.' 
+        each value in this dict is a list of pi_a0 and pi_a1 tuples.
         """
+        N_gamma_2_A = {}
         delta_2 = 0.05 
 
-        gamma_2_num_buckets = int(np.ceil(math.log((1/delta_2), 1 + self.gamma_2)))
-        gamma_2_buckets = []
-        gamma_2_buckets.append(0)
-        for j in range(gamma_2_num_buckets):
+        ### Demographic Parity (dp) buckets ###
+        dp_gamma_2_num_buckets = np.ceil(math.log((1/delta_2), 1 + self.gamma_2)) 
+        dp_gamma_2_buckets = []
+        for j in range(int(dp_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
-            gamma_2_buckets.append(bucket)
+            if bucket >= self.lbd_dp_wt and bucket <= 1.0 - self.lbd_dp_wt:
+                dp_gamma_2_buckets.append(bucket)
 
-        N_gamma_2_A  = []
-        for pi_a in gamma_2_buckets:
+        dp_N_gamma_2_A  = []
+        for pi_a in dp_gamma_2_buckets:
             pi_ap = 1 - pi_a
-            N_gamma_2_A.append((pi_a, pi_ap))
+            dp_N_gamma_2_A.append((pi_a, pi_ap))
 
-        print("First and last 5 entries of N_gamma_2:")
-        print(N_gamma_2_A[:4])
-        print(N_gamma_2_A[-4:])
-                                
+        N_gamma_2_A['dp'] = dp_N_gamma_2_A
+
+        ### Compute proportion of y0 and y1 in the training data ###
+        prop_y0 = (len(np.where(y == 0)[0]))/float(len(y))
+        prop_y1 = (len(np.where(y == 1)[0]))/float(len(y))
+        assert(prop_y0 + prop_y1 == 1)
+
+        ### Equalized Odds Y0 (eo_y0) buckets ###
+        eo_y0_gamma_2_num_buckets = np.ceil(math.log((prop_y0/delta_2), 1 + self.gamma_2))
+        eo_y0_gamma_2_buckets = []
+        for j in range(int(eo_y0_gamma_2_num_buckets)):
+            bucket = (delta_2) * (1 + self.gamma_2)**j
+            if bucket >= self.lbd_eo_wt and bucket <= prop_y0 - self.lbd_eo_wt:
+                eo_y0_gamma_2_buckets.append(bucket)
+        
+        eo_y0_N_gamma_2_A = []
+        for pi_a in eo_y0_gamma_2_buckets:
+            pi_ap = prop_y0 - pi_a
+            eo_y0_N_gamma_2_A.append((pi_a, pi_ap))
+        
+        N_gamma_2_A['eo_y0'] = eo_y0_N_gamma_2_A
+
+        ### Equalized Odds Y1 (eo_y1) buckets ###
+        eo_y1_gamma_2_num_buckets = np.ceil(math.log((prop_y1/delta_2), 1 + self.gamma_2))
+        eo_y1_gamma_2_buckets = []
+        for j in range(int(eo_y1_gamma_2_num_buckets)):
+            bucket = (delta_2) * (1 + self.gamma_2)**j
+            if bucket >= self.lbd_eo_wt and bucket <= prop_y1 - self.lbd_eo_wt:
+                eo_y1_gamma_2_buckets.append(bucket)
+        
+        eo_y1_N_gamma_2_A = []
+        for pi_a in eo_y1_gamma_2_buckets:
+            pi_ap = prop_y0 - pi_a
+            eo_y1_N_gamma_2_A.append((pi_a, pi_ap))
+        
+        N_gamma_2_A['eo_y1'] = eo_y1_N_gamma_2_A
+                        
         return N_gamma_2_A
 
     def _zero_one_loss_grad_w(self, pred, y):
@@ -139,7 +178,7 @@ class MetaAlgorithm:
                 
         return np.asarray(loss_vec)
 
-    def _project_W(self, w):
+    def _project_W(self, w, a_indices):
         """
         Project w back onto the feasible set of weights
 
@@ -149,7 +188,10 @@ class MetaAlgorithm:
         objective = cp.Minimize(cp.sum_squares(w - x))
         constraints = [0 <= x, 
                         x <= 1, 
-                        cp.sum(x) == 1]
+                        cp.sum(x) == 1,
+                        cp.sum(x[a_indices['a0']]) >= self.lbd_dp_wt,
+                        cp.sum(x[a_indices['a1']]) >= self.lbd_dp_wt ]  # extra constraint for non-trivial distributions
+        
         prob = cp.Problem(objective, constraints)
         prob.solve(solver=self.solver, verbose=False)
 
@@ -158,23 +200,26 @@ class MetaAlgorithm:
 
         return x.value
 
-    def _set_a_indices(self, sensitive_features):
+    def _set_a_indices(self, sensitive_features, y):
         """
         Creates a dictionary a_indices that contains the necessary information for which indices
-        contain the sensitive attributes.
+        contain the sensitive/protected attributes.
 
-        :return: dict 'a_indices' which contains a list of the a_0 indices, list of a_1 indices, and
-        a list containing the a value of each sample.
+        :return: dict 'a_indices' which contains a list of the a_0 indices, list of a_1 indices,
+        list of a_0 indices where y = 0, list of a_0 indices where y = 1, list of a_1 indices
+        where y = 0, list of a_1 indices where y = 1, and a list containing the a value of each sample.
         """
-        sensitive_features = sensitive_features.replace('African-American', 0)
-        sensitive_features = sensitive_features.replace('Caucasian', 1)
-        sensitive_features = sensitive_features.replace('Female', 0)
-        sensitive_features = sensitive_features.replace('Male', 1)
-
         a_indices = dict()
         a_indices['a0'] = sensitive_features.index[sensitive_features.eq(0)].tolist()
         a_indices['a1'] = sensitive_features.index[sensitive_features.eq(1)].tolist()
         a_indices['all'] = sensitive_features.tolist()
+
+        y0 = set(np.where(y == 0)[0])
+        y1 = set(np.where(y == 1)[0])
+        a_indices['a0_y0'] = list(y0.intersection(set(a_indices['a0'])))
+        a_indices['a0_y1'] = list(y1.intersection(set(a_indices['a0'])))
+        a_indices['a1_y0'] = list(y0.intersection(set(a_indices['a1'])))
+        a_indices['a1_y1'] = list(y1.intersection(set(a_indices['a1'])))
         return a_indices
 
     def meta_algorithm(self, X, y, sensitive_features, X_test, y_test, sensitive_features_test):
@@ -191,19 +236,16 @@ class MetaAlgorithm:
         list 'hypotheses' the actual list of (T_inner * T) hypotheses
         VotingClassifier, an object that takes a majority vote over (T_inner * T) hypotheses
         """
-         # dp, eo
-        a_indices = self._set_a_indices(sensitive_features) # dictionary with a value information
+        # dp, eo
+        a_indices = self._set_a_indices(sensitive_features, y) # dictionary with a value information
         w = np.full((X.shape[0],), 1/X.shape[0]) # each weight starts as uniform 1/n
         gamma_1_buckets = self._gamma_1_buckets(X)
-        gamma_2_buckets = self._gamma_2_buckets()
+        gamma_2_buckets = self._gamma_2_buckets(y)
 
+        # print(a_indices)
         # initialize eta_inner (depends on n)
-        if(self.eta_inner == None):
-            eta_inner = (1/(1 + self.B)) * np.sqrt(len(X)/self.T_inner)
-            self.eta_inner = eta_inner
-            print("eta_inner = " + str(eta_inner))
-        else:
-            print("eta_inner = " + str(self.eta_inner))
+        #eta_inner = (1/(1 + self.B)) * np.sqrt(len(X)/self.T_inner)
+        #print("eta_inner = " + str(eta_inner))
 
         # Start off with oracle prediction over uniform weights
         print("=== Initializing h_0... ===")
@@ -221,6 +263,8 @@ class MetaAlgorithm:
                                 self.num_cores,
                                 self.solver,
                                 self.constraint_used,
+                                self.lbd_dp_wt,
+                                self.lbd_eo_wt,
                                 0)
         h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
 
@@ -236,7 +280,7 @@ class MetaAlgorithm:
                 T_inner_sum_loss += self._zero_one_loss_grad_w(h.predict(X), y)
             
             w += self.eta * (1/len(inner_hypotheses_t)) * T_inner_sum_loss # avg. over the T_inner classifiers
-            w = self._project_W(w)
+            w = self._project_W(w, a_indices)
             oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
                                 a_indices,
                                 self.card_A, 
@@ -251,6 +295,8 @@ class MetaAlgorithm:
                                 self.num_cores,
                                 self.solver,
                                 self.constraint_used,
+                                self.lbd_dp_wt,
+                                self.lbd_eo_wt,
                                 t + 1) # just to print which outer loop T we're on
             
             h_t, inner_hypotheses_t = oracle.execute_oracle()

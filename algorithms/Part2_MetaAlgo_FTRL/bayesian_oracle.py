@@ -130,6 +130,8 @@ class BayesianOracle:
                 weights[i] = weights[i]/a1_y0_denominator
             for i in self.a_indices['a1_y1']:
                 weights[i] = weights[i]/a1_y1_denominator
+        else:
+            raise ValueError("Invalid fairness constraint. Use dp or eo.")
 
         # then, multiply by the B term (left term of Delta_i)
         if(lambda_tuple[0] == 'a0' and lambda_tuple[1] == 'a1'): # a = a0, a' = a1
