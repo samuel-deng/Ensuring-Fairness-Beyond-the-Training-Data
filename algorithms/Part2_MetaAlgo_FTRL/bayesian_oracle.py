@@ -69,14 +69,30 @@ class BayesianOracle:
         # weights that don't change over time
         self.const_i = np.zeros(len(self.weights_org))
         #self.const_i = np.multiply(self.weights_org, 1 - 2*self.y)
+
         # the B vector is the LHS of the Delta_i term (Lambda_w^{a_i, a'} - Lambda_w^{a', a_i})
         # this can be either B or -B, depending on the subgroup of example i
+        ### Demographic Parity B vectors ###
         self.B_vec_a0a1 = np.zeros(len(self.weights_org))
         self.B_vec_a0a1[self.a_indices['a0']] += self.B
         self.B_vec_a0a1[self.a_indices['a1']] -= self.B
         self.B_vec_a1a0 = np.zeros(len(self.weights_org))
         self.B_vec_a1a0[self.a_indices['a1']] += self.B
         self.B_vec_a1a0[self.a_indices['a0']] -= self.B
+
+        ### Equalized Odds B vectors ###
+        self.B_vec_a0a1y0 = np.zeros(len(self.weights_org))
+        self.B_vec_a0a1y0[self.a_indices['a0_y0']] += self.B
+        self.B_vec_a0a1y0[self.a_indices['a1_y0']] -= self.B
+        self.B_vec_a1a0y0 = np.zeros(len(self.weights_org))
+        self.B_vec_a1a0y0[self.a_indices['a1_y0']] += self.B
+        self.B_vec_a1a0y0[self.a_indices['a0_y0']] -= self.B
+        self.B_vec_a0a1y1 = np.zeros(len(self.weights_org))
+        self.B_vec_a0a1y1[self.a_indices['a0_y1']] += self.B
+        self.B_vec_a0a1y1[self.a_indices['a1_y1']] -= self.B
+        self.B_vec_a1a0y1 = np.zeros(len(self.weights_org))
+        self.B_vec_a1a0y1[self.a_indices['a1_y1']] += self.B
+        self.B_vec_a1a0y1[self.a_indices['a0_y1']] -= self.B
 
     def _update_delta_i(self, lambda_tuple):
         """
@@ -89,32 +105,54 @@ class BayesianOracle:
         self.delta_i = self.delta_i + new_delta_i
 
     def _get_new_delta_i(self, lambda_tuple):
-
         weights = lambda_tuple[2]
 
         # compute the denominator (sum_{j:a_j = a_i} w_j)
         a0_denominator = weights[self.a_indices['a0']].sum()
         a1_denominator = weights[self.a_indices['a1']].sum()
+        a0_y0_denominator = weights[self.a_indices['a0_y0']].sum()
+        a0_y1_denominator = weights[self.a_indices['a0_y1']].sum()
+        a1_y0_denominator = weights[self.a_indices['a1_y0']].sum()
+        a1_y1_denominator = weights[self.a_indices['a1_y1']].sum()
 
         # divide element-wise by the denominator (right term of Delta_i)
-        for i in self.a_indices['a0']:
-            weights[i] = weights[i]/a0_denominator
-        for i in self.a_indices['a1']:
-            weights[i] = weights[i]/a1_denominator
+        if self.constraint_used == 'dp':
+            for i in self.a_indices['a0']:
+                weights[i] = weights[i]/a0_denominator
+            for i in self.a_indices['a1']:
+                weights[i] = weights[i]/a1_denominator
+        elif self.constraint_used == 'eo':
+            for i in self.a_indices['a0_y0']:
+                weights[i] = weights[i]/a0_y0_denominator
+            for i in self.a_indices['a0_y1']:
+                weights[i] = weights[i]/a0_y1_denominator
+            for i in self.a_indices['a1_y0']:
+                weights[i] = weights[i]/a1_y0_denominator
+            for i in self.a_indices['a1_y1']:
+                weights[i] = weights[i]/a1_y1_denominator
 
         # then, multiply by the B term (left term of Delta_i)
-        if(lambda_tuple[0] == 'a0'): # a = a0, a' = a1
+        if(lambda_tuple[0] == 'a0' and lambda_tuple[1] == 'a1'): # a = a0, a' = a1
             new_delta_i = np.multiply(self.B_vec_a0a1, weights)
-        else:                        # a = a1, a' = a0
+        elif(lambda_tuple[0] == 'a1' and lambda_tuple[1] =='a0'): # a = a1, a' = a0
             new_delta_i = np.multiply(self.B_vec_a1a0, weights)
+        elif(lambda_tuple[0] == 'a0_y0' and lambda_tuple[1] == 'a1_y0'): # a = a0, a' = a1, y = 0
+            new_delta_i = np.multiply(self.B_vec_a0a1y0, weights)
+        elif(lambda_tuple[0] == 'a1_y0' and lambda_tuple[1] == 'a0_y0'): # a = a1, a' = a0, y = 0
+            new_delta_i = np.multiply(self.B_vec_a1a0y0, weights)
+        elif(lambda_tuple[0] == 'a0_y1' and lambda_tuple[1] == 'a1_y1'):
+            new_delta_i = np.multiply(self.B_vec_a0a1y1, weights)
+        elif(lambda_tuple[0] == 'a1_y1' and lambda_tuple[1] == 'a0_y1'):
+            new_delta_i = np.multiply(self.B_vec_a1a0y1, weights)
+        else:
+            raise ValueError("lambda_tuple in wrong format.")
         return new_delta_i
 
 
     def _randomized_classification(self, lambda_tuple):
-        
         w = self.eta * (self.const_i + self.delta_i) 
         if lambda_tuple != (0,0,0):
-            w = w + self.eta * ( np.multiply(self.weights_org, 1 - 2*self.y) +  self._get_new_delta_i(lambda_tuple) )
+            w = w + self.eta * ( np.multiply(self.weights_org, 1 - 2*self.y) +  self._get_new_delta_i(lambda_tuple))
         else:
             w = w + self.eta * ( np.multiply(self.weights_org, 1 - 2*self.y) )
         #print(np.max(self.const_i))
@@ -227,7 +265,6 @@ class BayesianOracle:
             lambda_t = lambda_best_response.best_response()
             #print('printing lambda t')
             #print(lambda_t[2].size)
-            #print(lambda_t)
             if(lambda_t != (0, 0, 0)):
                 #print('non-zero case')
                 self._update_delta_i(lambda_t)
