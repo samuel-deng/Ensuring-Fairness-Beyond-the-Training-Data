@@ -163,7 +163,8 @@ if __name__ == '__main__':
     parser.add_argument("--solver", help="solver for the LPs: [ECOS, OSQP, SCS, GUROBI]")
     parser.add_argument("--name", help="output file name for final ensemble")
     parser.add_argument("--constraint", help="constraint (dp or eo)")
-    parser.add_argument("--lbd_group_weights", help="lower bound on group weights")
+    parser.add_argument("--lbd_dp_weights", help="lower bound on group weights for dp")
+    parser.add_argument("--lbd_eo_weights", help="lower bound on group weights for eo")
     parser.add_argument("--no_output", help="disable outputting pkl files")
     parser.add_argument("--dataset", help="dataset in use for the experiment")
 
@@ -213,10 +214,14 @@ if __name__ == '__main__':
         arg_constraint = args.constraint
     else:
         arg_constraint = 'dp'
-    if(args.lbd_group_weights):
-        arg_lbd_g_wt = args.lbd_group_weights
+    if(args.lbd_dp_weights):
+        arg_lbd_dp_wt = args.lbd_dp_weights
     else:
-        arg_lbd_g_wt = 0.35
+        arg_lbd_dp_wt = 0.35
+    if(args.lbd_eo_weights):
+        arg_lbd_eo_wt = args.lbd_do_weights
+    else:
+        arg_lbd_eo_wt = 0.15
     if(args.no_output):
         arg_no_output = True
     else:
@@ -227,8 +232,8 @@ if __name__ == '__main__':
         arg_dataset = 'adult'
    
     algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
-                         epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, 
-                        num_cores = arg_num_cores, solver = arg_solver, constraint_used=arg_constraint, lbd_g_wt = arg_lbd_g_wt)
+                         epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, num_cores = arg_num_cores, 
+                         solver = arg_solver, constraint_used=arg_constraint, lbd_dp_wt = arg_lbd_dp_wt, lbd_eo_wt = arg_lbd_eo_wt)
 
     X_train, X_test, y_train, y_test, sensitive_features_train, sensitive_features_test = pick_dataset(arg_dataset)
     list_hypotheses, final_ensemble = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
