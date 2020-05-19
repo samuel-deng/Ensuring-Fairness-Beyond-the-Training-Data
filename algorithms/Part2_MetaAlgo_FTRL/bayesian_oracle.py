@@ -38,7 +38,7 @@ instances are protected/non-protected
 class BayesianOracle:
     def __init__(self, X, y, X_test, y_test, weights_org, sensitive_features, sensitive_features_test, 
                 a_indices, card_A, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, 
-                epsilon, eta, num_cores, solver, constraint_used, lbd_dp_wt, lbd_eo_wt, current_t):
+                epsilon, eta, num_cores, solver, constraint_used, lbd_dp_wt, lbd_eo_wt, ubd_dp_wt, ubd_eo_wt, current_t):
         self.X = X
         self.y = y 
         self.X_test = X_test
@@ -62,6 +62,8 @@ class BayesianOracle:
         self.current_t = current_t
         self.lbd_dp_wt = lbd_dp_wt
         self.lbd_eo_wt = lbd_eo_wt
+        self.ubd_dp_wt = ubd_dp_wt
+        self.ubd_eo_wt = ubd_eo_wt
 
         # preset for the delta_i computation
         self.delta_i = np.zeros(len(self.weights_org))
@@ -262,6 +264,8 @@ class BayesianOracle:
                                         self.solver,
                                         self.lbd_dp_wt,
                                         self.lbd_eo_wt,
+                                        self.ubd_dp_wt,
+                                        self.ubd_eo_wt,
                                         self.constraint_used)
 
             lambda_t = lambda_best_response.best_response()

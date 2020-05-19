@@ -46,8 +46,8 @@ vectors pi in the Lambda Best Response step.
 """
 
 class MetaAlgorithm:
-    def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, M = 1, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
-                B = 10, gamma_1 = 0.01, gamma_2 = 0.05, constraint_used='dp', lbd_dp_wt=0.35, lbd_eo_wt=0.15):
+    def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, M = 1, epsilon = 0.05, num_cores = 2, solver = 'ECOS', B = 10, 
+                gamma_1 = 0.01, gamma_2 = 0.05, constraint_used='dp', lbd_dp_wt=0.35, lbd_eo_wt=0.15, ubd_dp_wt=1.0, ubd_eo_wt=1.0):
         self.T = T
         self.T_inner = T_inner
         self.card_A = card_A
@@ -63,9 +63,13 @@ class MetaAlgorithm:
         self.constraint_used = constraint_used
         self.lbd_dp_wt = lbd_dp_wt
         self.lbd_eo_wt = lbd_eo_wt
+        self.ubd_dp_wt = ubd_dp_wt
+        self.ubd_eo_wt = ubd_eo_wt
 
         if(self.epsilon - 4 * self.gamma_1 < 0):
             raise(ValueError("epsilon - 4 * gamma_1 must be positive for LPs."))
+        if(self.constraint_used not in ['dp', 'eo']):
+            raise(ValueError("Fairness constraint must be either dp or eo."))
         if eta is None:
             self.eta = 1/np.sqrt(2*self.T)
         
@@ -74,8 +78,12 @@ class MetaAlgorithm:
         print("T_inner=" + str(self.T_inner))
         print("B=" + str(self.B))
         print("eta=" + str(self.eta))
-        print("eta_inner=" + str(self.eta))
+        print("eta_inner=" + str(self.eta_inner))
         print("epsilon=" + str(self.epsilon))
+        print("lbd_dp_wt=" + str(self.lbd_dp_wt))
+        print("lbd_eo_wt=" + str(self.lbd_eo_wt))
+        print("ubd_dp_wt=" + str(self.ubd_dp_wt))
+        print("ubd_eo_wt=" + str(self.ubd_eo_wt))
         print("Cores in use=" + str(self.num_cores))
         print("Fairness Definition=" + str(self.constraint_used))
 
@@ -122,7 +130,9 @@ class MetaAlgorithm:
         dp_N_gamma_2_A  = []
         for pi_a in dp_gamma_2_buckets:
             pi_ap = 1 - pi_a
-            dp_N_gamma_2_A.append((pi_a, pi_ap))
+            if(self.lbd_dp_wt <= pi_a and pi_a <= self.ubd_dp_wt 
+            and self.lbd_dp_wt <= pi_ap and pi_ap <= self.ubd_dp_wt):
+                dp_N_gamma_2_A.append((pi_a, pi_ap))
 
         N_gamma_2_A['dp'] = dp_N_gamma_2_A
 
@@ -142,7 +152,9 @@ class MetaAlgorithm:
         eo_y0_N_gamma_2_A = []
         for pi_a in eo_y0_gamma_2_buckets:
             pi_ap = prop_y0 - pi_a
-            eo_y0_N_gamma_2_A.append((pi_a, pi_ap))
+            if(self.lbd_eo_wt <= pi_a and pi_a <= self.ubd_eo_wt 
+            and self.lbd_eo_wt <= pi_ap and pi_ap <= self.ubd_eo_wt):
+                eo_y0_N_gamma_2_A.append((pi_a, pi_ap))
         
         N_gamma_2_A['eo_y0'] = eo_y0_N_gamma_2_A
 
@@ -157,9 +169,20 @@ class MetaAlgorithm:
         eo_y1_N_gamma_2_A = []
         for pi_a in eo_y1_gamma_2_buckets:
             pi_ap = prop_y0 - pi_a
-            eo_y1_N_gamma_2_A.append((pi_a, pi_ap))
+            if(self.lbd_eo_wt <= pi_a and pi_a <= self.ubd_eo_wt 
+            and self.lbd_eo_wt <= pi_ap and pi_ap <= self.ubd_eo_wt):
+                eo_y1_N_gamma_2_A.append((pi_a, pi_ap))
         
         N_gamma_2_A['eo_y1'] = eo_y1_N_gamma_2_A
+
+        if(self.constraint_used == 'dp'):
+            print("N(gamma_2, A) constraints:")
+            print(N_gamma_2_A['dp'])
+        elif(self.constraint_used == 'eo'):
+            print("N(gamma_2, A) constraints for Y = 0:")
+            print(N_gamma_2_A['eo_y0'])
+            print("N(gamma_2, A) constraints for Y = 1:")
+            print(N_gamma_2_A['eo_y1'])
                         
         return N_gamma_2_A
 
@@ -188,9 +211,22 @@ class MetaAlgorithm:
         objective = cp.Minimize(cp.sum_squares(w - x))
         constraints = [0 <= x, 
                         x <= 1, 
-                        cp.sum(x) == 1,
-                        cp.sum(x[a_indices['a0']]) >= self.lbd_dp_wt,
-                        cp.sum(x[a_indices['a1']]) >= self.lbd_dp_wt ]  # extra constraint for non-trivial distributions
+                        cp.sum(x) == 1]
+
+        if(self.constraint_used == 'dp'):
+            constraints.append(cp.sum(x[a_indices['a0']]) >= self.lbd_dp_wt)
+            constraints.append(cp.sum(x[a_indices['a1']]) >= self.lbd_dp_wt)
+            constraints.append(cp.sum(x[a_indices['a0']]) <= self.ubd_dp_wt)
+            constraints.append(cp.sum(x[a_indices['a1']]) <= self.ubd_dp_wt)
+        elif(self.constraint_used == 'eo'):
+            constraints.append(cp.sum(x[a_indices['a0_y0']]) >= self.lbd_eo_wt)
+            constraints.append(cp.sum(x[a_indices['a1_y0']]) >= self.lbd_eo_wt)
+            constraints.append(cp.sum(x[a_indices['a0_y1']]) >= self.lbd_eo_wt)
+            constraints.append(cp.sum(x[a_indices['a1_y1']]) >= self.lbd_eo_wt)
+            constraints.append(cp.sum(x[a_indices['a0_y0']]) <= self.ubd_eo_wt)
+            constraints.append(cp.sum(x[a_indices['a1_y0']]) <= self.ubd_eo_wt)
+            constraints.append(cp.sum(x[a_indices['a0_y1']]) <= self.ubd_eo_wt)
+            constraints.append(cp.sum(x[a_indices['a1_y1']]) <= self.ubd_eo_wt)
         
         prob = cp.Problem(objective, constraints)
         prob.solve(solver=self.solver, verbose=False)
@@ -220,6 +256,9 @@ class MetaAlgorithm:
         a_indices['a0_y1'] = list(y1.intersection(set(a_indices['a0'])))
         a_indices['a1_y0'] = list(y0.intersection(set(a_indices['a1'])))
         a_indices['a1_y1'] = list(y1.intersection(set(a_indices['a1'])))
+
+        assert(len(a_indices['a0']) + len(a_indices['a1']) == len(y))
+        assert(len(a_indices['a0_y0']) + len(a_indices['a0_y1']) + len(a_indices['a1_y0']) + len(a_indices['a1_y1']) == len(y))
         return a_indices
 
     def meta_algorithm(self, X, y, sensitive_features, X_test, y_test, sensitive_features_test):
@@ -265,6 +304,8 @@ class MetaAlgorithm:
                                 self.constraint_used,
                                 self.lbd_dp_wt,
                                 self.lbd_eo_wt,
+                                self.ubd_dp_wt,
+                                self.ubd_eo_wt,
                                 0)
         h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
 
@@ -297,6 +338,8 @@ class MetaAlgorithm:
                                 self.constraint_used,
                                 self.lbd_dp_wt,
                                 self.lbd_eo_wt,
+                                self.ubd_dp_wt,
+                                self.ubd_eo_wt,
                                 t + 1) # just to print which outer loop T we're on
             
             h_t, inner_hypotheses_t = oracle.execute_oracle()

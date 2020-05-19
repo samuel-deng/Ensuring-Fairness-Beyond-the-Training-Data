@@ -18,12 +18,13 @@ for the linear program. these are constants passed through the loop
 in Algorithm 2.
 """
 class DpLinearProgram():
-    def __init__(self, n, h_pred, a_indices, a, a_p, solver, lbd_g_weight):
+    def __init__(self, n, h_pred, a_indices, a, a_p, solver, lbd_g_weight, ubd_g_weight):
         self._w = cp.Variable(n)
         self._a = a
         self._a_p = a_p
         self.solver = solver
         self.lbd_g_weight = lbd_g_weight
+        self.ubd_g_weight = ubd_g_weight
 
         # Problem constants
         self._h_xi_a = h_pred.copy()
@@ -39,8 +40,10 @@ class DpLinearProgram():
             cp.sum(self._w[a_indices[a_p]]) == self.pi_1,
             cp.sum(self._w) == self.pi_0 + self.pi_1, # don't EXACTLY sum to 1 sometimes
             0 <= self._w,
-            cp.sum(self._w[a_indices[a]]) >= lbd_g_weight,     # extra constraint for non-trivial distributions
-            cp.sum(self._w[a_indices[a_p]]) >= lbd_g_weight    # extra constraint for non-trivial distributions
+            cp.sum(self._w[a_indices[a]]) >= self.lbd_g_weight,     # extra constraint for non-trivial distributions
+            cp.sum(self._w[a_indices[a_p]]) >= self.lbd_g_weight,   # extra constraint for non-trivial distributions
+            cp.sum(self._w[a_indices[a]]) <= self.ubd_g_weight,     # extra constraint for non-trivial distributions
+            cp.sum(self._w[a_indices[a_p]]) <= self.ubd_g_weight    # extra constraint for non-trivial distributions
         ]
 
         # Objective Function
@@ -55,7 +58,7 @@ class DpLinearProgram():
         return self._prob.value, self._w.value, (self._a, self._a_p, (pi[0], pi[1]))
 
 class EoLinearProgram():
-    def __init__(self, n, h_pred, a_indices, a, a_p, y, solver, lbd_g_weight):
+    def __init__(self, n, h_pred, a_indices, a, a_p, y, solver, lbd_g_weight, ubd_g_weight):
         self._w = cp.Variable(n)
         self._y = y
         self._a_y = str(a) + "_" + str(y)
@@ -63,6 +66,7 @@ class EoLinearProgram():
         self._excluded_subgroups = list({"a0_y0", "a0_y1", "a1_y0", "a1_y1"}.difference(set([self._a_y, self._a_p_y])))
         self.solver = solver
         self.lbd_g_weight = lbd_g_weight
+        self.ubd_g_weight = ubd_g_weight
 
         # Problem constants
         self._h_xi_a = h_pred.copy()
@@ -82,8 +86,10 @@ class EoLinearProgram():
             cp.sum(self._w[a_indices[self._a_p_y]]) == self.pi_1,
             cp.sum(self._w) == 1, # don't EXACTLY sum to 1 sometimes
             0 <= self._w,
-            cp.sum(self._w[a_indices[self._a_y]]) >= lbd_g_weight,     # extra constraint for non-trivial distributions
-            cp.sum(self._w[a_indices[self._a_p_y]]) >= lbd_g_weight    # extra constraint for non-trivial distributions
+            cp.sum(self._w[a_indices[self._a_y]]) >= self.lbd_g_weight,     # extra constraint for non-trivial distributions
+            cp.sum(self._w[a_indices[self._a_p_y]]) >= self.lbd_g_weight,    # extra constraint for non-trivial distributions
+            cp.sum(self._w[a_indices[self._a_y]]) <= self.ubd_g_weight,     # extra constraint for non-trivial distributions
+            cp.sum(self._w[a_indices[self._a_p_y]]) <= self.ubd_g_weight    # extra constraint for non-trivial distributions
         ]
 
         for group in self._excluded_subgroups:
@@ -112,7 +118,7 @@ of a), and w is the discretized (based on N(gamma_1, W)) weight vector that maxi
 """
 class LambdaBestResponse:
     def __init__(self, h_pred, a_indices, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, num_cores, solver,
-                lbd_dp_wt, lbd_eo_wt, constraint_used):
+                lbd_dp_wt, lbd_eo_wt, ubd_dp_wt, ubd_eo_wt, constraint_used):
         self.h_pred = np.asarray(h_pred)
         self.a_indices = a_indices
         self.gamma_1 = gamma_1
@@ -123,6 +129,8 @@ class LambdaBestResponse:
         self.solver = solver
         self.lbd_dp_weight = lbd_dp_wt
         self.lbd_eo_weight = lbd_eo_wt
+        self.ubd_dp_weight = ubd_dp_wt
+        self.ubd_eo_weight = ubd_eo_wt
         self.constraint_used = constraint_used
 
     def _discretize_weights_bsearch(self, w):
@@ -180,7 +188,7 @@ class LambdaBestResponse:
         if(self.constraint_used == 'dp'):
             solved_results = []
             for (a, a_p) in a_a_p: # either a = 'a0' and a_p = 'a1' or vice versa 
-                problem = DpLinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, self.solver, self.lbd_dp_weight)
+                problem = DpLinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, self.solver, self.lbd_dp_weight, self.ubd_dp_weight)
                 pool = Pool(processes = self.num_cores)
                 solved_results.extend(pool.map(problem.solve, N_gamma_2_A['dp'])) # multiprocessing maps each pi to new process
                 pool.close()
@@ -188,7 +196,7 @@ class LambdaBestResponse:
             solved_results = []
             for y in ['y0', 'y1']:
                 for (a, a_p) in a_a_p:
-                    problem = EoLinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, y, self.solver, self.lbd_eo_weight)
+                    problem = EoLinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, y, self.solver, self.lbd_eo_weight, self.ubd_eo_weight)
                     pool = Pool(processes = self.num_cores)
                     solved_results.extend(pool.map(problem.solve, N_gamma_2_A['eo_' + y]))
                     pool.close()
