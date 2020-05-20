@@ -153,27 +153,55 @@ class BayesianOracle:
         return new_delta_i
 
 
-    def _randomized_classification(self, lambda_tuple):
-        w = self.eta * (self.const_i + self.delta_i) 
-        if lambda_tuple != (0,0,0):
-            w = w + self.eta * ( np.multiply(self.weights_org, 1 - 2*self.y) +  self._get_new_delta_i(lambda_tuple))
+    def _weighted_classification(self, t):
+        """
+        Returns LogisticRegression classifier that uses the weights L_i(lambda).
+
+        :return: LogisticRegression. sklearn logistic regression object.
+        """
+        # Learning becomes a weighted classification problem, dependent on L_i as weights
+        # NOTE: c_1_i does NOT have the Delta_i here (just the loss * weight term). just named it that for convenience.
+        #random_eta = np.random.uniform(0, self.eta/10)
+        w = self.eta * t * (self.c_1_i - self.c_0_i) + self.eta * self.delta_i + 0.05
+        pos_indices = np.where(w >= 0)
+        neg_indices = np.where(w < 0)
+
+        redY = 1 * (w < 0)
+        redY = np.asarray(redY)
+        redW = w.abs()
+        redW = np.asarray(redW)
+
+        if(neg_indices[0].size):
+            logreg = LogisticRegression(solver='lbfgs')
+            logreg.fit(self.X, redY, sample_weight=redW)
         else:
-            w = w + self.eta * ( np.multiply(self.weights_org, 1 - 2*self.y) )
-        #print(np.max(self.const_i))
-        #print(np.max(self.delta_i))
-        #print('------')
-        nvar = len(w)
-        #print('inside randomized classification')
-        #print(nvar)
-        #solve a convex optimization problem
-        Q = cp.Variable(nvar)
-        objective = cp.Minimize( Q.T @ w + (0.05) * cp.sum_squares(Q))
-        constraints = [0.001 <= Q, Q <= 0.999]
-        prob = cp.Problem(objective, constraints)
-        prob.solve()
-        #print(Q.value)
-        #print(np.max(Q.value))
-        return Q.value
+            logreg = DummyClassifier(strategy="constant", constant=0)
+            logreg.fit(self.X, redY, sample_weight=redW)
+
+        return logreg, redW
+
+
+    # def _randomized_classification(self, lambda_tuple):
+    #     w = self.eta * (self.const_i + self.delta_i) 
+    #     if lambda_tuple != (0,0,0):
+    #         w = w + self.eta * ( np.multiply(self.weights_org, 1 - 2*self.y) +  self._get_new_delta_i(lambda_tuple))
+    #     else:
+    #         w = w + self.eta * ( np.multiply(self.weights_org, 1 - 2*self.y) )
+    #     #print(np.max(self.const_i))
+    #     #print(np.max(self.delta_i))
+    #     #print('------')
+    #     nvar = len(w)
+    #     #print('inside randomized classification')
+    #     #print(nvar)
+    #     #solve a convex optimization problem
+    #     Q = cp.Variable(nvar)
+    #     objective = cp.Minimize( Q.T @ w + (0.05) * cp.sum_squares(Q))
+    #     constraints = [0.001 <= Q, Q <= 0.999]
+    #     prob = cp.Problem(objective, constraints)
+    #     prob.solve()
+    #     #print(Q.value)
+    #     #print(np.max(Q.value))
+    #     return Q.value
 
 
     def _evaluate_fairness(self, y_true, y_pred, sensitive_features):
@@ -275,21 +303,25 @@ class BayesianOracle:
                 #print('non-zero case')
                 self._update_delta_i(lambda_t)
 
-            self.const_i += np.multiply(self.weights_org, 1 - 2*self.y)
+            h_t, final_weights = self._weighted_classification(t)
+            h_pred = h_t.predict(self.X)
+            hypotheses.append(h_t)
+
+            #self.const_i += np.multiply(self.weights_org, 1 - 2*self.y)
             #print(self.const_i)
 
-            Q_t = self._randomized_classification(lambda_t)
-            h_pred = [np.random.binomial(n=1,p=Q_t[i]) for i in range(len(Q_t))]
-            h_pred = [int(round(h_pred[v])) for v in range(len(Q_t))]
+            #Q_t = self._randomized_classification(lambda_t)
+            #h_pred = [np.random.binomial(n=1,p=Q_t[i]) for i in range(len(Q_t))]
+            #h_pred = [int(round(h_pred[v])) for v in range(len(Q_t))]
             #get classifier that matches the prediction h_pred
             #print(np.sum(h_pred))
             #logreg = LogisticRegression(penalty='none', solver='lbfgs')
             #logreg.fit(self.X, np.asarray(h_pred) )
-            forest = RandomForestClassifier(n_estimators=100, max_depth=50)
-            forest.fit(self.X, h_pred)
+            #forest = RandomForestClassifier(n_estimators=100, max_depth=50)
+            #forest.fit(self.X, h_pred)
             #print(h_pred)
-            hypotheses.append(forest)
-            new_h_pred = forest.predict(self.X)
+            #hypotheses.append(forest)
+            #new_h_pred = forest.predict(self.X)
             #print(accuracy_score(np.asarray(self.y), np.asarray(new_h_pred) ) )
             #print(self.const_i)
             end_inner = time.time()
