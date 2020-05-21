@@ -7,6 +7,8 @@ from sklearn.metrics import accuracy_score
 from lambda_best_response_param_parallel import LambdaBestResponse
 from voting_classifier import VotingClassifier
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.dummy import DummyClassifier
+
 """ 
 The Bayesian Oracle step (Algorithm 4) that learns the actual classifier
 via cost-sensitive classification, calling lambda_best_response_param_parallel
@@ -95,6 +97,12 @@ class BayesianOracle:
         self.B_vec_a1a0y1 = np.zeros(len(self.weights_org))
         self.B_vec_a1a0y1[self.a_indices['a1_y1']] += self.B
         self.B_vec_a1a0y1[self.a_indices['a0_y1']] -= self.B
+
+        # c_1_i (without the Delta_i) and c_0_i can be set only knowing the weights vector and y
+        loss_1 = np.ones(len(self.y)) - self.y
+        self.c_1_i = np.multiply(loss_1, self.weights_org)
+        loss_0 = self.y
+        self.c_0_i = np.multiply(loss_0, self.weights_org)
 
     def _update_delta_i(self, lambda_tuple):
         """
@@ -326,8 +334,8 @@ class BayesianOracle:
             #print(self.const_i)
             end_inner = time.time()
             if((t + 1) % 10 == 0):
-                train_pred = forest.predict(self.X)
-                test_pred = forest.predict(self.X_test)
+                train_pred = h_t.predict(self.X)
+                test_pred = h_t.predict(self.X_test)
                 train_acc = accuracy_score(train_pred, self.y)
                 test_acc = accuracy_score(test_pred, self.y_test)
                 groups, group_metrics, gaps = self._evaluate_fairness(self.y_test, test_pred, self.sensitive_features_test)

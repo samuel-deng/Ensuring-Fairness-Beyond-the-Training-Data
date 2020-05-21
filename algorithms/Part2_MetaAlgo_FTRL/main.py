@@ -57,7 +57,7 @@ def evaluate_fairness(y_true, y_pred, sensitive_features):
 
 def pick_dataset(dataset_used):
     if(dataset_used == 'compas'):
-        compas_train = pd.read_csv('./../../data/compas_subsets/compas_train_subset_2.csv')
+        compas_train = pd.read_csv('./../../data/compas_subsets/compas_train.csv')
         compas_test = pd.read_csv('./../../data/compas_test.csv')
  
         y_train = compas_train.pop('two_year_recid') 

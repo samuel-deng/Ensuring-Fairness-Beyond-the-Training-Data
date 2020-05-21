@@ -202,12 +202,17 @@ class MetaAlgorithm:
                 
         return np.asarray(loss_vec)
 
-    def _project_W(self, w, a_indices):
+    def _project_W(self, w, a_indices, y):
         """
         Project w back onto the feasible set of weights
 
         :return: nparray 'x.value' which is the projected weight vector.
         """
+        ### Compute proportion of y0 and y1 in the training data ###
+        prop_y0 = (len(np.where(y == 0)[0]))/float(len(y))
+        prop_y1 = (len(np.where(y == 1)[0]))/float(len(y))
+        assert(prop_y0 + prop_y1 == 1)
+
         x = cp.Variable(len(w))
         objective = cp.Minimize(cp.sum_squares(w - x))
         constraints = [0 <= x, 
@@ -236,6 +241,12 @@ class MetaAlgorithm:
             raise(cp.SolverError("project_W failed to find feasible solution."))
 
         return x.value
+    
+    def _update_w(self, X, y, a_indices, prev_h_t, w):
+        loss_vec = self._zero_one_loss_grad_w(prev_h_t.predict(X), y)
+        w_t = w + self.eta * loss_vec 
+        w_t = self._project_W(w_t, a_indices, y)
+        return w_t
 
     def _set_a_indices(self, sensitive_features, y):
         """
@@ -316,13 +327,16 @@ class MetaAlgorithm:
         for t in range(self.T):
             start_inner = time.time()
 
+            '''
             # compute the loss of each of the T_inner classifiers (to avg. over)
             T_inner_sum_loss = np.zeros(len(X))
             for h in inner_hypotheses_t:
                 T_inner_sum_loss += self._zero_one_loss_grad_w(h.predict(X), y)
             
             w += self.eta * (1/len(inner_hypotheses_t)) * T_inner_sum_loss # avg. over the T_inner classifiers
-            w = self._project_W(w, a_indices)
+            w = self._project_W(w, a_indices, y)
+            '''
+            w = self._update_w(X, y, a_indices, h_t, w)
             oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
                                 a_indices,
                                 self.card_A, 

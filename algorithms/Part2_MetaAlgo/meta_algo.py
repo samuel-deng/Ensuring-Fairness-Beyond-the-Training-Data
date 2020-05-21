@@ -233,8 +233,14 @@ class MetaAlgorithm:
 
         if prob.status in ["infeasible", "unbounded"]:
             raise(cp.SolverError("project_W failed to find feasible solution."))
-
+        
         return x.value
+    
+    def _update_w(self, X, y, a_indices, prev_h_t, w):
+        # loss_vec = self._zero_one_loss_grad_w(prev_h_t.predict(X), y)
+        w_t = w + self.eta * loss_vec 
+        w_t = self._project_W(w_t, a_indices)
+        return w_t
 
     def _set_a_indices(self, sensitive_features, y):
         """
@@ -281,11 +287,6 @@ class MetaAlgorithm:
         gamma_1_buckets = self._gamma_1_buckets(X)
         gamma_2_buckets = self._gamma_2_buckets(y)
 
-        # print(a_indices)
-        # initialize eta_inner (depends on n)
-        #eta_inner = (1/(1 + self.B)) * np.sqrt(len(X)/self.T_inner)
-        #print("eta_inner = " + str(eta_inner))
-
         # Start off with oracle prediction over uniform weights
         print("=== Initializing h_0... ===")
         oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
@@ -315,13 +316,18 @@ class MetaAlgorithm:
         for t in range(self.T):
             start_inner = time.time()
 
+            '''
             # compute the loss of each of the T_inner classifiers (to avg. over)
             T_inner_sum_loss = np.zeros(len(X))
             for h in inner_hypotheses_t:
                 T_inner_sum_loss += self._zero_one_loss_grad_w(h.predict(X), y)
-            
-            w += self.eta * (1/len(inner_hypotheses_t)) * T_inner_sum_loss # avg. over the T_inner classifiers
+            print(T_inner_sum_loss[:100])
+            T_inner_sum_loss = (1/len(inner_hypotheses_t)) * T_inner_sum_loss
+            print(T_inner_sum_loss[:100])
+            w = w + self.eta * T_inner_sum_loss # avg. over the T_inner classifiers
             w = self._project_W(w, a_indices)
+            '''
+            w = self._update_w(X, y, a_indices, h_t, w)
             oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
                                 a_indices,
                                 self.card_A, 
