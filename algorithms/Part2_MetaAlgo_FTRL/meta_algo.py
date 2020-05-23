@@ -47,7 +47,7 @@ vectors pi in the Lambda Best Response step.
 
 class MetaAlgorithm:
     def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
-                B = 1, gamma_1 = 0.001, gamma_2 = 0.05, fair_constraint='eo', lbd_dp_wt=0.35, lbd_eo_wt=0.15, ubd_dp_wt=1.0, ubd_eo_wt=1.0, gp_wt_bd=0.1):
+                B = 1, gamma_1 = 0.001, gamma_2 = 0.05, fair_constraint='eo', gp_wt_bd=0.1):
         self.T = T
         self.T_inner = T_inner
         self.card_A = card_A
@@ -60,10 +60,6 @@ class MetaAlgorithm:
         self.num_cores = num_cores
         self.solver = solver
         self.fair_constraint = fair_constraint
-        self.lbd_dp_wt = lbd_dp_wt
-        self.lbd_eo_wt = lbd_eo_wt
-        self.ubd_dp_wt = ubd_dp_wt
-        self.ubd_eo_wt = ubd_eo_wt
         self.gp_wt_bd = gp_wt_bd
 
         if(self.epsilon - 4 * self.gamma_1 < 0):
@@ -80,10 +76,6 @@ class MetaAlgorithm:
         print("eta=" + str(self.eta))
         print("eta_inner=" + str(self.eta_inner))
         print("epsilon=" + str(self.epsilon))
-        print("lbd_dp_wt=" + str(self.lbd_dp_wt))
-        print("lbd_eo_wt=" + str(self.lbd_eo_wt))
-        print("ubd_dp_wt=" + str(self.ubd_dp_wt))
-        print("ubd_eo_wt=" + str(self.ubd_eo_wt))
         print("gp_wt_bd=" + str(self.gp_wt_bd))
         print("Cores in use=" + str(self.num_cores))
         print("Fairness Definition=" + str(self.fair_constraint))
@@ -126,15 +118,14 @@ class MetaAlgorithm:
         dp_gamma_2_buckets = []
         for j in range(int(dp_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
-            if bucket >= self.lbd_dp_wt and bucket <= 1.0 - self.lbd_dp_wt:
-                dp_gamma_2_buckets.append(bucket)
+            dp_gamma_2_buckets.append(bucket)
 
         dp_N_gamma_2_A  = []
-        for pi_a in dp_gamma_2_buckets:
-            pi_ap = 1 - pi_a
-            if(self.lbd_dp_wt <= pi_a and pi_a <= 1.0 - self.lbd_dp_wt 
-            and self.lbd_dp_wt <= pi_ap and pi_ap <= 1.0 - self.lbd_dp_wt):
-                dp_N_gamma_2_A.append((pi_a, pi_ap))
+        for pi_0 in dp_gamma_2_buckets:
+            pi_1 = 1 - pi_0
+            if(proportions['a0'] - self.gp_wt_bd <= pi_0 and pi_0 <= proportions['a0'] + self.gp_wt_bd 
+            and proportions['a1'] - self.gp_wt_bd <= pi_1 and pi_1 <= proportions['a1'] + self.gp_wt_bd):
+                dp_N_gamma_2_A.append((pi_0, pi_1))
 
         N_gamma_2_A['dp'] = dp_N_gamma_2_A
 
@@ -143,15 +134,14 @@ class MetaAlgorithm:
         eo_y0_gamma_2_buckets = []
         for j in range(int(eo_y0_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
-            if bucket >= self.lbd_eo_wt and bucket <= proportions['y0'] - self.lbd_eo_wt:
-                eo_y0_gamma_2_buckets.append(bucket)
+            eo_y0_gamma_2_buckets.append(bucket)
         
         eo_y0_N_gamma_2_A = []
-        for pi_a in eo_y0_gamma_2_buckets:
-            pi_ap = proportions['y0'] - pi_a
-            if(self.lbd_eo_wt <= pi_a and pi_a <= proportions['y1'] - self.lbd_eo_wt 
-            and self.lbd_eo_wt <= pi_ap and pi_ap <= proportions['y1'] - self.lbd_eo_wt):
-                eo_y0_N_gamma_2_A.append((pi_a, pi_ap))
+        for pi_0_0 in eo_y0_gamma_2_buckets:
+            pi_1_0 = proportions['y0'] - pi_0_0
+            if(proportions['a0_y0'] - self.gp_wt_bd <= pi_0_0 and pi_0_0 <= proportions['a0_y0'] + self.gp_wt_bd
+            and proportions['a1_y0'] - self.gp_wt_bd <= pi_1_0 and pi_1_0 <= proportions['a1_y0'] + self.gp_wt_bd):
+                eo_y0_N_gamma_2_A.append((pi_0_0, pi_1_0))
         
         N_gamma_2_A['eo_y0'] = eo_y0_N_gamma_2_A
 
@@ -160,15 +150,14 @@ class MetaAlgorithm:
         eo_y1_gamma_2_buckets = []
         for j in range(int(eo_y1_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
-            if bucket >= self.lbd_eo_wt and bucket <= proportions['y1'] - self.lbd_eo_wt:
-                eo_y1_gamma_2_buckets.append(bucket)
+            eo_y1_gamma_2_buckets.append(bucket)
         
         eo_y1_N_gamma_2_A = []
-        for pi_a in eo_y1_gamma_2_buckets:
-            pi_ap = proportions['y0'] - pi_a
-            if(self.lbd_eo_wt <= pi_a and pi_a <= proportions['y1'] - self.lbd_eo_wt 
-            and self.lbd_eo_wt <= pi_ap and pi_ap <= proportions['y1'] - self.lbd_eo_wt):
-                eo_y1_N_gamma_2_A.append((pi_a, pi_ap))
+        for pi_0_1 in eo_y1_gamma_2_buckets:
+            pi_1_1 = proportions['y1'] - pi_0_1
+            if(proportions['a0_y1'] - self.gp_wt_bd <= pi_0_1 and pi_0_1 <= proportions['a0_y1'] + self.gp_wt_bd 
+            and proportions['a1_y1'] - self.gp_wt_bd <= pi_1_1 and pi_1_1 <= proportions['a1_y1'] + self.gp_wt_bd):
+                eo_y1_N_gamma_2_A.append((pi_0_1, pi_1_1))
         
         N_gamma_2_A['eo_y1'] = eo_y1_N_gamma_2_A
 
@@ -198,17 +187,12 @@ class MetaAlgorithm:
                 
         return np.asarray(loss_vec)
 
-    def _project_W(self, w, a_indices, y):
+    def _project_W(self, w, a_indices, y, proportions):
         """
         Project w back onto the feasible set of weights
 
         :return: nparray 'x.value' which is the projected weight vector.
         """
-        ### Compute proportion of y0 and y1 in the training data ###
-        prop_y0 = (len(np.where(y == 0)[0]))/float(len(y))
-        prop_y1 = (len(np.where(y == 1)[0]))/float(len(y))
-        assert(prop_y0 + prop_y1 == 1)
-
         x = cp.Variable(len(w))
         objective = cp.Minimize(cp.sum_squares(w - x))
         constraints = [0 <= x, 
@@ -216,19 +200,19 @@ class MetaAlgorithm:
                         cp.sum(x) == 1]  # extra constraint for non-trivial distributions
         
         if(self.fair_constraint == 'dp'):
-            constraints.append(cp.sum(x[a_indices['a0']]) >= self.lbd_dp_wt)
-            constraints.append(cp.sum(x[a_indices['a1']]) >= self.lbd_dp_wt)
-            constraints.append(cp.sum(x[a_indices['a0']]) <= self.ubd_dp_wt)
-            constraints.append(cp.sum(x[a_indices['a1']]) <= self.ubd_dp_wt)
+            constraints.append(cp.sum(x[a_indices['a0']]) >= proportions['a0'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a1']]) >= proportions['a1'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a0']]) <= proportions['a0'] + self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a1']]) <= proportions['a1'] + self.gp_wt_bd)
         elif(self.fair_constraint == 'eo'):
-            constraints.append(cp.sum(x[a_indices['a0_y0']]) >= self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a1_y0']]) >= self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a0_y1']]) >= self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a1_y1']]) >= self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a0_y0']]) <= prop_y0 - self.lbd_eo_wt) 
-            constraints.append(cp.sum(x[a_indices['a1_y0']]) <= prop_y0 - self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a0_y1']]) <= prop_y1 - self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a1_y1']]) <= prop_y1 - self.lbd_eo_wt)
+            constraints.append(cp.sum(x[a_indices['a0_y0']]) >= proportions['a0_y0'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a1_y0']]) >= proportions['a1_y0'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a0_y1']]) >= proportions['a0_y1'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a1_y1']]) >= proportions['a1_y1'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a0_y0']]) <= proportions['a0_y0'] + self.gp_wt_bd) 
+            constraints.append(cp.sum(x[a_indices['a1_y0']]) <= proportions['a1_y0'] + self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a0_y1']]) <= proportions['a0_y1'] + self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a1_y1']]) <= proportions['a1_y1'] + self.gp_wt_bd)
 
         prob = cp.Problem(objective, constraints)
         prob.solve(solver=self.solver, verbose=False)
@@ -238,10 +222,10 @@ class MetaAlgorithm:
 
         return x.value
     
-    def _update_w(self, X, y, a_indices, prev_h_t, w):
+    def _update_w(self, X, y, a_indices, prev_h_t, w, proportions):
         loss_vec = self._zero_one_loss_grad_w(prev_h_t.predict(X), y)
         w_t = w + self.eta * loss_vec 
-        w_t = self._project_W(w_t, a_indices, y)
+        w_t = self._project_W(w_t, a_indices, y, proportions)
         return w_t
 
     def _set_a_indices(self, sensitive_features, y):
@@ -279,6 +263,7 @@ class MetaAlgorithm:
         proportions['a1_y1'] = len(a_indices['a1_y1'])/float(len(y))
         proportions['y0'] = (len(np.where(y == 0)[0]))/float(len(y))
         proportions['y1'] = (len(np.where(y == 1)[0]))/float(len(y))
+
         assert(proportions['y0'] + proportions['y1'] == 1)
         assert(proportions['a0'] + proportions['a1'] == 1)
         assert(proportions['a0_y0'] + proportions['a0_y1'] + proportions['a1_y0'] + proportions['a1_y1'] == 1)
@@ -300,10 +285,19 @@ class MetaAlgorithm:
         VotingClassifier, an object that takes a majority vote over (T_inner * T) hypotheses
         """
         # dp, eo
+        print("Number of examples in dataset: {}".format(len(X)))
         a_indices = self._set_a_indices(sensitive_features, y) # dictionary with a value information
 
-        # calculate proportions in the training data
+        # calculate proportions in the training data and display
         proportions = self._set_proportions(a_indices, y)
+        if(self.fair_constraint == 'dp'):
+            print("Proportion of A = 0: {}".format(proportions['a0']))
+            print("Proportion of A = 1: {}".format(proportions['a1']))
+        elif(self.fair_constraint == 'eo'):
+            print("Proportion of A = 0, Y = 0: {}".format(proportions['a0_y0']))
+            print("Proportion of A = 1, Y = 0: {}".format(proportions['a1_y0']))
+            print("Proportion of A = 0, Y = 1: {}".format(proportions['a0_y1']))
+            print("Proportion of A = 1, Y = 1: {}".format(proportions['a1_y1']))
 
         w = np.full((X.shape[0],), 1/X.shape[0]) # each weight starts as uniform 1/n
         gamma_1_buckets = self._gamma_1_buckets(X)
@@ -324,10 +318,6 @@ class MetaAlgorithm:
                                 self.num_cores,
                                 self.solver,
                                 self.fair_constraint,
-                                self.lbd_dp_wt,
-                                self.lbd_eo_wt,
-                                self.ubd_dp_wt,
-                                self.ubd_eo_wt,
                                 0)
         h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
 
@@ -346,7 +336,7 @@ class MetaAlgorithm:
             w += self.eta * (1/len(inner_hypotheses_t)) * T_inner_sum_loss # avg. over the T_inner classifiers
             w = self._project_W(w, a_indices, y)
             '''
-            w = self._update_w(X, y, a_indices, h_t, w)
+            w = self._update_w(X, y, a_indices, h_t, w, proportions)
             oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
                                 a_indices,
                                 self.card_A, 
@@ -360,10 +350,6 @@ class MetaAlgorithm:
                                 self.num_cores,
                                 self.solver,
                                 self.fair_constraint,
-                                self.lbd_dp_wt,
-                                self.lbd_eo_wt,
-                                self.ubd_dp_wt,
-                                self.ubd_eo_wt,
                                 t + 1) # just to print which outer loop T we're on
             
             h_t, inner_hypotheses_t = oracle.execute_oracle()

@@ -142,10 +142,6 @@ if __name__ == '__main__':
     parser.add_argument("--solver", help="solver for the LPs: [ECOS, OSQP, SCS, GUROBI]")
     parser.add_argument("--name", help="output file name for final ensemble")
     parser.add_argument("--constraint", help="constraint (dp or eo)")
-    parser.add_argument("--lbd_dp_weights", help="lower bound on group weights for dp")
-    parser.add_argument("--lbd_eo_weights", help="lower bound on group weights for eo")
-    parser.add_argument("--ubd_dp_weights", help="upper bound on group weights for dp")
-    parser.add_argument("--ubd_eo_weights", help="upper bound on group weights for eo")
     parser.add_argument("--no_output", help="disable outputting pkl files")
     parser.add_argument("--dataset", help="dataset in use for the experiment")
     parser.add_argument("--gp_wt_bd", help="group weight bound on the marginal distributions")
@@ -196,22 +192,6 @@ if __name__ == '__main__':
         arg_constraint = args.constraint
     else:
         arg_constraint = 'eo'
-    if(args.lbd_dp_weights):
-        arg_lbd_dp_wt = float(args.lbd_dp_weights)
-    else:
-        arg_lbd_dp_wt = 0.35
-    if(args.lbd_eo_weights):
-        arg_lbd_eo_wt = float(args.lbd_do_weights)
-    else:
-        arg_lbd_eo_wt = 0.15
-    if(args.ubd_dp_weights):
-        arg_ubd_dp_wt = float(args.ubd_dp_weights)
-    else:
-        arg_ubd_dp_wt = 1.0
-    if(args.ubd_eo_weights):
-        arg_ubd_eo_wt = float(args.ubd_eo_weights)
-    else:
-        arg_ubd_eo_wt = 1.0
     if(args.no_output):
         arg_no_output = True
     else:
@@ -221,15 +201,14 @@ if __name__ == '__main__':
     else:
         arg_dataset = 'adult'
     if(args.gp_wt_bd):
-        arg_gp_wt_bd = args.gp_wt_bd
+        arg_gp_wt_bd = float(args.gp_wt_bd)
     else:
         arg_gp_wt_bd = 0.1
     
    
     algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
                          epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, num_cores = arg_num_cores, 
-                         solver = arg_solver, fair_constraint=arg_constraint, lbd_dp_wt = arg_lbd_dp_wt, lbd_eo_wt = arg_lbd_eo_wt,
-                         ubd_dp_wt = arg_ubd_dp_wt, ubd_eo_wt = arg_ubd_eo_wt, gp_wt_bd = arg_gp_wt_bd)
+                         solver = arg_solver, fair_constraint=arg_constraint, gp_wt_bd = arg_gp_wt_bd)
 
     X_train, X_test, y_train, y_test, sensitive_features_train, sensitive_features_test = pick_dataset(arg_dataset)
     list_hypotheses, final_ensemble = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
