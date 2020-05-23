@@ -243,7 +243,7 @@ if __name__ == '__main__':
    
     algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
                          epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, num_cores = arg_num_cores, 
-                         solver = arg_solver, constraint_used=arg_constraint, lbd_dp_wt = arg_lbd_dp_wt, lbd_eo_wt = arg_lbd_eo_wt,
+                         solver = arg_solver, fair_constraint=arg_constraint, lbd_dp_wt = arg_lbd_dp_wt, lbd_eo_wt = arg_lbd_eo_wt,
                          ubd_dp_wt = arg_ubd_dp_wt, ubd_eo_wt = arg_ubd_eo_wt)
 
     X_train, X_test, y_train, y_test, sensitive_features_train, sensitive_features_test = pick_dataset(arg_dataset)

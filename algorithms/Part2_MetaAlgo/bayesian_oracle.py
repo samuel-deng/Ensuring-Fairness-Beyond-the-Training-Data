@@ -40,7 +40,7 @@ instances are protected/non-protected
 class BayesianOracle:
     def __init__(self, X, y, X_test, y_test, weights_org, sensitive_features, sensitive_features_test, 
                 a_indices, card_A, M, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, 
-                epsilon, eta, num_cores, solver, constraint_used, lbd_dp_wt, lbd_eo_wt, ubd_dp_wt, ubd_eo_wt, 
+                epsilon, eta, num_cores, solver, fair_constraint, lbd_dp_wt, lbd_eo_wt, ubd_dp_wt, ubd_eo_wt, 
                 current_t):
         self.X = X
         self.y = y 
@@ -61,7 +61,7 @@ class BayesianOracle:
         self.eta = eta
         self.num_cores = num_cores
         self.solver = solver
-        self.constraint_used = constraint_used
+        self.fair_constraint = fair_constraint
         self.current_t = current_t
         self.lbd_dp_wt = lbd_dp_wt
         self.lbd_eo_wt = lbd_eo_wt
@@ -117,12 +117,12 @@ class BayesianOracle:
         a1_y1_denominator = weights[self.a_indices['a1_y1']].sum()
 
         # divide element-wise by the denominator (right term of Delta_i)
-        if self.constraint_used == 'dp':
+        if self.fair_constraint == 'dp':
             for i in self.a_indices['a0']:
                 weights[i] = weights[i]/a0_denominator
             for i in self.a_indices['a1']:
                 weights[i] = weights[i]/a1_denominator
-        elif self.constraint_used == 'eo':
+        elif self.fair_constraint == 'eo':
             for i in self.a_indices['a0_y0']:
                 weights[i] = weights[i]/a0_y0_denominator
             for i in self.a_indices['a0_y1']:
@@ -241,7 +241,7 @@ class BayesianOracle:
         start_outer = time.time()
 
         print("Executing ALGORITHM 4 (Learning Algorithm)...")
-        if(self.constraint_used == 'dp'):
+        if(self.fair_constraint == 'dp'):
             print("ALGORITHM 2 (Best Response) will solve: " + str(2 * len(self.gamma_2_buckets['dp'])) + " LPs...") # twice because a, a_p
         else:
             print("ALGORITHM 2 (Best Response) will solve: " + str(2 * len(self.gamma_2_buckets['eo_y0']) + 2 * len(self.gamma_2_buckets['eo_y1'])) + " LPs...")
@@ -260,7 +260,7 @@ class BayesianOracle:
                                         self.lbd_eo_wt,
                                         self.ubd_dp_wt,
                                         self.ubd_eo_wt,
-                                        self.constraint_used)
+                                        self.fair_constraint)
 
             lambda_t = lambda_best_response.best_response()
             if(lambda_t != (0, 0, 0)):
@@ -279,11 +279,11 @@ class BayesianOracle:
                 groups, group_metrics, gaps = self._evaluate_fairness(self.y_test, test_pred, self.sensitive_features_test)
                 print("Train accuracy of classifier {}: {}".format(t + 1, train_acc))
                 print("Test accuracy of classifier {}: {}".format(t + 1, test_acc))
-                if(self.constraint_used == 'dp'):
+                if(self.fair_constraint == 'dp'):
                     for group in groups:
                         print("P[h(X) = 1 | {}] = {}".format(group, group_metrics['dp'][group]))
                     print("Delta_dp = {}".format(gaps['dp']))
-                elif(self.constraint_used == 'eo'):
+                elif(self.fair_constraint == 'eo'):
                     for group in groups:
                         print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
                         print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo_y0'][group]))
@@ -303,11 +303,11 @@ class BayesianOracle:
         y_pred = T_inner_ensemble.predict(self.X_test)
         print("Test Accuracy = {}".format(accuracy_score(self.y_test, y_pred)))
         groups, group_metrics, gaps = self._evaluate_fairness(self.y_test, y_pred, self.sensitive_features_test)
-        if(self.constraint_used == 'dp'):
+        if(self.fair_constraint == 'dp'):
             for group in groups:
                 print("P[h(X) = 1 | {}] = {}".format(group, group_metrics['dp'][group]))
             print("Delta_dp = {}".format(gaps['dp']))
-        elif(self.constraint_used == 'eo'):
+        elif(self.fair_constraint == 'eo'):
             for group in groups:
                 print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
                 print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo_y0'][group]))

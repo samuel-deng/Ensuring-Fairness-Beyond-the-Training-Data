@@ -40,10 +40,10 @@ class DpLinearProgram():
             cp.sum(self._w[a_indices[a_p]]) == self.pi_1,
             cp.sum(self._w) == self.pi_0 + self.pi_1, # don't EXACTLY sum to 1 sometimes
             0 <= self._w,
-            cp.sum(self._w[a_indices[a]]) >= self.lbd_g_weight,     # extra constraint for non-trivial distributions
-            cp.sum(self._w[a_indices[a_p]]) >= self.lbd_g_weight,   # extra constraint for non-trivial distributions
-            cp.sum(self._w[a_indices[a]]) <= self.ubd_g_weight,     # extra constraint for non-trivial distributions
-            cp.sum(self._w[a_indices[a_p]]) <= self.ubd_g_weight    # extra constraint for non-trivial distributions
+            #cp.sum(self._w[a_indices[a]]) >= self.lbd_g_weight,     # extra constraint for non-trivial distributions
+            #cp.sum(self._w[a_indices[a_p]]) >= self.lbd_g_weight,   # extra constraint for non-trivial distributions
+            #cp.sum(self._w[a_indices[a]]) <= self.ubd_g_weight,     # extra constraint for non-trivial distributions
+            #cp.sum(self._w[a_indices[a_p]]) <= self.ubd_g_weight    # extra constraint for non-trivial distributions
         ]
 
         # Objective Function
@@ -86,10 +86,10 @@ class EoLinearProgram():
             cp.sum(self._w[a_indices[self._a_p_y]]) == self.pi_1,
             cp.sum(self._w) == 1, # don't EXACTLY sum to 1 sometimes
             0 <= self._w,
-            cp.sum(self._w[a_indices[self._a_y]]) >= self.lbd_g_weight,     # extra constraint for non-trivial distributions
-            cp.sum(self._w[a_indices[self._a_p_y]]) >= self.lbd_g_weight,    # extra constraint for non-trivial distributions
-            cp.sum(self._w[a_indices[self._a_y]]) <= self.ubd_g_weight,     # extra constraint for non-trivial distributions
-            cp.sum(self._w[a_indices[self._a_p_y]]) <= self.ubd_g_weight    # extra constraint for non-trivial distributions
+            #cp.sum(self._w[a_indices[self._a_y]]) >= self.lbd_g_weight,     # extra constraint for non-trivial distributions
+            #cp.sum(self._w[a_indices[self._a_p_y]]) >= self.lbd_g_weight,    # extra constraint for non-trivial distributions
+            #cp.sum(self._w[a_indices[self._a_y]]) <= self.pi_0 - self.lbd_g_weight,     # extra constraint for non-trivial distributions
+            #cp.sum(self._w[a_indices[self._a_p_y]]) <= self.pi_1 - self.lbd_g_weight    # extra constraint for non-trivial distributions
         ]
 
         for group in self._excluded_subgroups:
@@ -118,7 +118,7 @@ of a), and w is the discretized (based on N(gamma_1, W)) weight vector that maxi
 """
 class LambdaBestResponse:
     def __init__(self, h_pred, a_indices, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, num_cores, solver,
-                lbd_dp_wt, lbd_eo_wt, ubd_dp_wt, ubd_eo_wt, constraint_used):
+                lbd_dp_wt, lbd_eo_wt, ubd_dp_wt, ubd_eo_wt, fair_constraint):
         self.h_pred = np.asarray(h_pred)
         self.a_indices = a_indices
         self.gamma_1 = gamma_1
@@ -131,7 +131,7 @@ class LambdaBestResponse:
         self.lbd_eo_weight = lbd_eo_wt
         self.ubd_dp_weight = ubd_dp_wt
         self.ubd_eo_weight = ubd_eo_wt
-        self.constraint_used = constraint_used
+        self.fair_constraint = fair_constraint
 
     def _discretize_weights_bsearch(self, w):
         """
@@ -185,14 +185,14 @@ class LambdaBestResponse:
         a_a_p = list(itertools.permutations(['a0', 'a1'])) 
 
         start = time.time()
-        if(self.constraint_used == 'dp'):
+        if(self.fair_constraint == 'dp'):
             solved_results = []
             for (a, a_p) in a_a_p: # either a = 'a0' and a_p = 'a1' or vice versa 
                 problem = DpLinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, self.solver, self.lbd_dp_weight, self.ubd_dp_weight)
                 pool = Pool(processes = self.num_cores)
                 solved_results.extend(pool.map(problem.solve, N_gamma_2_A['dp'])) # multiprocessing maps each pi to new process
                 pool.close()
-        elif(self.constraint_used == 'eo'):
+        elif(self.fair_constraint == 'eo'):
             solved_results = []
             for y in ['y0', 'y1']:
                 for (a, a_p) in a_a_p:

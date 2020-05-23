@@ -47,7 +47,7 @@ vectors pi in the Lambda Best Response step.
 
 class MetaAlgorithm:
     def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, M = 1, epsilon = 0.05, num_cores = 2, solver = 'ECOS', B = 10, 
-                gamma_1 = 0.01, gamma_2 = 0.05, constraint_used='dp', lbd_dp_wt=0.35, lbd_eo_wt=0.15, ubd_dp_wt=1.0, ubd_eo_wt=1.0):
+                gamma_1 = 0.01, gamma_2 = 0.05, fair_constraint='dp', lbd_dp_wt=0.35, lbd_eo_wt=0.15, ubd_dp_wt=1.0, ubd_eo_wt=1.0):
         self.T = T
         self.T_inner = T_inner
         self.card_A = card_A
@@ -60,7 +60,7 @@ class MetaAlgorithm:
         self.epsilon = epsilon
         self.num_cores = num_cores
         self.solver = solver
-        self.constraint_used = constraint_used
+        self.fair_constraint = fair_constraint
         self.lbd_dp_wt = lbd_dp_wt
         self.lbd_eo_wt = lbd_eo_wt
         self.ubd_dp_wt = ubd_dp_wt
@@ -68,7 +68,7 @@ class MetaAlgorithm:
 
         if(self.epsilon - 4 * self.gamma_1 < 0):
             raise(ValueError("epsilon - 4 * gamma_1 must be positive for LPs."))
-        if(self.constraint_used not in ['dp', 'eo']):
+        if(self.fair_constraint not in ['dp', 'eo']):
             raise(ValueError("Fairness constraint must be either dp or eo."))
         if eta is None:
             self.eta = 1/np.sqrt(2*self.T)
@@ -85,7 +85,7 @@ class MetaAlgorithm:
         print("ubd_dp_wt=" + str(self.ubd_dp_wt))
         print("ubd_eo_wt=" + str(self.ubd_eo_wt))
         print("Cores in use=" + str(self.num_cores))
-        print("Fairness Definition=" + str(self.constraint_used))
+        print("Fairness Definition=" + str(self.fair_constraint))
 
     def _gamma_1_buckets(self, X):
         """
@@ -175,10 +175,10 @@ class MetaAlgorithm:
         
         N_gamma_2_A['eo_y1'] = eo_y1_N_gamma_2_A
 
-        if(self.constraint_used == 'dp'):
+        if(self.fair_constraint == 'dp'):
             print("N(gamma_2, A) constraints:")
             print(N_gamma_2_A['dp'])
-        elif(self.constraint_used == 'eo'):
+        elif(self.fair_constraint == 'eo'):
             print("N(gamma_2, A) constraints for Y = 0:")
             print(N_gamma_2_A['eo_y0'])
             print("N(gamma_2, A) constraints for Y = 1:")
@@ -213,12 +213,12 @@ class MetaAlgorithm:
                         x <= 1, 
                         cp.sum(x) == 1]
 
-        if(self.constraint_used == 'dp'):
+        if(self.fair_constraint == 'dp'):
             constraints.append(cp.sum(x[a_indices['a0']]) >= self.lbd_dp_wt)
             constraints.append(cp.sum(x[a_indices['a1']]) >= self.lbd_dp_wt)
             constraints.append(cp.sum(x[a_indices['a0']]) <= self.ubd_dp_wt)
             constraints.append(cp.sum(x[a_indices['a1']]) <= self.ubd_dp_wt)
-        elif(self.constraint_used == 'eo'):
+        elif(self.fair_constraint == 'eo'):
             constraints.append(cp.sum(x[a_indices['a0_y0']]) >= self.lbd_eo_wt)
             constraints.append(cp.sum(x[a_indices['a1_y0']]) >= self.lbd_eo_wt)
             constraints.append(cp.sum(x[a_indices['a0_y1']]) >= self.lbd_eo_wt)
@@ -302,7 +302,7 @@ class MetaAlgorithm:
                                 self.eta_inner,
                                 self.num_cores,
                                 self.solver,
-                                self.constraint_used,
+                                self.fair_constraint,
                                 self.lbd_dp_wt,
                                 self.lbd_eo_wt,
                                 self.ubd_dp_wt,
@@ -341,7 +341,7 @@ class MetaAlgorithm:
                                 self.eta_inner,
                                 self.num_cores,
                                 self.solver,
-                                self.constraint_used,
+                                self.fair_constraint,
                                 self.lbd_dp_wt,
                                 self.lbd_eo_wt,
                                 self.ubd_dp_wt,
