@@ -78,11 +78,11 @@ def pick_dataset(dataset_used):
         sensitive_features_train = X_train['sex']
         sensitive_features_test = X_test['sex']
 
-        sensitive_features_train[sensitive_features_train < 0] = 0
+        sensitive_features_train[sensitive_features_train <= 0] = 0
         sensitive_features_train[sensitive_features_train > 0] = 1
         sensitive_features_train = sensitive_features_train.reset_index(drop=True)
 
-        sensitive_features_test[sensitive_features_test < 0] = 0
+        sensitive_features_test[sensitive_features_test <= 0] = 0
         sensitive_features_test[sensitive_features_test > 0] = 1
         sensitive_features_test = sensitive_features_test.reset_index(drop=True)
 
@@ -97,11 +97,11 @@ def pick_dataset(dataset_used):
         sensitive_features_train = X_train['race7']
         sensitive_features_test = X_test['race7']
 
-        sensitive_features_train[sensitive_features_train < 0] = 0
+        sensitive_features_train[sensitive_features_train <= 0] = 0
         sensitive_features_train[sensitive_features_train > 0] = 1
         sensitive_features_train = sensitive_features_train.reset_index(drop=True)
 
-        sensitive_features_test[sensitive_features_test < 0] = 0
+        sensitive_features_test[sensitive_features_test <= 0] = 0
         sensitive_features_test[sensitive_features_test > 0] = 1
         sensitive_features_test = sensitive_features_test.reset_index(drop=True)
 
@@ -115,11 +115,11 @@ def pick_dataset(dataset_used):
 
         sensitive_features_train = X_train['majority_white']
         sensitive_features_test = X_test['majority_white']
-        sensitive_features_train[sensitive_features_train < 0] = 0
+        sensitive_features_train[sensitive_features_train <= 0] = 0
         sensitive_features_train[sensitive_features_train > 0] = 1
         sensitive_features_train = sensitive_features_train.reset_index(drop=True)
 
-        sensitive_features_test[sensitive_features_test < 0] = 0
+        sensitive_features_test[sensitive_features_test <= 0] = 0
         sensitive_features_test[sensitive_features_test > 0] = 1
         sensitive_features_test = sensitive_features_test.reset_index(drop=True)
         
@@ -201,10 +201,9 @@ if __name__ == '__main__':
     else:
         arg_dataset = 'adult'
     if(args.gp_wt_bd):
-        arg_gp_wt_bd = args.gp_wt_bd
+        arg_gp_wt_bd = float(args.gp_wt_bd)
     else:
         arg_gp_wt_bd = 0.0331
-    
    
     algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
                          epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, num_cores = arg_num_cores, 
@@ -231,8 +230,8 @@ if __name__ == '__main__':
         print("Delta_dp = {}".format(gaps['dp']))
     elif(arg_constraint == 'eo'):
         for group in groups:
-            print("P[h(X) = 1 | A = {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
             print("P[h(X) = 1 | A = {}, Y = 0] = {}".format(group, group_metrics['eo_y0'][group]))
+            print("P[h(X) = 1 | A = {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
         print("Delta_eo1 = {}".format(gaps['eo_y1']))
         print("Delta_eo0 = {}".format(gaps['eo_y0']))
     else:

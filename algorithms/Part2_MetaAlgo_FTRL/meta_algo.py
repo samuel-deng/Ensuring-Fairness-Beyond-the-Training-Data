@@ -119,16 +119,15 @@ class MetaAlgorithm:
         for j in range(int(dp_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
             #if self.lbd_dp_wt <= bucket and bucket <= 1.0 - self.lbd_dp_wt:
-            if self.gp_wt_bd <= bucket and bucket <= 1.0 - self.gp_wt_bd:
-                dp_gamma_2_buckets.append(bucket)
+            dp_gamma_2_buckets.append(bucket)
 
         dp_N_gamma_2_A  = []
         for pi_a in dp_gamma_2_buckets:
             pi_ap = 1 - pi_a
             # if(self.lbd_dp_wt <= pi_a and pi_a <= 1.0 - self.lbd_dp_wt 
             # and self.lbd_dp_wt <= pi_ap and pi_ap <= 1.0 - self.lbd_dp_wt):
-            if(self.gp_wt_bd <= pi_a and pi_a <= 1.0 - self.gp_wt_bd 
-            and self.gp_wt_bd <= pi_ap and pi_ap <= 1.0 - self.gp_wt_bd):
+            if(proportions['a0'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0'] + self.gp_wt_bd 
+            and proportions['a1'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1'] + self.gp_wt_bd):
                 dp_N_gamma_2_A.append((pi_a, pi_ap))
 
         N_gamma_2_A['dp'] = dp_N_gamma_2_A
@@ -162,13 +161,13 @@ class MetaAlgorithm:
         
         eo_y1_N_gamma_2_A = []
         for pi_a in eo_y1_gamma_2_buckets:
-            pi_ap = proportions['y0'] - pi_a
+            pi_ap = proportions['y1'] - pi_a
             #if(self.lbd_eo_wt <= pi_a and pi_a <= proportions['y1'] - self.lbd_eo_wt 
             #and self.lbd_eo_wt <= pi_ap and pi_ap <= proportions['y1'] - self.lbd_eo_wt):
             if(proportions['a0_y1'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0_y1'] + self.gp_wt_bd 
             and proportions['a1_y1'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1_y1'] + self.gp_wt_bd):
                 eo_y1_N_gamma_2_A.append((pi_a, pi_ap))
-        
+
         N_gamma_2_A['eo_y1'] = eo_y1_N_gamma_2_A
 
         if(self.fair_constraint == 'dp'):
@@ -203,11 +202,6 @@ class MetaAlgorithm:
 
         :return: nparray 'x.value' which is the projected weight vector.
         """
-        ### Compute proportion of y0 and y1 in the training data ###
-        prop_y0 = (len(np.where(y == 0)[0]))/float(len(y))
-        prop_y1 = (len(np.where(y == 1)[0]))/float(len(y))
-        assert(prop_y0 + prop_y1 == 1)
-
         x = cp.Variable(len(w))
         objective = cp.Minimize(cp.sum_squares(w - x))
         constraints = [0 <= x, 
@@ -230,7 +224,7 @@ class MetaAlgorithm:
             constraints.append(cp.sum(x[a_indices['a0_y1']]) <= prop_y1 - self.lbd_eo_wt)
             constraints.append(cp.sum(x[a_indices['a1_y1']]) <= prop_y1 - self.lbd_eo_wt)
         '''
-        
+
         if(self.fair_constraint == 'dp'):
             constraints.append(cp.sum(x[a_indices['a0']]) >= proportions['a0'] - self.gp_wt_bd)
             constraints.append(cp.sum(x[a_indices['a1']]) >= proportions['a1'] - self.gp_wt_bd)
@@ -328,7 +322,7 @@ class MetaAlgorithm:
         list 'hypotheses' the actual list of (T_inner * T) hypotheses
         VotingClassifier, an object that takes a majority vote over (T_inner * T) hypotheses
         """
-        # dp, eo
+        print("Number of examples = {}".format(len(X)))
         a_indices = self._set_a_indices(sensitive_features, y) # dictionary with a value information
 
         # calculate proportions in the training data
@@ -357,6 +351,7 @@ class MetaAlgorithm:
         h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
 
         hypotheses = []
+        hypotheses.extend(inner_hypotheses_t)
         start_outer = time.time()
         print("=== ALGORITHM 1 EXECUTION ===")
         for t in range(self.T):

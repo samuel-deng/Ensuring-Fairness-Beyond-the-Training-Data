@@ -175,6 +175,7 @@ class LambdaBestResponse:
                 pool = Pool(processes = self.num_cores)
                 solved_results.extend(pool.map(problem.solve, N_gamma_2_A['dp'])) # multiprocessing maps each pi to new process
                 pool.close()
+
         elif(self.fair_constraint == 'eo'):
             solved_results = []
             for y in ['y0', 'y1']:
@@ -183,6 +184,7 @@ class LambdaBestResponse:
                     pool = Pool(processes = self.num_cores)
                     solved_results.extend(pool.map(problem.solve, N_gamma_2_A['eo_' + y]))
                     pool.close()
+        
         else:
             raise ValueError("Invalid fairness constraint. Choose dp or eo.")
         end = time.time()

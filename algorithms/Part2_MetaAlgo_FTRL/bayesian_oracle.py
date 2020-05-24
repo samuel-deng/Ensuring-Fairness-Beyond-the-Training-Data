@@ -338,8 +338,8 @@ class BayesianOracle:
                     print("Delta_dp = {}".format(gaps['dp']))
                 elif(self.fair_constraint == 'eo'):
                     for group in groups:
-                        print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
                         print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo_y0'][group]))
+                        print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
                     print("Delta_eo1 = {}".format(gaps['eo_y1']))
                     print("Delta_eo0 = {}".format(gaps['eo_y0']))
                 else:
@@ -362,8 +362,8 @@ class BayesianOracle:
             print("Delta_dp = {}".format(gaps['dp']))
         elif(self.fair_constraint == 'eo'):
             for group in groups:
-                print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
                 print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo_y0'][group]))
+                print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
             print("Delta_eo1 = {}".format(gaps['eo_y1']))
             print("Delta_eo0 = {}".format(gaps['eo_y0']))
         else:

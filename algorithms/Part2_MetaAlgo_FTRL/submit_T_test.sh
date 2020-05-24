@@ -13,18 +13,20 @@ module load anaconda/3-2019.03
 source activate /rigel/home/sd3013/.conda/envs/fairness_checking
 
 #Command to execute Python program
-python main.py --solver ECOS --num_cores 14 --T_inner 250 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 1 --no_output y --dataset compas
+python main.py --solver ECOS --num_cores 14 --T_inner 500 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 0.5 --no_output y 
 
-python main.py --solver ECOS --num_cores 14 --T_inner 400 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 1 --no_output y --dataset compas
+python main.py --solver ECOS --num_cores 14 --T_inner 600 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 0.5 --no_output y 
 
-python main.py --solver ECOS --num_cores 14 --T_inner 500 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 1 --no_output y --dataset compas
+python main.py --solver ECOS --num_cores 14 --T_inner 700 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 0.5 --no_output y 
 
-python main.py --solver ECOS --num_cores 14 --T_inner 750 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 1 --no_output y --dataset compas
+python main.py --solver ECOS --num_cores 14 --T_inner 800 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 0.5 --no_output y 
 
-python main.py --solver ECOS --num_cores 14 --T_inner 1000 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 1 --no_output y --dataset compas
+python main.py --solver ECOS --num_cores 14 --T_inner 900 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 0.5 --no_output y 
 
-python main.py --solver ECOS --num_cores 14 --T_inner 1250 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 1 --no_output y --dataset compas
+python main.py --solver ECOS --num_cores 14 --T_inner 1000 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 0.5 --no_output y 
 
-python main.py --solver ECOS --num_cores 14 --T_inner 1500 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 1 --no_output y --dataset compas
+python main.py --solver ECOS --num_cores 14 --T_inner 1100 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 0.5 --no_output y 
+
+python main.py --solver ECOS --num_cores 14 --T_inner 1200 --T 1 --eta_inner 0.5 --gamma_2 0.05 --constraint eo --B 0.5 --no_output y 
 
 #End of script
