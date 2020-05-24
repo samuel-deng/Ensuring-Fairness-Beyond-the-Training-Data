@@ -47,7 +47,7 @@ vectors pi in the Lambda Best Response step.
 
 class MetaAlgorithm:
     def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
-                B = 1, gamma_1 = 0.001, gamma_2 = 0.05, fair_constraint='eo', lbd_dp_wt=0.35, lbd_eo_wt=0.15, ubd_dp_wt=1.0, ubd_eo_wt=1.0, gp_wt_bd=0.1):
+                B = 1, gamma_1 = 0.001, gamma_2 = 0.05, fair_constraint='eo', gp_wt_bd=0.1):
         self.T = T
         self.T_inner = T_inner
         self.card_A = card_A
@@ -60,10 +60,6 @@ class MetaAlgorithm:
         self.num_cores = num_cores
         self.solver = solver
         self.fair_constraint = fair_constraint
-        self.lbd_dp_wt = lbd_dp_wt
-        self.lbd_eo_wt = lbd_eo_wt
-        self.ubd_dp_wt = ubd_dp_wt
-        self.ubd_eo_wt = ubd_eo_wt
         self.gp_wt_bd = gp_wt_bd
 
         if(self.epsilon - 4 * self.gamma_1 < 0):
@@ -80,10 +76,6 @@ class MetaAlgorithm:
         print("eta=" + str(self.eta))
         print("eta_inner=" + str(self.eta_inner))
         print("epsilon=" + str(self.epsilon))
-        print("lbd_dp_wt=" + str(self.lbd_dp_wt))
-        print("lbd_eo_wt=" + str(self.lbd_eo_wt))
-        print("ubd_dp_wt=" + str(self.ubd_dp_wt))
-        print("ubd_eo_wt=" + str(self.ubd_eo_wt))
         print("gp_wt_bd=" + str(self.gp_wt_bd))
         print("Cores in use=" + str(self.num_cores))
         print("Fairness Definition=" + str(self.fair_constraint))
@@ -126,14 +118,17 @@ class MetaAlgorithm:
         dp_gamma_2_buckets = []
         for j in range(int(dp_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
-            if bucket >= self.lbd_dp_wt and bucket <= 1.0 - self.lbd_dp_wt:
+            #if self.lbd_dp_wt <= bucket and bucket <= 1.0 - self.lbd_dp_wt:
+            if self.gp_wt_bd <= bucket and bucket <= 1.0 - self.gp_wt_bd:
                 dp_gamma_2_buckets.append(bucket)
 
         dp_N_gamma_2_A  = []
         for pi_a in dp_gamma_2_buckets:
             pi_ap = 1 - pi_a
-            if(self.lbd_dp_wt <= pi_a and pi_a <= 1.0 - self.lbd_dp_wt 
-            and self.lbd_dp_wt <= pi_ap and pi_ap <= 1.0 - self.lbd_dp_wt):
+            # if(self.lbd_dp_wt <= pi_a and pi_a <= 1.0 - self.lbd_dp_wt 
+            # and self.lbd_dp_wt <= pi_ap and pi_ap <= 1.0 - self.lbd_dp_wt):
+            if(self.gp_wt_bd <= pi_a and pi_a <= 1.0 - self.gp_wt_bd 
+            and self.gp_wt_bd <= pi_ap and pi_ap <= 1.0 - self.gp_wt_bd):
                 dp_N_gamma_2_A.append((pi_a, pi_ap))
 
         N_gamma_2_A['dp'] = dp_N_gamma_2_A
@@ -143,14 +138,16 @@ class MetaAlgorithm:
         eo_y0_gamma_2_buckets = []
         for j in range(int(eo_y0_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
-            if bucket >= self.lbd_eo_wt and bucket <= proportions['y0'] - self.lbd_eo_wt:
-                eo_y0_gamma_2_buckets.append(bucket)
-        
+            #if proportions['a0_y0'] - self.gp_wt_bd <= bucket and bucket <= proportions['a0_y0'] + self.gp_wt_bd:
+            eo_y0_gamma_2_buckets.append(bucket)
+            
         eo_y0_N_gamma_2_A = []
         for pi_a in eo_y0_gamma_2_buckets:
             pi_ap = proportions['y0'] - pi_a
-            if(self.lbd_eo_wt <= pi_a and pi_a <= proportions['y1'] - self.lbd_eo_wt 
-            and self.lbd_eo_wt <= pi_ap and pi_ap <= proportions['y1'] - self.lbd_eo_wt):
+            #if(self.lbd_eo_wt <= pi_a and pi_a <= proportions['y0'] - self.lbd_eo_wt 
+            #and self.lbd_eo_wt <= pi_ap and pi_ap <= proportions['y0'] - self.lbd_eo_wt):
+            if(proportions['a0_y0'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0_y0'] + self.gp_wt_bd 
+            and proportions['a1_y0'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1_y0'] + self.gp_wt_bd):
                 eo_y0_N_gamma_2_A.append((pi_a, pi_ap))
         
         N_gamma_2_A['eo_y0'] = eo_y0_N_gamma_2_A
@@ -160,14 +157,16 @@ class MetaAlgorithm:
         eo_y1_gamma_2_buckets = []
         for j in range(int(eo_y1_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
-            if bucket >= self.lbd_eo_wt and bucket <= proportions['y1'] - self.lbd_eo_wt:
-                eo_y1_gamma_2_buckets.append(bucket)
+            #if proportions['a0_y1'] - self.gp_wt_bd <= bucket and bucket <= proportions['a0_y1'] + self.gp_wt_bd:
+            eo_y1_gamma_2_buckets.append(bucket)
         
         eo_y1_N_gamma_2_A = []
         for pi_a in eo_y1_gamma_2_buckets:
             pi_ap = proportions['y0'] - pi_a
-            if(self.lbd_eo_wt <= pi_a and pi_a <= proportions['y1'] - self.lbd_eo_wt 
-            and self.lbd_eo_wt <= pi_ap and pi_ap <= proportions['y1'] - self.lbd_eo_wt):
+            #if(self.lbd_eo_wt <= pi_a and pi_a <= proportions['y1'] - self.lbd_eo_wt 
+            #and self.lbd_eo_wt <= pi_ap and pi_ap <= proportions['y1'] - self.lbd_eo_wt):
+            if(proportions['a0_y1'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0_y1'] + self.gp_wt_bd 
+            and proportions['a1_y1'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1_y1'] + self.gp_wt_bd):
                 eo_y1_N_gamma_2_A.append((pi_a, pi_ap))
         
         N_gamma_2_A['eo_y1'] = eo_y1_N_gamma_2_A
@@ -198,7 +197,7 @@ class MetaAlgorithm:
                 
         return np.asarray(loss_vec)
 
-    def _project_W(self, w, a_indices, y):
+    def _project_W(self, w, a_indices, y, proportions):
         """
         Project w back onto the feasible set of weights
 
@@ -215,6 +214,7 @@ class MetaAlgorithm:
                         x <= 1, 
                         cp.sum(x) == 1]  # extra constraint for non-trivial distributions
         
+        '''
         if(self.fair_constraint == 'dp'):
             constraints.append(cp.sum(x[a_indices['a0']]) >= self.lbd_dp_wt)
             constraints.append(cp.sum(x[a_indices['a1']]) >= self.lbd_dp_wt)
@@ -229,6 +229,22 @@ class MetaAlgorithm:
             constraints.append(cp.sum(x[a_indices['a1_y0']]) <= prop_y0 - self.lbd_eo_wt)
             constraints.append(cp.sum(x[a_indices['a0_y1']]) <= prop_y1 - self.lbd_eo_wt)
             constraints.append(cp.sum(x[a_indices['a1_y1']]) <= prop_y1 - self.lbd_eo_wt)
+        '''
+        
+        if(self.fair_constraint == 'dp'):
+            constraints.append(cp.sum(x[a_indices['a0']]) >= proportions['a0'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a1']]) >= proportions['a1'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a0']]) <= proportions['a0'] + self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a1']]) <= proportions['a1'] + self.gp_wt_bd)
+        elif(self.fair_constraint == 'eo'):
+            constraints.append(cp.sum(x[a_indices['a0_y0']]) >= proportions['a0_y0'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a1_y0']]) >= proportions['a1_y0'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a0_y1']]) >= proportions['a0_y1'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a1_y1']]) >= proportions['a1_y1'] - self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a0_y0']]) <= proportions['a0_y0'] + self.gp_wt_bd) 
+            constraints.append(cp.sum(x[a_indices['a1_y0']]) <= proportions['a1_y0'] + self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a0_y1']]) <= proportions['a0_y1'] + self.gp_wt_bd)
+            constraints.append(cp.sum(x[a_indices['a1_y1']]) <= proportions['a1_y1'] + self.gp_wt_bd)
 
         prob = cp.Problem(objective, constraints)
         prob.solve(solver=self.solver, verbose=False)
@@ -238,10 +254,10 @@ class MetaAlgorithm:
 
         return x.value
     
-    def _update_w(self, X, y, a_indices, prev_h_t, w):
+    def _update_w(self, X, y, a_indices, prev_h_t, w, proportions):
         loss_vec = self._zero_one_loss_grad_w(prev_h_t.predict(X), y)
         w_t = w + self.eta * loss_vec 
-        w_t = self._project_W(w_t, a_indices, y)
+        w_t = self._project_W(w_t, a_indices, y, proportions)
         return w_t
 
     def _set_a_indices(self, sensitive_features, y):
@@ -279,6 +295,19 @@ class MetaAlgorithm:
         proportions['a1_y1'] = len(a_indices['a1_y1'])/float(len(y))
         proportions['y0'] = (len(np.where(y == 0)[0]))/float(len(y))
         proportions['y1'] = (len(np.where(y == 1)[0]))/float(len(y))
+
+        print('y0 proportion = {}'.format(proportions['y0']))
+        print('y1 proportion = {}'.format(proportions['y1']))
+        
+        if(self.fair_constraint == 'dp'):
+            print('a0 proportion = {}'.format(proportions['a0']))
+            print('a1 proportion = {}'.format(proportions['a1']))
+        elif(self.fair_constraint == 'eo'):
+            print('a0 y0 proportion = {}'.format(proportions['a0_y0']))
+            print('a1 y0 proportion = {}'.format(proportions['a1_y0']))
+            print('a0 y1 proportion = {}'.format(proportions['a0_y1']))
+            print('a1 y1 proportion = {}'.format(proportions['a1_y1']))
+
         assert(proportions['y0'] + proportions['y1'] == 1)
         assert(proportions['a0'] + proportions['a1'] == 1)
         assert(proportions['a0_y0'] + proportions['a0_y1'] + proportions['a1_y0'] + proportions['a1_y1'] == 1)
@@ -324,10 +353,6 @@ class MetaAlgorithm:
                                 self.num_cores,
                                 self.solver,
                                 self.fair_constraint,
-                                self.lbd_dp_wt,
-                                self.lbd_eo_wt,
-                                self.ubd_dp_wt,
-                                self.ubd_eo_wt,
                                 0)
         h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
 
@@ -346,7 +371,7 @@ class MetaAlgorithm:
             w += self.eta * (1/len(inner_hypotheses_t)) * T_inner_sum_loss # avg. over the T_inner classifiers
             w = self._project_W(w, a_indices, y)
             '''
-            w = self._update_w(X, y, a_indices, h_t, w)
+            w = self._update_w(X, y, a_indices, h_t, w, proportions)
             oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
                                 a_indices,
                                 self.card_A, 
@@ -360,10 +385,6 @@ class MetaAlgorithm:
                                 self.num_cores,
                                 self.solver,
                                 self.fair_constraint,
-                                self.lbd_dp_wt,
-                                self.lbd_eo_wt,
-                                self.ubd_dp_wt,
-                                self.ubd_eo_wt,
                                 t + 1) # just to print which outer loop T we're on
             
             h_t, inner_hypotheses_t = oracle.execute_oracle()
