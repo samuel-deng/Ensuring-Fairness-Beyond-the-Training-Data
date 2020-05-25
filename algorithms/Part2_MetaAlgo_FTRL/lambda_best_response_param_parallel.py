@@ -36,7 +36,7 @@ class DpLinearProgram():
         self._constraints = [
             cp.sum(self._w[a_indices[a]]) == self.pi_0,
             cp.sum(self._w[a_indices[a_p]]) == self.pi_1,
-            cp.sum(self._w) == self.pi_0 + self.pi_1, # don't EXACTLY sum to 1 sometimes
+            cp.sum(self._w) == 1, # don't EXACTLY sum to 1 sometimes
             0 <= self._w,
         ]
 
@@ -46,8 +46,14 @@ class DpLinearProgram():
         self._prob = cp.Problem(self._objective, self._constraints) 
 
     def solve(self, pi):
-        self.pi_0.value = pi[0] # fixed as constant from the Algorithm 2 loop
-        self.pi_1.value = pi[1] # fixed as constant from the Algorithm 2 loop
+        if(self._a == 'a0'):
+            self.pi_0.value = pi[0] # fixed as constant from the Algorithm 2 loop
+            self.pi_1.value = pi[1] # fixed as constant from the Algorithm 2 loop
+        else:
+            self.pi_0.value = pi[1] # fixed as constant from the Algorithm 2 loop
+            self.pi_1.value = pi[0] # fixed as constant from the Algorithm 2 loop
+
+        #print("OBJECTIVE : 1/{} (w * h({})) - 1/{} (w * h({}))".format(self.pi_0.value, self._a, self.pi_1.value, self._a_p))
         self._prob.solve(solver = self.solver, verbose=False, warm_start = True)
         return self._prob.value, self._w.value, (self._a, self._a_p, (pi[0], pi[1]))
 
@@ -89,8 +95,14 @@ class EoLinearProgram():
         self._prob = cp.Problem(self._objective, self._constraints) 
 
     def solve(self, pi):
-        self.pi_0.value = pi[0] # fixed as constant from the Algorithm 2 loop
-        self.pi_1.value = pi[1] # fixed as constant from the Algorithm 2 loop
+        if(self._a_y == 'a1_y0' or self._a_y == 'a1_y1'):
+            self.pi_0.value = pi[1]
+            self.pi_1.value = pi[0]
+        else:
+            self.pi_0.value = pi[0] # fixed as constant from the Algorithm 2 loop
+            self.pi_1.value = pi[1] # fixed as constant from the Algorithm 2 loop
+
+        #print("OBJECTIVE : 1/{} (w * h({})) - 1/{} (w * h({}))".format(self.pi_0.value, self._a_y, self.pi_1.value, self._a_p_y))
         self._prob.solve(solver = self.solver, verbose=False, warm_start = True)
         return self._prob.value, self._w.value, (self._a_y, self._a_p_y, (pi[0], pi[1]))
 
