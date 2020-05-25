@@ -3,6 +3,7 @@ import numpy as np
 import math
 import time 
 import itertools
+import pickle
 from bayesian_oracle import BayesianOracle
 from voting_classifier import VotingClassifier
 
@@ -47,7 +48,8 @@ vectors pi in the Lambda Best Response step.
 
 class MetaAlgorithm:
     def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
-                B = 1, gamma_1 = 0.001, gamma_2 = 0.05, fair_constraint='eo', gp_wt_bd=0.1):
+                B = 1, gamma_1 = 0.001, gamma_2 = 0.05, fair_constraint='eo', gp_wt_bd=0.1, prev_h_t = None, 
+                prev_w_t = None):
         self.T = T
         self.T_inner = T_inner
         self.card_A = card_A
@@ -61,6 +63,8 @@ class MetaAlgorithm:
         self.solver = solver
         self.fair_constraint = fair_constraint
         self.gp_wt_bd = gp_wt_bd
+        self.prev_h_t = prev_h_t
+        self.prev_w_t = prev_w_t
 
         if(self.epsilon - 4 * self.gamma_1 < 0):
             raise(ValueError("epsilon - 4 * gamma_1 must be positive for LPs."))
@@ -68,6 +72,10 @@ class MetaAlgorithm:
             raise(ValueError("Fairness constraint must be either dp or eo."))
         if eta is None:
             self.eta = 1/np.sqrt(2*self.T)
+        if self.prev_h_t == None and self.prev_w_t != None:
+            raise(ValueError("prev_w_t and prev_h_t must be both specified/unspecified."))
+        if self.prev_h_t != None and self.prev_w_t == None:
+            raise(ValueError("prev_w_t and prev_h_t must be both specified/unspecified."))
         
         print("=== HYPERPARAMETERS ===")
         print("T=" + str(self.T))
@@ -322,6 +330,7 @@ class MetaAlgorithm:
         list 'hypotheses' the actual list of (T_inner * T) hypotheses
         VotingClassifier, an object that takes a majority vote over (T_inner * T) hypotheses
         """
+        start_outer = time.time()
         print("Number of examples = {}".format(len(X)))
         a_indices = self._set_a_indices(sensitive_features, y) # dictionary with a value information
 
@@ -331,28 +340,35 @@ class MetaAlgorithm:
         w = np.full((X.shape[0],), 1/X.shape[0]) # each weight starts as uniform 1/n
         gamma_1_buckets = self._gamma_1_buckets(X)
         gamma_2_buckets = self._gamma_2_buckets(y, proportions)
-
-        # Start off with oracle prediction over uniform weights
-        print("=== Initializing h_0... ===")
-        oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
-                                a_indices,
-                                self.card_A, 
-                                self.B, 
-                                self.T_inner,
-                                self.gamma_1,
-                                gamma_1_buckets, 
-                                gamma_2_buckets, 
-                                self.epsilon,
-                                self.eta_inner,
-                                self.num_cores,
-                                self.solver,
-                                self.fair_constraint,
-                                0)
-        h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
-
         hypotheses = []
-        hypotheses.extend(inner_hypotheses_t)
-        start_outer = time.time()
+
+        if(self.prev_h_t == None):
+            # Start off with oracle prediction over uniform weights
+            print("=== Initializing h_0... ===")
+            oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
+                                    a_indices,
+                                    self.card_A, 
+                                    self.B, 
+                                    self.T_inner,
+                                    self.gamma_1,
+                                    gamma_1_buckets, 
+                                    gamma_2_buckets, 
+                                    self.epsilon,
+                                    self.eta_inner,
+                                    self.num_cores,
+                                    self.solver,
+                                    self.fair_constraint,
+                                    0)
+            h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
+            hypotheses.extend(inner_hypotheses_t)
+        else:
+            # Continue by setting h_t to the previous h_t 
+            print("=== CONTINUING from {}... ===".format(self.prev_h_t))
+            pickled_h_t = open(self.prev_h_t,"rb")
+            h_t = pickle.load(pickled_h_t)
+            pickled_w_t = open(self.prev_w_t,"rb")
+            w = pickle.load(pickled_w_t)
+
         print("=== ALGORITHM 1 EXECUTION ===")
         for t in range(self.T):
             start_inner = time.time()
@@ -391,4 +407,4 @@ class MetaAlgorithm:
         
         end_outer = time.time()
         print("ALGORITHM 1 (Meta Algorithm) Total Execution Time: " + str(end_outer - start_outer))
-        return hypotheses, VotingClassifier(hypotheses) 
+        return hypotheses, VotingClassifier(hypotheses), h_t, w 
