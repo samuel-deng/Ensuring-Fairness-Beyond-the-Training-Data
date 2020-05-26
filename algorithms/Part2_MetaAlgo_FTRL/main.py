@@ -221,7 +221,7 @@ if __name__ == '__main__':
                          prev_h_t = arg_prev_h_t, prev_w_t = arg_prev_w_t)
 
     X_train, X_test, y_train, y_test, sensitive_features_train, sensitive_features_test = pick_dataset(arg_dataset)
-    list_hypotheses, final_ensemble, h_t, w_t = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
+    list_hypotheses, final_ensemble, h_t, w_t, h_0 = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
                                                             X_test, y_test, sensitive_features_test)
 
     if (args.name):
@@ -229,11 +229,13 @@ if __name__ == '__main__':
         arg_output_list = 'list_' + args.name + '.pkl'
         arg_output_h_t = 'h_t_' + args.name + '.pkl'
         arg_output_w_t = 'w_t_' + args.name + '.pkl'
+        arg_output_h_0 = 'h_0_' + args.name + '.pkl'
     else:
         arg_output = 'ensemble_B{}_Tinner{}_etainner{}.pkl'.format(arg_B, arg_T_inner, arg_eta_inner) 
         arg_output_list = 'list_B{}_Tinner{}_etainner{}.pkl'.format(arg_B, arg_T_inner, arg_eta_inner)
         arg_output_h_t = 'h_t_{}.pkl'.format(now)
         arg_output_w_t = 'w_t_{}.pkl'.format(now)
+        arg_output_h_0 = 'h_0_{}.pkl'.format(now)
 
     print("=== FINAL ENSEMBLE FAIRNESS EVALUATION ===")
     y_pred = final_ensemble.predict(X_test)
@@ -267,6 +269,9 @@ if __name__ == '__main__':
 
         with open(arg_output_w_t, "wb") as f:
             pickle.dump(w_t, f)
+
+        with open(arg_output_h_0, "wb") as f:
+            pickle.dump(h_0, f) 
 
 '''
 loaded_list = pickle.load(open('list_hypotheses.pkl', 'rb'))
