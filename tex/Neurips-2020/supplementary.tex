@@ -1,0 +1,41 @@
+
+\begin{lemma}
+If $\delta^w_{DP}(f) \le \epsilon$ for any weight $w \in \Nc(\gamma_1,\WW)$, then we have $\delta^w_{DP}(f) \le \epsilon + 4\gamma_1$ for any weight $w \in \WW$.
+\end{lemma}
+\begin{proof}
+Recall the definition of demographic parity with respect to a weight vector $w$.
+$$\delta^w_{DP}(f) = \abs{ \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} -  \frac{\sum_{i: a_i = a'} w_i f(x_i,a')}{{\sum_{i: a_i = a'} w_i}} }$$ 
+For a given weight $w$, we construct a new weight $w' = (w'_1,\ldots,w'_n)$ as follows. For each $i \in [n]$, $w'_i$ is the upper-end point of the bucket containing $w_i$. Note that this guarantees that either $w_i\le \delta$ or $\frac{w'_i}{1+\gamma_1} \le w_i \le w_i'$. We now establish the following lower bound.
+\begin{align}\label{eq:lbd-ratio}
+\frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \ge \frac{1}{1+\gamma_1}  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} \ge (1-\gamma_1) \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} 
+\end{align}
+Also note that,
+\begin{align*}
+\sum_{i: a_i = a} w_i' &\le \sum_{i:a_i = a, w_i > \delta} w_i + \sum_{i: a_i = a, w_i \le \delta} \delta 
+\le (1+\gamma_1) \sum_{i:a_i = a, w_i > \delta} w_i' + n \delta
+\end{align*}
+This gives us the following.
+\begin{align*}
+\frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \le \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\frac{1}{1+\gamma_1}\sum_{i: a_i = a} w_i' - \frac{n\delta}{1+\gamma_1} }  \le (1+\gamma_1) \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i' - n\delta } 
+\end{align*}
+Now we substitute, $\delta=\gamma_1/(2n)$ and get the following upper bound.
+\begin{align}%\label{eq:ubd-ratio}
+\frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} &\le (1+\gamma_1) \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i' - \gamma_1/2}\nonumber \\ &\le \frac{1+\gamma_1}{1-\gamma_1} \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} \le (1+3\gamma_1)  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'}\label{eq:ubd-ratio}
+\end{align}
+% \begin{align*}
+% &\frac{\sum_{i: a_i = a} w_i f(x_i,a) - \norm{w - w'}_1}{\sum_{i: a_i = a} w_i + \norm{w - w'}_1} \le \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \le \frac{\sum_{i: a_i = a} w_i f(x_i,a) + \norm{w - w'}_1}{\sum_{i: a_i = a} w_i - \norm{w - w'}_1} \\
+% \iff &\frac{\sum_{i: a_i = a} w_i f(x_i,a) - \eps/4}{\sum_{i: a_i = a} w_i + \eps/4} \le \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \le \frac{\sum_{i: a_i = a} w_i f(x_i,a) + \eps/4}{\sum_{i: a_i = a} w_i - \eps/4} \\
+% \iff & \frac{\sum_{i: a_i = a} w_i f(x_i,a) - \eps/4}{1/2\sum_{i: a_i = a} w_i} \le \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} \le  \frac{\sum_{i: a_i = a} w_i f(x_i,a) + \eps/4}{1/2\sum_{i: a_i = a} w_i}
+% \end{align*}
+Now we bound $\delta^w_{DP}(f)$ using the results above. Suppose $\frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} >  \frac{\sum_{i: a_i = a'} w_i f(x_i,a')}{\sum_{i: a_i = a'} w_i}$. Then we have,
+%\begin{align*}
+%\delta^w_{DP}(f) = \frac{\sum_{i: a_i = a} w_i f(x_i,a)}{\sum_{i: a_i = a} w_i} -  \frac{\sum_{i: a_i = a'} w_i f(x_i,a')}{\sum_{i: a_i = a'} w_i}
+%\end{align*}
+%Then we have,
+\begin{align*}
+\delta^w_{DP}(f) &\le (1+3\gamma_1)  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} - (1-\gamma_1) \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'}  \\
+&\le  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} -  \frac{\sum_{i: a_i = a} w_i' f(x_i,a)}{\sum_{i: a_i = a} w_i'} + 4\gamma_1\\
+&\le \delta^{w'}_{DP}(f) + 4\gamma_1
+\end{align*}
+The first inequality uses the upper bound for the first term (eq. \ref{eq:ubd-ratio}) and the lower bound for the second term (eq. \ref{eq:lbd-ratio}). The proof when the first term is less than the second term in the definition of $\delta^w_{DP}(f)$ is similar. Therefore, if we guarantee that $\delta^{w'}_{DP}(f) \le \eps$, we have $\delta^w_{DP}(f) \le \eps+4\gamma_1$.
+\end{proof}
