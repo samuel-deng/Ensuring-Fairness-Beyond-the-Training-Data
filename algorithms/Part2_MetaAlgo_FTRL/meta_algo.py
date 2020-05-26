@@ -360,6 +360,7 @@ class MetaAlgorithm:
                                     self.fair_constraint,
                                     0)
             h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
+            h_0 = h_t
             hypotheses.extend(inner_hypotheses_t)
         else:
             # Continue by setting h_t to the previous h_t 
@@ -407,4 +408,4 @@ class MetaAlgorithm:
         
         end_outer = time.time()
         print("ALGORITHM 1 (Meta Algorithm) Total Execution Time: " + str(end_outer - start_outer))
-        return hypotheses, VotingClassifier(hypotheses), h_t, w 
+        return hypotheses, VotingClassifier(hypotheses), h_t, w, h_0 
