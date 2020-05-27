@@ -208,14 +208,13 @@ class LambdaBestResponse:
             if result[0] > max_lp: # result[0] is the objective value of the LP
                 max_lp = result[0]
                 argmax_lp = result[1] # result[1] is the weight vector from the LP
-                argmax_lp[argmax_lp < 0] = 0 # sometimes some slightly < 0 entries for argmax
                 optimal_tuple = result[2] # result[2] is a tuple of the form (a0, a1, (pi_0, pi_1)) or (a0_y0, a1_y0, (pi_0, pi_1))
         
         # Violation of fairness
         if(max_lp > self.epsilon - 4*self.gamma_1):
             optimal_w = argmax_lp
             optimal_w[optimal_w < 0] = 0
-            optimal_w = self._discretize_weights_bsearch(optimal_w) # let w_i be the upper end-point of bucket
+            #optimal_w = self._discretize_weights_bsearch(optimal_w) # let w_i be the upper end-point of bucket
             
             # lambda_w_a_ap = self.B
             lambda_entry = (optimal_tuple[0], optimal_tuple[1], optimal_w) 

@@ -140,7 +140,7 @@ if __name__ == '__main__':
     parser.add_argument("--eta_inner", help="eta param for inner loop")
     parser.add_argument("--num_cores", help="number of cores for multiprocessing")
     parser.add_argument("--solver", help="solver for the LPs: [ECOS, OSQP, SCS, GUROBI]")
-    parser.add_argument("--name", help="output file name for final ensemble")
+    parser.add_argument("--name", help="output file name extension")
     parser.add_argument("--constraint", help="constraint (dp or eo)")
     parser.add_argument("--no_output", help="disable outputting pkl files")
     parser.add_argument("--dataset", help="dataset in use for the experiment")
@@ -153,15 +153,15 @@ if __name__ == '__main__':
     if(args.B):
         arg_B = float(args.B)
     else:
-        arg_B = 1
+        arg_B = 0.1
     if(args.T):
         arg_T = int(args.T)
     else:
-        arg_T = 40
+        arg_T = 1
     if(args.T_inner):
         arg_T_inner = int(args.T_inner)
     else:
-        arg_T_inner = 400
+        arg_T_inner = 500
     if(args.epsilon):
         arg_epsilon = float(args.epsilon)
     else:
@@ -177,11 +177,11 @@ if __name__ == '__main__':
     if(args.eta):
         arg_eta = float(args.eta)
     else:
-        arg_eta = float(1/np.sqrt(2*arg_T))
+        arg_eta = 0.5
     if(args.eta_inner):
         arg_eta_inner = float(args.eta_inner)
     else:
-        arg_eta_inner = float(1/np.sqrt(2*arg_T_inner))
+        arg_eta_inner = 0.5
     if(args.num_cores):
         arg_num_cores = int(args.num_cores)
     else:
@@ -221,6 +221,7 @@ if __name__ == '__main__':
                          prev_h_t = arg_prev_h_t, prev_w_t = arg_prev_w_t)
 
     X_train, X_test, y_train, y_test, sensitive_features_train, sensitive_features_test = pick_dataset(arg_dataset)
+    print("DATASET = {}".format(arg_dataset))
     list_hypotheses, final_ensemble, h_t, w_t, h_0 = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
                                                             X_test, y_test, sensitive_features_test)
 
@@ -249,13 +250,10 @@ if __name__ == '__main__':
         for group in groups:
             print("P[h(X) = 1 | A = {}, Y = 0] = {}".format(group, group_metrics['eo_y0'][group]))
             print("P[h(X) = 1 | A = {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
-        print("Delta_eo1 = {}".format(gaps['eo_y1']))
         print("Delta_eo0 = {}".format(gaps['eo_y0']))
+        print("Delta_eo1 = {}".format(gaps['eo_y1']))
     else:
         raise ValueError("Invalid fairness constraint. Choose dp or eo.")
-
-    # output_file = 'final_y_pred' + now.strftime("%Y-%m-%d_%H:%M:%S") + '.pkl'
-    # pickle.dump(y_pred, open(output_file, 'wb') )
 
     if(not arg_no_output):
         with open(arg_output_list, 'wb') as f:
@@ -272,10 +270,3 @@ if __name__ == '__main__':
 
         with open(arg_output_h_0, "wb") as f:
             pickle.dump(h_0, f) 
-
-'''
-loaded_list = pickle.load(open('list_hypotheses.pkl', 'rb'))
-print(loaded_list)
-final_ensemble = pickle.load(open('final_ensemble.pckl', 'rb'))
-print(final_ensemble.predict(X_test))
-'''

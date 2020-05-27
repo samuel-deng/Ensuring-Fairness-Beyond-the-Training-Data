@@ -81,6 +81,8 @@ class MetaAlgorithm:
         print("T=" + str(self.T))
         print("T_inner=" + str(self.T_inner))
         print("B=" + str(self.B))
+        print("gamma_1=" + str(self.gamma_1))
+        print("gamma_2=" + str(self.gamma_2))
         print("eta=" + str(self.eta))
         print("eta_inner=" + str(self.eta_inner))
         print("epsilon=" + str(self.epsilon))
@@ -126,14 +128,11 @@ class MetaAlgorithm:
         dp_gamma_2_buckets = []
         for j in range(int(dp_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
-            #if self.lbd_dp_wt <= bucket and bucket <= 1.0 - self.lbd_dp_wt:
             dp_gamma_2_buckets.append(bucket)
 
         dp_N_gamma_2_A  = []
         for pi_a in dp_gamma_2_buckets:
             pi_ap = 1 - pi_a
-            # if(self.lbd_dp_wt <= pi_a and pi_a <= 1.0 - self.lbd_dp_wt 
-            # and self.lbd_dp_wt <= pi_ap and pi_ap <= 1.0 - self.lbd_dp_wt):
             if(proportions['a0'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0'] + self.gp_wt_bd 
             and proportions['a1'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1'] + self.gp_wt_bd):
                 dp_N_gamma_2_A.append((pi_a, pi_ap))
@@ -145,14 +144,11 @@ class MetaAlgorithm:
         eo_y0_gamma_2_buckets = []
         for j in range(int(eo_y0_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
-            #if proportions['a0_y0'] - self.gp_wt_bd <= bucket and bucket <= proportions['a0_y0'] + self.gp_wt_bd:
             eo_y0_gamma_2_buckets.append(bucket)
-            
+                        
         eo_y0_N_gamma_2_A = []
         for pi_a in eo_y0_gamma_2_buckets:
             pi_ap = proportions['y0'] - pi_a
-            #if(self.lbd_eo_wt <= pi_a and pi_a <= proportions['y0'] - self.lbd_eo_wt 
-            #and self.lbd_eo_wt <= pi_ap and pi_ap <= proportions['y0'] - self.lbd_eo_wt):
             if(proportions['a0_y0'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0_y0'] + self.gp_wt_bd 
             and proportions['a1_y0'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1_y0'] + self.gp_wt_bd):
                 eo_y0_N_gamma_2_A.append((pi_a, pi_ap))
@@ -164,14 +160,11 @@ class MetaAlgorithm:
         eo_y1_gamma_2_buckets = []
         for j in range(int(eo_y1_gamma_2_num_buckets)):
             bucket = (delta_2) * (1 + self.gamma_2)**j
-            #if proportions['a0_y1'] - self.gp_wt_bd <= bucket and bucket <= proportions['a0_y1'] + self.gp_wt_bd:
             eo_y1_gamma_2_buckets.append(bucket)
         
         eo_y1_N_gamma_2_A = []
         for pi_a in eo_y1_gamma_2_buckets:
             pi_ap = proportions['y1'] - pi_a
-            #if(self.lbd_eo_wt <= pi_a and pi_a <= proportions['y1'] - self.lbd_eo_wt 
-            #and self.lbd_eo_wt <= pi_ap and pi_ap <= proportions['y1'] - self.lbd_eo_wt):
             if(proportions['a0_y1'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0_y1'] + self.gp_wt_bd 
             and proportions['a1_y1'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1_y1'] + self.gp_wt_bd):
                 eo_y1_N_gamma_2_A.append((pi_a, pi_ap))
@@ -214,24 +207,7 @@ class MetaAlgorithm:
         objective = cp.Minimize(cp.sum_squares(w - x))
         constraints = [0 <= x, 
                         x <= 1, 
-                        cp.sum(x) == 1]  # extra constraint for non-trivial distributions
-        
-        '''
-        if(self.fair_constraint == 'dp'):
-            constraints.append(cp.sum(x[a_indices['a0']]) >= self.lbd_dp_wt)
-            constraints.append(cp.sum(x[a_indices['a1']]) >= self.lbd_dp_wt)
-            constraints.append(cp.sum(x[a_indices['a0']]) <= self.ubd_dp_wt)
-            constraints.append(cp.sum(x[a_indices['a1']]) <= self.ubd_dp_wt)
-        elif(self.fair_constraint == 'eo'):
-            constraints.append(cp.sum(x[a_indices['a0_y0']]) >= self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a1_y0']]) >= self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a0_y1']]) >= self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a1_y1']]) >= self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a0_y0']]) <= prop_y0 - self.lbd_eo_wt) 
-            constraints.append(cp.sum(x[a_indices['a1_y0']]) <= prop_y0 - self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a0_y1']]) <= prop_y1 - self.lbd_eo_wt)
-            constraints.append(cp.sum(x[a_indices['a1_y1']]) <= prop_y1 - self.lbd_eo_wt)
-        '''
+                        cp.sum(x) == 1]  
 
         if(self.fair_constraint == 'dp'):
             constraints.append(cp.sum(x[a_indices['a0']]) >= proportions['a0'] - self.gp_wt_bd)
@@ -261,6 +237,15 @@ class MetaAlgorithm:
         w_t = w + self.eta * loss_vec 
         w_t = self._project_W(w_t, a_indices, y, proportions)
         return w_t
+
+    def _alternate_update_w(self, X, y, a_indices, inner_hypotheses_t, w, proportions):
+        T_inner_sum_loss = np.zeros(len(X))
+        for h in inner_hypotheses_t:
+            T_inner_sum_loss += self._zero_one_loss_grad_w(h.predict(X), y)
+        
+        w += self.eta * np.divide(T_inner_sum_loss.astype(float), len(inner_hypotheses_t)) # avg. over the T_inner classifiers
+        w = self._project_W(w, a_indices, y, proportions)
+        return w
 
     def _set_a_indices(self, sensitive_features, y):
         """
@@ -300,20 +285,16 @@ class MetaAlgorithm:
 
         print('y0 proportion = {}'.format(proportions['y0']))
         print('y1 proportion = {}'.format(proportions['y1']))
-        
-        if(self.fair_constraint == 'dp'):
-            print('a0 proportion = {}'.format(proportions['a0']))
-            print('a1 proportion = {}'.format(proportions['a1']))
-        elif(self.fair_constraint == 'eo'):
-            print('a0 y0 proportion = {}'.format(proportions['a0_y0']))
-            print('a1 y0 proportion = {}'.format(proportions['a1_y0']))
-            print('a0 y1 proportion = {}'.format(proportions['a0_y1']))
-            print('a1 y1 proportion = {}'.format(proportions['a1_y1']))
+        print('a0 proportion = {}'.format(proportions['a0']))
+        print('a1 proportion = {}'.format(proportions['a1']))
+        print('a0 y0 proportion = {}'.format(proportions['a0_y0']))
+        print('a1 y0 proportion = {}'.format(proportions['a1_y0']))
+        print('a0 y1 proportion = {}'.format(proportions['a0_y1']))
+        print('a1 y1 proportion = {}'.format(proportions['a1_y1']))
 
         assert(proportions['y0'] + proportions['y1'] == 1)
         assert(proportions['a0'] + proportions['a1'] == 1)
         assert(proportions['a0_y0'] + proportions['a0_y1'] + proportions['a1_y0'] + proportions['a1_y1'] == 1)
-
         return proportions
 
     def meta_algorithm(self, X, y, sensitive_features, X_test, y_test, sensitive_features_test):
@@ -332,10 +313,8 @@ class MetaAlgorithm:
         """
         start_outer = time.time()
         print("Number of examples = {}".format(len(X)))
-        a_indices = self._set_a_indices(sensitive_features, y) # dictionary with a value information
-
-        # calculate proportions in the training data
-        proportions = self._set_proportions(a_indices, y)
+        a_indices = self._set_a_indices(sensitive_features, y) # dictionary with sensitive value locations
+        proportions = self._set_proportions(a_indices, y)      # dictionary with all pi values
 
         w = np.full((X.shape[0],), 1/X.shape[0]) # each weight starts as uniform 1/n
         gamma_1_buckets = self._gamma_1_buckets(X)
@@ -373,17 +352,8 @@ class MetaAlgorithm:
         print("=== ALGORITHM 1 EXECUTION ===")
         for t in range(self.T):
             start_inner = time.time()
-
-            '''
-            # compute the loss of each of the T_inner classifiers (to avg. over)
-            T_inner_sum_loss = np.zeros(len(X))
-            for h in inner_hypotheses_t:
-                T_inner_sum_loss += self._zero_one_loss_grad_w(h.predict(X), y)
-            
-            w += self.eta * (1/len(inner_hypotheses_t)) * T_inner_sum_loss # avg. over the T_inner classifiers
-            w = self._project_W(w, a_indices, y)
-            '''
             w = self._update_w(X, y, a_indices, h_t, w, proportions)
+            #w = self._alternate_update_w(X, y, a_indices, h_t, w, proportions)
             oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
                                 a_indices,
                                 self.card_A, 
