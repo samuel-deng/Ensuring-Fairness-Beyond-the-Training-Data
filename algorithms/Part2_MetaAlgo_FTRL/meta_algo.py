@@ -48,7 +48,7 @@ vectors pi in the Lambda Best Response step.
 
 class MetaAlgorithm:
     def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
-                B = 1, gamma_1 = 0.001, gamma_2 = 0.05, fair_constraint='eo', gp_wt_bd=0.1, prev_h_t = None, 
+                B = 0.1, gamma_1 = 0.001, gamma_2 = 0.05, fair_constraint='eo', gp_wt_bd=0.1, prev_h_t = None, 
                 prev_w_t = None):
         self.T = T
         self.T_inner = T_inner
