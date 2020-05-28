@@ -1,0 +1,13 @@
+# Fdb version 3
+["pdflatex"] 1590652355 "supplementary.tex" "supplementary.pdf" "supplementary" 1590652357
+  "/usr/local/texlive/2019/texmf-dist/fonts/map/fontname/texfonts.map" 1511824771 3332 103109f5612ad95229751940c61aada0 ""
+  "/usr/local/texlive/2019/texmf-dist/fonts/tfm/public/cm/cmbx10.tfm" 1136768653 1328 c834bbb027764024c09d3d2bf908b5f0 ""
+  "/usr/local/texlive/2019/texmf-dist/web2c/texmf.cnf" 1557092114 35484 cb1661360667bf4db662a8895053b554 ""
+  "/usr/local/texlive/2019/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1557342064 3277517 23507ed665b4dd9046f0f2a94bbef2be ""
+  "/usr/local/texlive/2019/texmf-var/web2c/pdftex/pdflatex.fmt" 1557342086 4259635 562fc36ec496993777a6c428d8bfb811 ""
+  "/usr/local/texlive/2019/texmf.cnf" 1557341546 577 d150fef99ac436ad1156e86b0892f6ef ""
+  "supplementary.aux" 1590603693 8 a94a2480d3289e625eea47cd1b285758 ""
+  "supplementary.tex" 1590652354 14921 0daa9fa2331b001cc0907b8d0d9f233e ""
+  (generated)
+  "supplementary.log"
+  "supplementary.pdf"

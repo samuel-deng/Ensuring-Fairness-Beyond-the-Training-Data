@@ -1,49 +1,50 @@
-This is BibTeX, Version 0.99d (TeX Live 2018)
+This is BibTeX, Version 0.99d (TeX Live 2019)
 Capacity: max_strings=100000, hash_size=100000, hash_prime=85009
 The top-level auxiliary file: main.aux
-The style file: plain.bst
+The style file: plainnat.bst
 Database file #1: newrefs.bib
 Warning--to sort, need author or key in COMPAS
+Warning--empty year in COMPAS
 Warning--empty publisher in CWVN+17
 You've used 11 entries,
-            2118 wiz_defined-function locations,
-            568 strings with 5980 characters,
-and the built_in function-call counts, 4869 in all, are:
-= -- 488
-> -- 221
-< -- 8
-+ -- 88
-- -- 76
-* -- 315
-:= -- 726
+            2773 wiz_defined-function locations,
+            663 strings with 6808 characters,
+and the built_in function-call counts, 6445 in all, are:
+= -- 590
+> -- 360
+< -- 11
++ -- 122
+- -- 111
+* -- 490
+:= -- 902
 add.period$ -- 35
 call.type$ -- 11
 change.case$ -- 69
-chr.to.int$ -- 0
-cite$ -- 13
-duplicate$ -- 206
-empty$ -- 381
-format.name$ -- 76
-if$ -- 1080
-int.to.chr$ -- 0
-int.to.str$ -- 11
+chr.to.int$ -- 11
+cite$ -- 26
+duplicate$ -- 311
+empty$ -- 523
+format.name$ -- 125
+if$ -- 1421
+int.to.chr$ -- 1
+int.to.str$ -- 1
 missing$ -- 10
-newline$ -- 58
-num.names$ -- 20
-pop$ -- 95
+newline$ -- 63
+num.names$ -- 40
+pop$ -- 169
 preamble$ -- 1
 purify$ -- 58
 quote$ -- 0
-skip$ -- 176
+skip$ -- 268
 stack$ -- 0
-substring$ -- 329
+substring$ -- 296
 swap$ -- 87
 text.length$ -- 8
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 44
-warning$ -- 2
-while$ -- 43
-width$ -- 13
-write$ -- 121
-(There were 2 warnings)
+type$ -- 121
+warning$ -- 3
+while$ -- 53
+width$ -- 0
+write$ -- 148
+(There were 3 warnings)
