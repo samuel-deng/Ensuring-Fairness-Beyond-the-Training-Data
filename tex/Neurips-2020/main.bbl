@@ -1,73 +1,80 @@
-\newcommand{\etalchar}[1]{$^{#1}$}
-\begin{thebibliography}{KNRW17}
+\begin{thebibliography}{11}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
 
-\bibitem[ABD{\etalchar{+}}18]{ABDL+18}
-Alekh Agarwal, Alina Beygelzimer, Miroslav Dud{\'\i}k, John Langford, and Hanna
-  Wallach.
-\newblock A reductions approach to fair classification.
-\newblock {\em arXiv preprint arXiv:1803.02453}, 2018.
-
-\bibitem[BCZ{\etalchar{+}}16]{BCZS+16}
-Tolga Bolukbasi, Kai-Wei Chang, James~Y Zou, Venkatesh Saligrama, and Adam~T
-  Kalai.
-\newblock {Man is to Computer Programmer as Woman is to Homemaker? Debiasing
-  Word Embeddings}.
-\newblock In {\em Advances in neural information processing systems}, pages
-  4349--4357, 2016.
-
-\bibitem[BG18]{BG18}
-Joy Buolamwini and Timnit Gebru.
-\newblock {Gender Shades: Intersectional Accuracy Disparities in Commercial
-  Gender Classification}.
-\newblock In {\em Conference on fairness, accountability and transparency},
-  pages 77--91, 2018.
-
-\bibitem[CLSS17]{CLSS17}
-Robert~S Chen, Brendan Lucier, Yaron Singer, and Vasilis Syrgkanis.
-\newblock {Robust Optimization for Non-Convex Objectives}.
-\newblock In {\em Advances in Neural Information Processing Systems}, pages
-  4705--4714, 2017.
-
-\bibitem[COM]{COMPAS}
+\bibitem[COM()]{COMPAS}
 Compas dataset.
 \newblock
   \url{https://www.propublica.org/datastore/dataset/compas-recidivism-risk-score-data-and-analysis}.
 \newblock Accessed: 2019-10-26.
 
-\bibitem[CWV{\etalchar{+}}17]{CWVN+17}
+\bibitem[Agarwal et~al.(2018)Agarwal, Beygelzimer, Dud{\'\i}k, Langford, and
+  Wallach]{ABDL+18}
+Alekh Agarwal, Alina Beygelzimer, Miroslav Dud{\'\i}k, John Langford, and Hanna
+  Wallach.
+\newblock A reductions approach to fair classification.
+\newblock \emph{arXiv preprint arXiv:1803.02453}, 2018.
+
+\bibitem[Bolukbasi et~al.(2016)Bolukbasi, Chang, Zou, Saligrama, and
+  Kalai]{BCZS+16}
+Tolga Bolukbasi, Kai-Wei Chang, James~Y Zou, Venkatesh Saligrama, and Adam~T
+  Kalai.
+\newblock {Man is to Computer Programmer as Woman is to Homemaker? Debiasing
+  Word Embeddings}.
+\newblock In \emph{Advances in neural information processing systems}, pages
+  4349--4357, 2016.
+
+\bibitem[Buolamwini and Gebru(2018)]{BG18}
+Joy Buolamwini and Timnit Gebru.
+\newblock {Gender Shades: Intersectional Accuracy Disparities in Commercial
+  Gender Classification}.
+\newblock In \emph{Conference on fairness, accountability and transparency},
+  pages 77--91, 2018.
+
+\bibitem[Calmon et~al.(2017)Calmon, Wei, Vinzamuri, Natesan~Ramamurthy, and
+  Varshney]{CWVN+17}
 Flavio Calmon, Dennis Wei, Bhanukiran Vinzamuri, Karthikeyan
   Natesan~Ramamurthy, and Kush~R Varshney.
 \newblock Optimized pre-processing for discrimination prevention.
-\newblock In {\em Advances in Neural Information Processing Systems 30}, pages
+\newblock In \emph{Advances in Neural Information Processing Systems 30}, pages
   3992--4001. 2017.
 
-\bibitem[FS96]{FS96}
+\bibitem[Chen et~al.(2017)Chen, Lucier, Singer, and Syrgkanis]{CLSS17}
+Robert~S Chen, Brendan Lucier, Yaron Singer, and Vasilis Syrgkanis.
+\newblock {Robust Optimization for Non-Convex Objectives}.
+\newblock In \emph{Advances in Neural Information Processing Systems}, pages
+  4705--4714, 2017.
+
+\bibitem[Freund and Schapire(1996)]{FS96}
 Yoav Freund and Robert~E Schapire.
 \newblock Game theory, on-line prediction and boosting.
-\newblock In {\em COLT}, volume~96, pages 325--332. Citeseer, 1996.
+\newblock In \emph{COLT}, volume~96, pages 325--332. Citeseer, 1996.
 
-\bibitem[H{\etalchar{+}}16]{Hazan16}
-Elad Hazan et~al.
-\newblock Introduction to online convex optimization.
-\newblock {\em Foundations and Trends{\textregistered} in Optimization},
-  2(3-4):157--325, 2016.
-
-\bibitem[HPS{\etalchar{+}}16]{HPS16}
+\bibitem[Hardt et~al.(2016)Hardt, Price, Srebro, et~al.]{HPS16}
 Moritz Hardt, Eric Price, Nati Srebro, et~al.
 \newblock {Equality of Opportunity in Supervised Learning}.
-\newblock In {\em Advances in neural information processing systems}, pages
+\newblock In \emph{Advances in neural information processing systems}, pages
   3315--3323, 2016.
 
-\bibitem[KNRW17]{KNRZ17}
+\bibitem[Hazan(2016)]{Hazan16}
+Elad Hazan.
+\newblock Introduction to online convex optimization.
+\newblock \emph{Foundations and Trends{\textregistered} in Optimization},
+  2\penalty0 (3-4):\penalty0 157--325, 2016.
+
+\bibitem[Kearns et~al.(2017)Kearns, Neel, Roth, and Wu]{KNRZ17}
 Michael Kearns, Seth Neel, Aaron Roth, and Zhiwei~Steven Wu.
 \newblock Preventing fairness gerrymandering: Auditing and learning for
   subgroup fairness.
-\newblock {\em arXiv preprint arXiv:1711.05144}, 2017.
+\newblock \emph{arXiv preprint arXiv:1711.05144}, 2017.
 
-\bibitem[ZWS{\etalchar{+}}13]{ZWSP+13}
+\bibitem[Zemel et~al.(2013)Zemel, Wu, Swersky, Pitassi, and Dwork]{ZWSP+13}
 Rich Zemel, Yu~Wu, Kevin Swersky, Toni Pitassi, and Cynthia Dwork.
 \newblock {Learning Fair Representations}.
-\newblock In {\em International Conference on Machine Learning}, pages
+\newblock In \emph{International Conference on Machine Learning}, pages
   325--333, 2013.
 
 \end{thebibliography}

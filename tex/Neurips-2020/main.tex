@@ -55,7 +55,8 @@
 
 \usepackage{graphicx}
 \usepackage{cleveref}
-
+\usepackage{thmtools}
+\usepackage{thm-restate}
 \usepackage{appendix}
 
 % COMMENTS
@@ -93,6 +94,8 @@
 
 \DeclareMathOperator*{\argmin}{arg\,min}
 \DeclareMathOperator*{\argmax}{arg\,max}
+
+%\declaretheorem[name=Theorem,numberwithin=section]{thm}
 
 % CS - COMPLEXITY
 \newcommand{\bigo}[1]{O\left(#1\right)}%
@@ -178,8 +181,11 @@
 
 \title{Making Fair Classifiers Robust}
 \begin{document}
-
 \maketitle
+\begin{abstract}
+We initiate the study of fair classifiers that are robust to perturbations in the training distribution. Despite recent progress, the literature on fairness has largely ignored the design of fair and robust classifiers. In this work, we develop classifiers that are fair not only with respect to the training distribution but a class of distributions that are weighted perturbations of the training samples. We set up a min-max objective function whose goal is to minimize a distributionally robust training loss, and at the same time, find a classifier that is fair with respect to a class of distributions. We first reduce this problem to finding a fair classifier that is robust with respect to the class of distributions. Based on a classical online learning algorithm, we develop an iterative algorithm that provably converges to such a fair and robust solution. Along the way, we also show that the number of iterations of this algorithm can be made sub-linear in number of training points, improving upon several prior work in the design of fair classifiers. Experiments on standard machine learning fairness datasets suggest that our classifier retains fairness guarantees and test accuracy competitive to existing fair classifiers with respect to a large class of perturbations on the test set.  
+\end{abstract}
+
 
 
 \section{Introduction}
@@ -301,7 +307,7 @@ We would like to point out that \cite{ABDL+18} was the first to show that the de
 
 \subsubsection{Discretization of the Weights}
 We first discretize the set of weights $\WW$. Divide the interval $[0,1]$ into buckets $B_0 = [0,\delta)$, $B_{j+1} = [(1+\gamma_1)^j \delta, (1+\gamma_1)^{j+1}\delta)$ for $j=0,1,\ldots,M-1$ for $M = \ceil{\log_{1+\gamma_1}(1/\delta) )}$. For any weight $w\in \WW$, we construct a new weight $w' = (w'_1,\ldots,w'_n)$ as follows. For each $i \in [n]$, $w'_i$ is the upper-end point of the bucket containing $w_i$. Note that this guarantees that either $w_i\le \delta$ or $\frac{w'_i}{1+\gamma_1} \le w_i \le w_i'$. We now substitute $\delta = \frac{\gamma_1}{2n}$ and write $\Nc(\gamma_1,\WW)$ to denote the set containing all the discretized weights of the set $\WW$.  Now we show that designing fair classifier wrt to the set of weights $\Nc(\gamma_1,\WW)$ is sufficient to designing fair classifier wrt to the set of weights $\WW$. 
-\begin{lemma}
+\begin{lemma}\label{lem:discrete-weights}
 If $\delta^w_{DP}(f) \le \epsilon$ for any weight $w \in \Nc(\gamma_1,\WW)$, then we have $\delta^w_{DP}(f) \le \epsilon + 4\gamma_1$ for any weight $w \in \WW$.
 \end{lemma}
  Therefore, in order to ensure that $\delta^w_{DP}(f) \le \eps$ we discretize the set of weights $\WW$ and enforce $\eps-4\gamma_1$ fairness for all the weights in the set $\Nc(\gamma_1,\WW)$. This result makes our work easier as we need to guarantee fairness with respect to a finite set of weights $\Nc(\gamma_1,\WW)$, instead of a large and continuous set of weights $\WW$. However, note that, the number of weights in $\Nc(\gamma_1,\WW)$ can be $O\left( \log^n_{1+\gamma_1}(2n/\gamma_1)\right)$, which can be exponentially large in $n$. We next see how to circumvent this problem.
@@ -372,104 +378,99 @@ The above intuition can be formalized as follows.
 %
 We first discretize the set of all marginals over the groups i.e. the simplex over $\abs{\Ac}$.
 %, $\Delta_{\Ac} = \set{\pi \in \bbR^{\abs{\Ac}}_+: \sum_{a \in \Ac} \pi_a = 1}$. 
-For example, discretize $[0,1]$ as $0,\delta, (1+\gamma_2)^j \delta$ for $j=1,2,\ldots,M$ for $M = O(\log_{1+\gamma_2}(1/\delta))$. This discretizes $[0,1]^{\Ac}$ into $M^{\abs{\Ac} }$ points. Now we just retain the points for which $\sum_{a\in \Ac} \pi_a \in (1-2\gamma_2,1+2\gamma_2)$ and discard all other points. Let us denote the set of such points as $N(\gamma_2,\Ac)$. Algorithm \ref{algo:best-lambda} describes the best response of the $\lambda$-player for a given choice of $h$. It goes through all the points $\pi$ in $N(\gamma_2,\Ac)$ and for each such value and a pair of groups $a,a'$ finds the weight $w$ which maximizes $T(w,a,h) - T(w,a',h)$. Note that this can be solved using a Linear Program as the weights assigned to a group is fixed by the point $\pi$. Out of all the solutions, the algorithm finds the one with the maximum value. Then it checks whether the maximum violates the constraint i.e. greater than $\eps - 4\gamma_1$. If so, it sets the corresponding $\lambda$ value to $B$ and everything else to $0$. If not, it returns the zero vector. Note that, the weight returned by the linear program need not correspond to a weight in $N(\gamma_1, \WW)$. In that case, the algorithm rounds the weight to the nearest weight in $N(\gamma_1,\WW)$ and sets the corresponding $\lambda$ variable.
+For example, we discretize $[0,1]$ as $0,\delta, (1+\gamma_2)^j \delta$ for $j=1,2,\ldots,M$ for $M = O(\log_{1+\gamma_2}(1/\delta))$. This discretizes $[0,1]^{\Ac}$ into $M^{\abs{\Ac} }$ points, and then we retain the discretized marginals whose total sum is at most $1+\gamma_2$, and discard all other points. Let us denote the set of such marginals as $\Pi(\gamma_2,\Ac)$. Algorithm \ref{algo:best-lambda} describes the best response of the $\lambda$-player for a given choice of hypothesis $h$. It goes through all the marginals $\pi$ in $\Pi(\gamma_2,\Ac)$ and for each such tuple and a pair of groups $a,a'$ finds the weight $w$ which maximizes $T(w,a,h) - T(w,a',h)$. Note that this can be solved using a Linear Program as the weights assigned to a group is fixed by the marginal tuple $\pi$. Out of all the solutions, the algorithm finds the one with the maximum value. Then it checks whether this maximum violates the constraint i.e. greater than $\eps - 4\gamma_1$. If so, it sets the corresponding $\lambda$ value to $B$ and everything else to $0$. Otherwise, it returns the zero vector. Note that, the weight returned by the linear program need not correspond to a weight in $\Nc(\gamma_1, \WW)$. In that case, the algorithm rounds the weight to the nearest weight in $\Nc(\gamma_1,\WW)$ and sets the corresponding $\lambda$ variable to $B$. For discretizing the marginals we will set $\delta = (1+\gamma_2)\frac{\gamma_1}{n}$, which implies that the number of LP-s run by algorithm \ref{algo:best-lambda} is at most $O\left(\log^{\abs{\Ac}}_{1+\gamma_2}\left( \frac{n}{(1+\gamma_2)\gamma_1}\right)\right) = O(\textrm{poly}(\log n))$, as the number of groups is fixed.
 
 \begin{algorithm}[H]
 \DontPrintSemicolon
 \KwInput{Training Set: $\{x_i,a_i,y_i\}_{i=1}^n$, and hypothesis $h \in \HH$.}
 %\KwInput{Training Set: $\{x_i,a_i,y_i\}_{i=1}^n$, set of weights: $\WW$, hypothesis class $\HH$, parameters $T$ and $\eta$.}
-\For{each $\pi \in N(\gamma_2,\Ac)$}
+\For{each $\pi \in \Pi(\gamma_2,\Ac)$}
 {
 	\For{each $a,a' \in \Ac$}
 	{
 	Solve the following LP:
 	\begin{align*}
 	w(a,a',\pi) = \argmax_w \quad &\frac{1}{\pi_a} \sum_{i:a_i = a} w_i h(x_i,a) - \frac{1}{\pi_{a'}} \sum_{i:a_i = a'} w_i h(x_i,a') \\
-	\textrm{s.t.} \quad & \sum_{i=1:a_i = a} w_i  = \pi_a \\
-& \sum_{i=1: a_i = a'} w_i = \pi_{a'} \\
-& w_i \ge 0 \quad \forall i \in [n] \\
-&\sum_{i=1}^n w_i = 1
+	\textrm{s.t.} \quad & \sum_{i:a_i = a} w_i  = \pi_a \quad 
+ \sum_{i: a_i = a'} w_i = \pi_{a'} \quad
+ w_i \ge 0 \quad \forall i \in [n] \quad
+\sum_{i=1}^n w_i = 1
 	\end{align*}
-	Set $\text{val}(a,a',\pi) = \frac{1}{\pi_a} \sum_{i:a_i = a} w(a,a',\pi)_i h(x_i,a) - \frac{1}{\pi_{a'}} \sum_{i:a_i = a'} w(a,a',\pi)_i h(x_i,a')$\\
+	Set $\textrm{val}(a,a',\pi) = \frac{1}{\pi_a} \sum_{i:a_i = a} w(a,a',\pi)_i h(x_i,a) - \frac{1}{\pi_{a'}} \sum_{i:a_i = a'} w(a,a',\pi)_i h(x_i,a')$\\
 	}
 }
-Set $(a^*,a^{'*},\pi^*) = \argmax_{a,a',\pi} \text{val}(a,a',\pi)$\\
-\If{$\text{val}(a^*,a^{'*},\pi^*) > \eps$}
+Set $(a^*_1,a^{*}_2,\pi^*) = \argmax_{a,a',\pi} \text{val}(a,a',\pi)$\\
+\uIf{$\textrm{val}(a^*_1,a^{*}_2,\pi^*) > \eps$}
 {
-	Let $w = w(a^*,a^{'*},\pi^*)$.\\
-	\For{$i \in [n]$}
-		{Let $w_i'$ be the upper-end point of the bucket containing $w_i$.\\}
+	Let $w = w(a^*_1,a^{*}_2,\pi^*)$.\\
+	For each $i \in [n]$, let $w_i'$ be the upper-end point of the bucket containing $w_i$.\\
 	\Return{$\lambda^{a,a'}_w = \left\{ \begin{array}{cc}
-	B & \text{ if } (a,a',w) = (a^*,a^{'*},w') \\
+	B & \text{ if } (a,a',w) = (a^*_1,a^{*}_2,w') \\
 	0 & \text{ o.w. }
 	\end{array}\right.$}
 }
-\Else{
-	\Return{$\lambda^{a,a'}_w = 0$ for all $a,a' \in \Ac$ and $w \in N(\gamma_1,\WW)$.}
+\uElse{
+	\Return{$\vec{0}$}
 }
 \caption{Best Response of the $\lambda$-player\label{algo:best-lambda}}
 \end{algorithm}
 
-\begin{theorem}
+The next lemma shows that algorithm \ref{algo:best-lambda} computes an approximate best-response for the $\lambda$-player.
+\begin{lemma}
 Algorithm \ref{algo:best-lambda} is an $B(4\gamma_1 + \gamma_2)$-approximate best response for the $\lambda$-player i.e. for any $h \in \HH$, it returns $\lambda^*$ such that
-$$U(h,\lambda^*) \ge \max_{\lambda} U(h,\lambda) - B(4\gamma_1 + \gamma_2)$$
-\end{theorem}
-\begin{proof}
-We need to consider two cases. First, suppose that $T(w,a,h) - T(w,a',h) \le \eps - 4\gamma_1$ for all $w \in N(\gamma_1,\WW)$ and $a,a' \in \Ac$. Then for any marginal $\pi \in N(\gamma_2,\Ac)$, and $a,a'$ consider the corresponding linear program. We show that the optimal value of the LP is bounded by $\eps$. Indeed, any weight $w$ satisfying the marginal conditions i.e. $\sum_{i:a_i = a}w_i = \pi_a$ and $\sum_{i:a_i = a'}w_i = \pi_{a'}$. Then $w'$ be the weight constructed by rounding the weight $w$ i.e. for each $i \in [n]$, let $w_i'$ be the upper-end point of the bucket containing $w_i$. As we proved earlier $\delta^w_{DP}(h) \le \delta^{w'}_{DP} + 4\gamma_1$. This gives that $\delta^w_{DP}(h) \le \eps$. This implies that the optimal value of the LP is always less than $\eps$. So algorithm \ref{algo:best-lambda} returns the zero vector, which is the optimal solution in this case.
+$U(h,\lambda^*) \ge \max_{\lambda} U(h,\lambda) - B(4\gamma_1 + \gamma_2)$.
+\end{lemma}
 
-Second, there exists $w,a,a'$ such that $T(w,a,h) - T(w,a',h) > \eps - 4\gamma_1$ and in particular let $(w^*,a^*,a^{'*}) \in \argmax_{w,a,a'} T(w,a,h) - T(w,a',h)$. Then the optimal solution sets $\lambda^{a^*,a^{'*}}_{w^*}$ to $B$ and everything else to zero. Let $\pi_{a^*}$ and $\pi_{a^{'*}}$ be the corresponding marginals for groups $a$ and $a'$, and let $\pi'_{a^*}$ and $\pi'_{a^{'*}}$ be the upper-end point of the bucket containing $\pi_{a^*}$ and $\pi_{a^{'*}}$ respectively. This guarantees the following.
-$$ \frac{\pi'_{a^*}}{1 + \gamma_2} \le \pi_{a^*} \le \pi'_{a^*} \quad \text{and} \quad \frac{\pi'_{a^{'*}}}{1 + \gamma_2} \le \pi_{a^{'*}} \le \pi'_{a^{'*}} $$
-Now, consider the LP corresponding to the marginal $\pi'$ and subgroups $a^*$ and $a^{'*}$. 
-\begin{align*}
-&\frac{1}{\pi'_{a^*}} \sum_{i:a_i = a^*} w_i h(x_i,a^*) - \frac{1}{\pi'_{a^{'*}}} \sum_{i:a_i = a^{'*}} w_i h(x_i,a^{'*}) \\
-&\ge \frac{1}{(1+\gamma_2) \pi_{a^*}} \sum_{i:a_i = a^*} w_i h(x_i,a^*) - \frac{1}{\pi_{a^{'*}}} \sum_{i:a_i = a^{'*}} w_i h(x_i,a^{'*})  \\
-&\ge (1-\gamma_2) T(w,a^*,h) - T(w,a^{'*},h)\\
-&\ge T(w,a^*,h) - T(w,a^{'*},h) - \gamma_2
-\end{align*}
-Therefore, if the maximum value of $T(w,a,h) - T(w,a',h)$ over all weights $w$ and subgroups $a,a'$ is larger than $\eps + \gamma_2$, the value of the corresponding LP will be larger than $\eps$ and the algorithm will set the correct coordinate of $\lambda$ to $B$. On the other hand, if the maximum value of $T(w,a,h) - T(w,a',h)$ is between $\eps - 4\gamma_1$ and $\eps+\gamma_2$. In that case, the algorithm might return the zero vector with value zero. However, the optimal can be as large as $B \times (4\gamma_1 + \gamma_2)$.
-\end{proof}
+\noindent{\bfseries Learning Algorithm}:
+ We are now ready to introduce our algorithm for the problem defined in equation \ref{eq:lagrangian}. In this algorithm, the $h$-player will use a learning algorithm, but the $\lambda$-player will use algorithm \ref{algo:best-lambda} to compute its approximate best response. The learning algorithm will use the Regularized Follow the Leader (RFTL) algorithm and we now briefly review this algorithm and its guarantees. RFTL is a classical algorithm for online convex optimization (OCO). In OCO, the decision maker takes a decision $x_t \in \Kc$ at round $t$, an adversary reveals a convex loss function $f_t:\Kc \rightarrow \bbR$, and the decision maker suffers a loss of $f_t(x_t)$. The goal is to minimize regret, which is defined as $\max_{u \in \Kc}\left\{\sum_{t=1}^T f_t(x_t) - f_t(u)\right\}$ i.e. the difference between the loss suffered by the learner and the best fixed decision that could have been made in hindsight. RFTL algorithm requires a strongly convex regularization function $R:\Kc \rightarrow \bbR_{\ge 0}$ chooses $x_t$ according to the following rule:
+$$x_{t} = \argmin_{x \in \Kc} \left\{\eta \sum_{s=1}^{t-1} \nabla f_s(x_s)^T x + R(x)  \right\}.$$
+The interested reader is referred to the textbook by \cite{Hazan16} for details about RFTL and guarantees on its performance.
 
- We are now ready to introduce our algorithm for the problem defined in equation \ref{eq:lagrangian}. In this algorithm, the $h$-player will use a learning algorithm, but the $\lambda$-player will use algorithm \ref{algo:best-lambda} to compute approximate best response. We first recall Regularized Follow the Leader (RFTL) algorithm and its guarantees (c.f. \cite{Hazan16}).
+% \begin{algorithm}[H]
+% \DontPrintSemicolon
+% \KwInput{$\eta > 0$, regularization function $R$, and a convex compact set $\Kc$.}
+% Set $x_1 = \argmin_{x \in \Kc}R(x)$\\
+% %$\qquad \text{s.t. } \delta^{w_0}_F(h) \le \epsilon$\\
+% \For{$t \in [T]$}
+% {
+% 	Predict $x_t$\\
+% 	Observe $f_t$ and compute $\nabla f_t(x_t)$\\
+% 	Update $$x_{t+1} = \argmin_{x \in \Kc} \left\{\eta \sum_{s=1}^t \nabla f_t(x_t)^T x + R(x)  \right\}$$\\
+% 	%$\qquad \text{s.t. } \delta^{w_t}_F(h) \le \epsilon$
+% }
+% \caption{RFTL}
+% \end{algorithm}
 
-\begin{algorithm}[H]
-\DontPrintSemicolon
-\KwInput{$\eta > 0$, regularization function $R$, and a convex compact set $\Kc$.}
-Set $x_1 = \argmin_{x \in \Kc}R(x)$\\
-%$\qquad \text{s.t. } \delta^{w_0}_F(h) \le \epsilon$\\
-\For{$t \in [T]$}
-{
-	Predict $x_t$\\
-	Observe $f_t$ and compute $\nabla f_t(x_t)$\\
-	Update $$x_{t+1} = \argmin_{x \in \Kc} \left\{\eta \sum_{s=1}^t \nabla f_t(x_t)^T x + R(x)  \right\}$$\\
-	%$\qquad \text{s.t. } \delta^{w_t}_F(h) \le \epsilon$
-}
-\caption{RFTL}
-\end{algorithm}
+% \begin{theorem}\label{thm:rftl-guarantee}
+% The RFTL algorithm achieves the following regret bound for any $u \in \Kc$
+% $$\sum_{t=1}^T f_t(x_t) - f_t(u) \le \frac{\eta}{4} \sum_{t=1}^T \norm{\nabla f_t(x_t)}_{\infty}^{2} + \frac{R(u) - R(x_1)}{2 \eta}$$
+% Moreover, if $\norm{\nabla f_t(x_t)}_{\infty} \le G_R$ for all $t$ and $R(u) - R(x_1) \le D_R$ for all $u \in \Kc$, then we can optimize $\eta$ to get the following bound: $\sum_{t=1}^T f_t(x_t) - f_t(u) \le D_R G_R \sqrt{T}$.
+% \end{theorem}
 
-\begin{theorem}\label{thm:rftl-guarantee}
-The RFTL algorithm achieves the following regret bound for any $u \in \Kc$
-$$\sum_{t=1}^T f_t(x_t) - f_t(u) \le \frac{\eta}{4} \sum_{t=1}^T \norm{\nabla f_t(x_t)}_{\infty}^{2} + \frac{R(u) - R(x_1)}{2 \eta}$$
-Moreover, if $\norm{\nabla f_t(x_t)}_{\infty} \le G_R$ for all $t$ and $R(u) - R(x_1) \le D_R$ for all $u \in \Kc$, then we can optimize $\eta$ to get the following bound: $\sum_{t=1}^T f_t(x_t) - f_t(u) \le D_R G_R \sqrt{T}$.
-\end{theorem}
-
-Recall the best response of the $h$-player. For a given $\lambda$ the best response of the $h$-player is the following cost-sensitive classification problem.
-\begin{equation}
-\hat{h} \in \argmin_{h \in \HH} \sum_{i=1}^n c^1_i (\lambda) h(x_i,a_i) + c^0_i(\lambda) (1 - h(x_i,a_i))
+We now use RFTL algorithm to design an algorithm (\ref{algo:inner}) for solving a minmax approximate equilibrium of the game $U(h,\lambda)$. 
+The $h$-player uses RFTL as a learning algorithm to choose $h_t$, whereas the $\lambda$-player uses algorithm \ref{algo:best-lambda} to generate an approximate best response $\lambda_t$ to $h_t$. Recall that, in order to use the RFTL algorithm we need to specify the regularization function $R$ and cost function $f_t$ in each round. We choose $R(x) = 1/2\norm{x}_2^2$. At round $t$, for an action $h_t$, the cost function is $f_t(h_t) = U(h_t,\lambda_t)$ where $\lambda_t$ is the approximate best-response to $h_t$. Therefore, in order to implement RFTL the learner needs to solve the following optimization problem. 
+\begin{equation}\label{eq:optim-step}
+h_t \in \argmin_{h \in \HH}\left\{\eta \sum_{s=1}^{t-1}\nabla_{h_s} U(h_s,\lambda_s)^T h + \frac{1}{2}\norm{h}_2^2\right\}
 \end{equation}
-Writing $L_i(\lambda) = c^1_i(\lambda) - c^0_i(\lambda)$ the problem stated above becomes
-\begin{equation}
-\hat{h} \in \argmin_{h \in \HH} \sum_{i=1}^n L_i(\lambda) h(x_i,a_i)
-\end{equation}
+Here with slight abuse of notation we write $\HH$ to include the set of randomized classifiers. So that $h(x_i,a_i)$ is interpreted as the probability that hypothesis $h$ outputs $1$ on an input $(x_i,a_i)$. Now we show that the optimization problem (eq. \ref{eq:optim-step}) faced by the learner becomes a cost-sensitive classification problem. Recall that given $\lambda_s$, the best response of the learner is given by the following cost-sensitive classification problem.
+\begin{equation*}
+\hat{h} \in \argmin_{h \in \HH} \sum_{i=1}^n c^1_i (\lambda_s) h(x_i,a_i) + c^0_i(\lambda_s) (1 - h(x_i,a_i))
+\end{equation*}
+We now use a linearization trick used by \cite{KNRZ17}.
+Writing $L_i(\lambda_s) = c^1_i(\lambda_s) - c^0_i(\lambda_s)$, the objective in the problem above becomes $\sum_{i=1}^n L_i(\lambda_s) h(x_i,a_i)$. Hence, $\nabla_{h_s}U(h_s,\lambda_s)$ is linear in $h_s$ and equals the vector $\{L_i(\lambda_s)\}_{i=1}^n$. With this observation, the objective in equation \ref{eq:optim-step} becomes
 %{\bfseries Best Respose to $\lambda$}: For a given set of lagrangian multipliers $\{\lambda_w\}_{w \in N(\eps/5,\WW)}$, the optimal choice of $h$ is a weighted classification problem. 
-Algorithm \ref{algo:inner} describes the algorithm for solving a minmax approximate equilibrium of the game $U(h,\lambda)$ for $h \in \HH$ and $\lambda \in \bbR^{\abs{N(\gamma_1,\WW)}\times \abs{\Ac}^2}_+, \norm{\lambda}_1 \le B$. We will later see how this solution immediately leads to a solution for the optimization problem defined in equation \ref{eq:final-objective}. The $h$-player uses the RFTL algorithm as a learning algorithm whereas the $\lambda$-player approximately best respond to $h_t$ in each round. Recall that, in order to use the RFTL algorithm we need to specify the regularization function $R$ and cost function $f_t$ in each round. We choose $R(x) = 1/2\norm{x}_2^2$. As the learner always chooses a vector in $\set{0,1}^n$ corresponding to the $n$ predictions for the $n$ training instances, the diameter $D_R$ is bounded by $n$. At round $t$, for an action $h_t$, the cost function is $f_t(h_t) = U(h_t,\lambda_t)$ where $\lambda_t$ is the $B(4\gamma_1 + \gamma_2)$-approximate best-response to $h_t$. Now we show that the optimization problem faced by the learner becomes a cost-sensitive classification problem. Indeed,
+% Algorithm \ref{algo:inner} describes the algorithm for solving a minmax approximate equilibrium of the game $U(h,\lambda)$ for $h \in \HH$ and $\lambda \in \bbR^{\abs{N(\gamma_1,\WW)}\times \abs{\Ac}^2}_+, \norm{\lambda}_1 \le B$. We will later see how this solution immediately leads to a solution for the optimization problem defined in equation \ref{eq:final-objective}. The $h$-player uses the RFTL algorithm as a learning algorithm whereas the $\lambda$-player approximately best respond to $h_t$ in each round. Recall that, in order to use the RFTL algorithm we need to specify the regularization function $R$ and cost function $f_t$ in each round. We choose $R(x) = 1/2\norm{x}_2^2$. As the learner always chooses a vector in $\set{0,1}^n$ corresponding to the $n$ predictions for the $n$ training instances, the diameter $D_R$ is bounded by $n$. At round $t$, for an action $h_t$, the cost function is $f_t(h_t) = U(h_t,\lambda_t)$ where $\lambda_t$ is the $B(4\gamma_1 + \gamma_2)$-approximate best-response to $h_t$. Now we show that the optimization problem faced by the learner becomes a cost-sensitive classification problem. Indeed,
 \begin{align*}
-&\eta \sum_{s=1}^t \left \langle L(\lambda_s), h \right \rangle + R(h) \\
 &= \eta \sum_{s=1}^t \sum_{i=1}^n L(\lambda_s) h(x_i,a_i) + \frac{1}{2} \sum_{i=1}^n (h(x_i,a_i))^2 \\
-&= \eta \sum_{i=1}^n L(\sum_{s=1}^t \lambda_s) h(x_i,a_i) + \frac{1}{2} \sum_{i=1}^n h(x_i,a_i) \\
-&= \sum_{i=1}^n (\eta L(\sum_{s=1}^t \lambda_s) + 1/2) h(x_i,a_i)
+&\le \eta \sum_{i=1}^n L\left(\sum_{s=1}^t \lambda_s\right) h(x_i,a_i) + \frac{1}{2} \sum_{i=1}^n h(x_i,a_i) \\
+&= \sum_{i=1}^n \left(\eta L\left(\sum_{s=1}^t \lambda_s\right) + \frac{1}{2}\right) h(x_i,a_i)
 \end{align*}
-The third inequality follows because $L(\lambda)$ is linear in $\lambda$ and $h(x_i,a_i) \in \set{0,1}$. Finally, we show even though the number of $\lambda$-variables is exponential in $n$, the algorithm can be efficiently implemented. In fact, the best response of the $\lambda$-player always returns a solution where all the variables are zero or exactly one is set to $B$. Therefore, instead of recording the entire $\lambda$ vector the learning algorithm can just record the non-zero variables and there will be at most $T$ of them.
-
+The second inequality follows from two observations. First, $L(\lambda)$ is linear in $\lambda$. Second, since the predictions $h(x_i,a_i) \in [0,1]$ we replace the quadratic term by a linear term, an upper bound\footnote{Without this relaxation we will be solving a regularized version of cost-sensitive classification}. We would like to contrast our approach with \cite{KNRZ17}, who used Follow the Perturbed Leader (FTPL) algorithm for the learner. Our approach has several benefits.
+\begin{enumerate}
+\item Since RFTL doesn't use randomized regularization, the predictions generated by our method are more robust. \dm{Rephrase.}
+\item We will use RFTL based learning algorithm to design a fast solver for the minmax objective.
+\end{enumerate}
+Finally, we observe that even though the number of $\lambda$-variables is exponential in $n$, the algorithm can be efficiently implemented. In fact, the best response of the $\lambda$-player always returns a solution where all the variables are zero or exactly one is set to $B$. Therefore, instead of recording the entire $\lambda$ vector the learning algorithm can just record the non-zero variables and there will be at most $T$ of them. The next lemma provides performance guarantees of algorithm \ref{algo:inner}.
 \begin{algorithm}
 \DontPrintSemicolon
 \KwInput{$\eta > 0$, weight $w^0 \in \bbR^n_+$, number of rounds $T$}
@@ -478,70 +479,25 @@ Set $h_1 = 0$\\
 {
 	$\lambda_t = \text{Best}_{\lambda}(h_t)$\\
 	Set $\tilde{\lambda}_t = \sum_{t'=1}^t \lambda_{t'}$\\
-	$h_{t+1} = \argmin_{h \in \HH} \sum_{i=1}^n (\eta L_i(\tilde{\lambda}_t) + 1/2) h(x_i,a_i)$
+	$h_{t+1} = \argmin_{h \in \HH} \sum_{i=1}^n (\eta L_i(\tilde{\lambda}_t) + 1/2) h(x_i,a_i)$ %\tcc{Upper Bound of }
 }
 \Return{Uniform distribution over $\set{h_1,\ldots,h_T}$.}
-\caption{Inner Optimization\label{algo:inner}}
+\caption{Approximate Fair Classifier ($\AF$)\label{algo:inner}}
 \end{algorithm}
-
 \begin{theorem}
-Suppose $\abs{\ell(y,\hat{y})} \le M$ for all $y,\hat{y}$. Then algorithm \ref{algo:inner} computes a $(2M + B)\sqrt{n/T} + B(4\gamma_1 + \gamma_2)$-approximate minmax equilibrium of the game $U(h,\lambda)$ for $h \in \HH$ and $\lambda \in \bbR^{\abs{N(\gamma_1,\WW)}\times \abs{\Ac}^2}_+, \norm{\lambda}_1 \le B$. 
+Given a desired fairness level $\eps$, if algorithm \ref{algo:inner} is run for $T= O\left(\frac{n}{\eps^2} \right)$ rounds, then the ensemble hypothesis $\hat{h}$ provides the following guarantees:
+$$\sum_{i=1}^n w^0_i \ell(\hat{h}(x_i,a_i),y_i) \le \min_{h \in \HH}\sum_{i=1}^n w^0_i \ell({h}(x_i,a_i),y_i) + O(\eps)
+\ \textrm{and} \ 
+ \delta^w_{DP}(\hat{h}) \le 2\eps \quad \forall w \in \WW.$$
 \end{theorem}
-\begin{proof}
-At round $t$, the cost is linear in $h_t$ i.e. $f_t(h_t) = \sum_{i=1}^n L(\lambda_t)_i h_t(x_i,a_i)$. Let us write $\bar{\lambda} = \frac{1}{T} \lambda_t$ and $D$ to be the uniform distribution over $h_1,\ldots,h_T$. Since we chose $R(x) = 1/2 \norm{x}_2^2$ as the regularization function and the actions are $0-1$ vectors in $n$-dimensional space, the diameter $D_R$ is bounded by $\sqrt{n}$. On the other hand, $\norm{\nabla f_t(h_t)}_{\infty} = \max_i \abs{L(\lambda_t)_i} $. We now bound $\abs{L(\lambda_t)_i}$ for an arbitrary $i$. Suppose $y_i=1$. The proof when $y=0$ is identical.
-\begin{align*}
-\abs{L(\lambda_t)_i} = \abs{c^1_i - c^0_i} = &\abs{w^0_i}\abs{\ell(0,1) - \ell(1,1)} + \abs{\Delta_i} \\
-&\le 2M + B
-\end{align*}
-The last line follows as $w^0_i \le 1$ and since $\lambda_t$ is an approximate best reponse computed by algorithm \ref{algo:best-lambda}, exactly one $\lambda$ variable is set to $B$.
-Therefore, by theorem \ref{thm:rftl-guarantee}, for any hypothesis $h \in \HH$,
-\begin{align}
-&\sum_{t=1}^T \sum_{i=1}^n L(\lambda_t)_i h_t(x_i,a_i) - \sum_{i=1}^n L(\lambda_t)_i h(x_i,a_i) \le (2M + B)\sqrt{nT}\nonumber \\
-\Leftrightarrow &\sum_{t=1}^T U(h_t,\lambda_t) - U(h,\lambda_t) \le (2M + B)\sqrt{nT}\nonumber \\
-\Leftrightarrow &\frac{1}{T} \sum_{t=1}^T U(h_t,\lambda_t) \le U(h,\bar{\lambda}) + \frac{(2M + B)\sqrt{n}}{\sqrt{T}} \label{eq:minmax-1}
-\end{align}
-On the other hand, $\lambda_t$ is an approximate $B(4\gamma_1 + \gamma_2)$-approximate best response to $h_t$ for each round $t$. Therefore, for any $\lambda$ we have,
-\begin{align}
-&\sum_{t=1}^T U(h_t,\lambda_t) \ge \sum_{t=1}^T U(h_t,\lambda) - BT(4\gamma_1 + \gamma_2)\nonumber \\
-\Leftrightarrow &\frac{1}{T} \sum_{t=1}^T U(h_t,\lambda_t) \ge \E_{h \sim D} U(h,\lambda) - B(4\gamma_1 + \gamma_2) \label{eq:minmax-2}
-\end{align}
-Equations \ref{eq:minmax-1} and \ref{eq:minmax-2} immediately imply that the distribution $D$ and $\bar{\lambda}$ is a $(2M + B)\sqrt{n/T} + B(4\gamma_1 + \gamma_2)$-approximate equilibrium of the game $U(h,\lambda)$ (\cite{FS96}).
-\end{proof}
 
-The next theorem establishes the guarantees of the approximate minmax solution. The proof is similar to the proof of theorem 4.5 from \cite{KNRZ17}.
-\begin{theorem}
-Let $(\hat{h},\hat{\lambda})$ be a $\nu$-approximate minmax equilibrium of the game $U(h,\lambda)$. Then,
-$$\sum_{i=1}^n w^0_i \ell(\hat{h}(x_i,a_i),y_i) \le \min_{h \in \HH}\sum_{i=1}^n w^0_i \ell({h}(x_i,a_i),y_i) + 2\nu$$
-and 
-$$\forall w \in \WW\quad \delta^w_{DP}(\hat{h}) \le \eps + \frac{M + 2\nu}{B}$$
-\end{theorem}
-\begin{proof}
-Let $(\hat{h},\hat{\lambda})$ be a $\nu$-approximate minmax equilibrium of the game $U(h,\lambda)$ i.e. 
-\begin{align*}
- \forall h \quad  U(\hat{h},\hat{\lambda}) \le U(h,\hat{\lambda}) + \nu  \quad \text{ and } \quad \forall \lambda  \quad U(\hat{h},\hat{\lambda}) \ge U(\hat{h}, \lambda) - \nu
-\end{align*}
-Let $h^*$ be the optimal feasible hypothesis. First suppose that $\hat{h}$ is feasible i.e. $T(w,a,\hat{h}) - T(w,a',\hat{h}) \le \eps - 4\gamma_1$ for all $w \in N(\gamma_1,\WW)$ and $a,a' \in \Ac$. In that case, the optimal $\lambda$ is the zero vector and $\max_{\lambda} U(\hat{h},\lambda) = \sum_{i=1}^n w^0_i \ell(h(x_i,a_i),y_i)$. Therefore,
-\begin{align*}
-\sum_{i=1}^n w^0_i \ell(\hat{h}(x_i,a_i),y_i) = \max_{\lambda} U(\hat{h},\lambda) \le U(\hat{h},\hat{\lambda}) + \nu \le U(h^*,\hat{\lambda}) + 2\nu \le \sum_{i=1}^n w^0_i \ell(h^*(x_i,a_i),y_i) + 2\nu
-\end{align*}
-The last inequality follows because $h^*$ is feasible and $\lambda$ is non-negative. Now consider the case when $\hat{h}$ is not feasible i.e. there exists $w,a,a'$ such that $T(w,a,\hat{h}) - T(w,a',\hat{h}) > \eps - 4\gamma_1$. In that case, let $(\hat{w},\hat{a},\hat{a}')$ be the tuple with maximum violation and the optimal $\lambda$, say $\lambda^*$, sets this coordinate to $B$ and everything else to zero. Then
-\begin{align*}
-\sum_{i=1}^n w^0_i \ell(\hat{h}(x_i,a_i),y_i) &= U(\hat{h},\lambda^*) - B(T(\hat{w},\hat{a},\hat{h}) - T(\hat{w},\hat{a}',\hat{h}) - \eps + 4\gamma_1)\\
- &\le U(\hat{h},\lambda^*) \le U(\hat{h},\hat{\lambda}) + \nu \le U(h^*,\hat{\lambda}) + 2\nu \le \sum_{i=1}^n w^0_i \ell(h^*(x_i,a_i),y_i) + 2\nu.
-\end{align*}
-The previous chain of inequalities also give 
-\begin{align*}
-B \left( \max_{(w,a,a')}T(w,a,\hat{h}) - T(w,a',\hat{h}) -\eps + 4\gamma_1 \right)\le \sum_{i=1}^n w^0_i \ell(h^*(x_i,a_i),y_i) + 2\nu \le M + 2\nu.
-\end{align*}
-This implies that for all weights $w \in N(\gamma_1,\WW)$ the maximum violation of the fairness constraint is $(M + 2\nu)/ B$, which in turn implies a bound of at most $(M + 2\nu)/B + \eps$ on the fairness constraint with respect to any weight $w \in \WW$. 
-\end{proof}
 \section{Faster Approximate Fair Classifier}
 
 \section{Experiment}
 
 \section{Conclusion}
 
-\bibliographystyle{alpha}
+\bibliographystyle{plainnat}
 \bibliography{newrefs}
 
 \appendix
