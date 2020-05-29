@@ -147,6 +147,7 @@ if __name__ == '__main__':
     parser.add_argument("--gp_wt_bd", help="group weight bound on the marginal distributions")
     parser.add_argument("--prev_h_t", help="previous h_t from previous outer loops")
     parser.add_argument("--prev_w_t", help="previous w_t from previous outer loops")
+    parser.add_argument("--onlyh0", help="stop at the h0 classifier")
 
     now = datetime.datetime.now()
     args = parser.parse_args()
@@ -214,11 +215,15 @@ if __name__ == '__main__':
         arg_prev_w_t = args.prev_w_t
     else:
         arg_prev_w_t = None
+    if(args.onlyh0):
+        arg_only_h0 = True
+    else:
+        arg_only_h0 = False
    
     algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
                          epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, num_cores = arg_num_cores, 
                          solver = arg_solver, fair_constraint=arg_constraint, gp_wt_bd = arg_gp_wt_bd, 
-                         prev_h_t = arg_prev_h_t, prev_w_t = arg_prev_w_t)
+                         prev_h_t = arg_prev_h_t, prev_w_t = arg_prev_w_t, only_h0 = arg_only_h0)
 
     X_train, X_test, y_train, y_test, sensitive_features_train, sensitive_features_test = pick_dataset(arg_dataset)
     print("DATASET = {}".format(arg_dataset))
@@ -230,13 +235,13 @@ if __name__ == '__main__':
         arg_output_list = 'list_' + args.name + '.pkl'
         arg_output_h_t = 'h_t_' + args.name + '.pkl'
         arg_output_w_t = 'w_t_' + args.name + '.pkl'
-        arg_output_h_0 = 'h_0_' + args.name + '.pkl'
+        arg_output_h_0 = 'h0_' + args.name + '.pkl'
     else:
         arg_output = 'ensemble_B{}_Tinner{}_etainner{}.pkl'.format(arg_B, arg_T_inner, arg_eta_inner) 
         arg_output_list = 'list_B{}_Tinner{}_etainner{}.pkl'.format(arg_B, arg_T_inner, arg_eta_inner)
         arg_output_h_t = 'h_t_{}.pkl'.format(now)
         arg_output_w_t = 'w_t_{}.pkl'.format(now)
-        arg_output_h_0 = 'h_0_{}.pkl'.format(now)
+        arg_output_h_0 = 'h0_{}.pkl'.format(now)
 
     print("=== FINAL ENSEMBLE FAIRNESS EVALUATION ===")
     y_pred = final_ensemble.predict(X_test)

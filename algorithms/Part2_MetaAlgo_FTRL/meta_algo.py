@@ -49,7 +49,7 @@ vectors pi in the Lambda Best Response step.
 class MetaAlgorithm:
     def __init__(self, T, T_inner, eta, eta_inner, card_A = 2, epsilon = 0.05, num_cores = 2, solver = 'ECOS',
                 B = 0.1, gamma_1 = 0.001, gamma_2 = 0.05, fair_constraint='eo', gp_wt_bd=0.1, prev_h_t = None, 
-                prev_w_t = None):
+                prev_w_t = None, only_h0=False):
         self.T = T
         self.T_inner = T_inner
         self.card_A = card_A
@@ -65,6 +65,7 @@ class MetaAlgorithm:
         self.gp_wt_bd = gp_wt_bd
         self.prev_h_t = prev_h_t
         self.prev_w_t = prev_w_t
+        self.only_h0 = only_h0
 
         if(self.epsilon - 4 * self.gamma_1 < 0):
             raise(ValueError("epsilon - 4 * gamma_1 must be positive for LPs."))
@@ -89,6 +90,7 @@ class MetaAlgorithm:
         print("gp_wt_bd=" + str(self.gp_wt_bd))
         print("Cores in use=" + str(self.num_cores))
         print("Fairness Definition=" + str(self.fair_constraint))
+        print("onlyh0=" + str(self.only_h0))
 
     def _gamma_1_buckets(self, X):
         """
@@ -349,33 +351,35 @@ class MetaAlgorithm:
             pickled_w_t = open(self.prev_w_t,"rb")
             w = pickle.load(pickled_w_t)
 
-        print("=== ALGORITHM 1 EXECUTION ===")
-        for t in range(self.T):
-            start_inner = time.time()
-            w = self._update_w(X, y, a_indices, h_t, w, proportions)
-            #w = self._alternate_update_w(X, y, a_indices, h_t, w, proportions)
-            oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
-                                a_indices,
-                                self.card_A, 
-                                self.B, 
-                                self.T_inner,
-                                self.gamma_1,
-                                gamma_1_buckets, 
-                                gamma_2_buckets, 
-                                self.epsilon,
-                                self.eta_inner,
-                                self.num_cores,
-                                self.solver,
-                                self.fair_constraint,
-                                t + 1) # just to print which outer loop T we're on
-            
-            h_t, inner_hypotheses_t = oracle.execute_oracle()
-            hypotheses.extend(inner_hypotheses_t) # concatenate all of the inner loop hypotheses 
+        if(not self.only_h0):
+            print("=== ALGORITHM 1 EXECUTION ===")
+            for t in range(self.T):
+                start_inner = time.time()
+                w = self._update_w(X, y, a_indices, h_t, w, proportions)
+                #w = self._alternate_update_w(X, y, a_indices, h_t, w, proportions)
+                oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
+                                    a_indices,
+                                    self.card_A, 
+                                    self.B, 
+                                    self.T_inner,
+                                    self.gamma_1,
+                                    gamma_1_buckets, 
+                                    gamma_2_buckets, 
+                                    self.epsilon,
+                                    self.eta_inner,
+                                    self.num_cores,
+                                    self.solver,
+                                    self.fair_constraint,
+                                    t + 1) # just to print which outer loop T we're on
+                
+                h_t, inner_hypotheses_t = oracle.execute_oracle()
+                hypotheses.extend(inner_hypotheses_t) # concatenate all of the inner loop hypotheses 
 
-            end_inner = time.time()
-            print("ALGORITHM 1 (Meta Algorithm) Loop " + str(t  + 1) + " Completed!")
-            print("ALGORITHM 1 (Meta Algorithm) Time/loop: " + str(end_inner - start_inner))
-        
-        end_outer = time.time()
-        print("ALGORITHM 1 (Meta Algorithm) Total Execution Time: " + str(end_outer - start_outer))
+                end_inner = time.time()
+                print("ALGORITHM 1 (Meta Algorithm) Loop " + str(t  + 1) + " Completed!")
+                print("ALGORITHM 1 (Meta Algorithm) Time/loop: " + str(end_inner - start_inner))
+            
+            end_outer = time.time()
+            print("ALGORITHM 1 (Meta Algorithm) Total Execution Time: " + str(end_outer - start_outer))
+            
         return hypotheses, VotingClassifier(hypotheses), h_t, w, h_0 
