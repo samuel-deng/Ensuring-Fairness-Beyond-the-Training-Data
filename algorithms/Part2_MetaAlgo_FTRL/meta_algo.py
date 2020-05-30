@@ -294,9 +294,9 @@ class MetaAlgorithm:
         print('a0 y1 proportion = {}'.format(proportions['a0_y1']))
         print('a1 y1 proportion = {}'.format(proportions['a1_y1']))
 
-        assert(proportions['y0'] + proportions['y1'] == 1)
-        assert(proportions['a0'] + proportions['a1'] == 1)
-        assert(proportions['a0_y0'] + proportions['a0_y1'] + proportions['a1_y0'] + proportions['a1_y1'] == 1)
+        #assert(proportions['y0'] + proportions['y1'] == 1)
+        #assert(proportions['a0'] + proportions['a1'] == 1)
+        #assert(proportions['a0_y0'] + proportions['a0_y1'] + proportions['a1_y0'] + proportions['a1_y1'] == 1)
         return proportions
 
     def meta_algorithm(self, X, y, sensitive_features, X_test, y_test, sensitive_features_test):

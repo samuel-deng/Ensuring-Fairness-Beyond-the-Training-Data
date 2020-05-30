@@ -55,24 +55,24 @@ def evaluate_fairness(y_true, y_pred, sensitive_features):
         
         return groups, group_metrics, gaps
 
-def pick_dataset(dataset_used):
+def pick_dataset(dataset_used, split):
     if(dataset_used == 'compas'):
-        X_train = pd.read_csv('./../../data/processed/compas/compas_train1_X.csv')
-        X_test = pd.read_csv('./../../data/processed/compas/compas_test1_X.csv')
-        y_train = pd.read_csv('./../../data/processed/compas/compas_train1_y.csv')
+        X_train = pd.read_csv('./../../data/processed/compas/compas_train{}_X.csv'.format(split))
+        X_test = pd.read_csv('./../../data/processed/compas/compas_test{}_X.csv'.format(split))
+        y_train = pd.read_csv('./../../data/processed/compas/compas_train{}_y.csv'.format(split))
         y_train = y_train['two_year_recid']
-        y_test = pd.read_csv('./../../data/processed/compas/compas_test1_y.csv')
+        y_test = pd.read_csv('./../../data/processed/compas/compas_test{}_y.csv'.format(split))
         y_test = y_test['two_year_recid']
 
         sensitive_features_train = X_train['race']
         sensitive_features_test = X_test['race']        
 
     elif(dataset_used == 'adult'):
-        X_train = pd.read_csv('./../../data/processed/adult/adult_train1_X.csv')
-        X_test = pd.read_csv('./../../data/processed/adult/adult_test1_X.csv')
-        y_train = pd.read_csv('./../../data/processed/adult/adult_train1_y.csv')
+        X_train = pd.read_csv('./../../data/processed/adult/adult_train{}_X.csv'.format(split))
+        X_test = pd.read_csv('./../../data/processed/adult/adult_test{}_X.csv'.format(split))
+        y_train = pd.read_csv('./../../data/processed/adult/adult_train{}_y.csv'.format(split))
         y_train = y_train['income']
-        y_test = pd.read_csv('./../../data/processed/adult/adult_test1_y.csv')
+        y_test = pd.read_csv('./../../data/processed/adult/adult_test{}_y.csv'.format(split))
         y_test = y_test['income']
 
         sensitive_features_train = X_train['sex']
@@ -87,11 +87,11 @@ def pick_dataset(dataset_used):
         sensitive_features_test = sensitive_features_test.reset_index(drop=True)
 
     elif(dataset_used == 'lawschool'):
-        X_train = pd.read_csv('./../../data/processed/lawschool/lawschool_train1_X.csv')
-        X_test = pd.read_csv('./../../data/processed/lawschool/lawschool_test1_X.csv')
-        y_train = pd.read_csv('./../../data/processed/lawschool/lawschool_train1_y.csv')
+        X_train = pd.read_csv('./../../data/processed/lawschool/lawschool_train{}_X.csv'.format(split))
+        X_test = pd.read_csv('./../../data/processed/lawschool/lawschool_test{}_X.csv'.format(split))
+        y_train = pd.read_csv('./../../data/processed/lawschool/lawschool_train{}_y.csv'.format(split))
         y_train = y_train['bar1']
-        y_test = pd.read_csv('./../../data/processed/lawschool/lawschool_test1_y.csv')
+        y_test = pd.read_csv('./../../data/processed/lawschool/lawschool_test{}_y.csv'.format(split))
         y_test = y_test['bar1']
 
         sensitive_features_train = X_train['race7']
@@ -106,11 +106,11 @@ def pick_dataset(dataset_used):
         sensitive_features_test = sensitive_features_test.reset_index(drop=True)
 
     elif(dataset_used == 'communities'):
-        X_train = pd.read_csv('./../../data/processed/communities/communities_train1_X.csv')
-        X_test = pd.read_csv('./../../data/processed/communities/communities_test1_X.csv')
-        y_train = pd.read_csv('./../../data/processed/communities/communities_train1_y.csv')
+        X_train = pd.read_csv('./../../data/processed/communities/communities_train{}_X.csv'.format(split))
+        X_test = pd.read_csv('./../../data/processed/communities/communities_test{}_X.csv'.format(split))
+        y_train = pd.read_csv('./../../data/processed/communities/communities_train{}_y.csv'.format(split))
         y_train = y_train['ViolentCrimesPerPop']
-        y_test = pd.read_csv('./../../data/processed/communities/communities_test1_y.csv')
+        y_test = pd.read_csv('./../../data/processed/communities/communities_test{}_y.csv'.format(split))
         y_test = y_test['ViolentCrimesPerPop']
 
         sensitive_features_train = X_train['majority_white']
@@ -148,6 +148,7 @@ if __name__ == '__main__':
     parser.add_argument("--prev_h_t", help="previous h_t from previous outer loops")
     parser.add_argument("--prev_w_t", help="previous w_t from previous outer loops")
     parser.add_argument("--onlyh0", help="stop at the h0 classifier")
+    parser.add_argument("--split", help="the train/test split number")
 
     now = datetime.datetime.now()
     args = parser.parse_args()
@@ -178,7 +179,7 @@ if __name__ == '__main__':
     if(args.eta):
         arg_eta = float(args.eta)
     else:
-        arg_eta = 0.5
+        arg_eta = 0.2
     if(args.eta_inner):
         arg_eta_inner = float(args.eta_inner)
     else:
@@ -219,29 +220,34 @@ if __name__ == '__main__':
         arg_only_h0 = True
     else:
         arg_only_h0 = False
+    if(args.split):
+        arg_split = args.split
+    else:
+        arg_split = '1'
    
     algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
                          epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, num_cores = arg_num_cores, 
                          solver = arg_solver, fair_constraint=arg_constraint, gp_wt_bd = arg_gp_wt_bd, 
                          prev_h_t = arg_prev_h_t, prev_w_t = arg_prev_w_t, only_h0 = arg_only_h0)
 
-    X_train, X_test, y_train, y_test, sensitive_features_train, sensitive_features_test = pick_dataset(arg_dataset)
+    X_train, X_test, y_train, y_test, sensitive_features_train, sensitive_features_test = pick_dataset(arg_dataset, arg_split)
     print("DATASET = {}".format(arg_dataset))
+    print("Train/Test Split = {}".format(arg_split))
     list_hypotheses, final_ensemble, h_t, w_t, h_0 = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
                                                             X_test, y_test, sensitive_features_test)
 
     if (args.name):
-        arg_output = 'ensemble_' + args.name + '.pkl'
-        arg_output_list = 'list_' + args.name + '.pkl'
-        arg_output_h_t = 'h_t_' + args.name + '.pkl'
-        arg_output_w_t = 'w_t_' + args.name + '.pkl'
-        arg_output_h_0 = 'h0_' + args.name + '.pkl'
+        arg_output = 'ensemble_' + args.name + 'split{}.pkl'.format(arg_split)
+        arg_output_list = 'list_' + args.name + 'split{}.pkl'.format(arg_split)
+        arg_output_h_t = 'h_t_' + args.name + 'split{}.pkl'.format(arg_split)
+        arg_output_w_t = 'w_t_' + args.name + 'split{}.pkl'.format(arg_split)
+        arg_output_h_0 = 'h0_' + args.name + 'split{}.pkl'.format(arg_split)
     else:
-        arg_output = 'ensemble_B{}_Tinner{}_etainner{}.pkl'.format(arg_B, arg_T_inner, arg_eta_inner) 
-        arg_output_list = 'list_B{}_Tinner{}_etainner{}.pkl'.format(arg_B, arg_T_inner, arg_eta_inner)
-        arg_output_h_t = 'h_t_{}.pkl'.format(now)
-        arg_output_w_t = 'w_t_{}.pkl'.format(now)
-        arg_output_h_0 = 'h0_{}.pkl'.format(now)
+        arg_output = 'ensemble_B{}_Tinner{}_etainner{}_split{}.pkl'.format(arg_B, arg_T_inner, arg_eta_inner, arg_split) 
+        arg_output_list = 'list_B{}_Tinner{}_etainner{}_split{}.pkl'.format(arg_B, arg_T_inner, arg_eta_inner, arg_split)
+        arg_output_h_t = 'h_t_{}_split{}.pkl'.format(now, arg_split)
+        arg_output_w_t = 'w_t_{}_split{}.pkl'.format(now, arg_split)
+        arg_output_h_0 = 'h0_{}_split{}.pkl'.format(now, arg_split)
 
     print("=== FINAL ENSEMBLE FAIRNESS EVALUATION ===")
     y_pred = final_ensemble.predict(X_test)
