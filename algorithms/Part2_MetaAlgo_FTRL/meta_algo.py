@@ -342,7 +342,7 @@ class MetaAlgorithm:
                                     0)
             h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
             h_0 = h_t
-            hypotheses.extend(inner_hypotheses_t)
+            hypotheses.append(h_t)
         else:
             # Continue by setting h_t to the previous h_t 
             print("=== CONTINUING from {}... ===".format(self.prev_h_t))
@@ -356,7 +356,14 @@ class MetaAlgorithm:
             for t in range(self.T):
                 start_inner = time.time()
                 w = self._update_w(X, y, a_indices, h_t, w, proportions)
-                #w = self._alternate_update_w(X, y, a_indices, h_t, w, proportions)
+                print("Updated w vector={}".format(w[:10]))
+                print("Loss vector={}".format(self._zero_one_loss_grad_w(h_t.predict(X), y)[:10]))
+
+                print("Updated w vector prop. a0={}".format(np.sum(w[a_indices['a0']])))
+
+                print("Updated w vector prop. a1={}".format(np.sum(w[a_indices['a1']])))
+
+                #w = self._alternate_update_w(X, y, a_indices, inner_hypotheses_t, w, proportions)
                 oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
                                     a_indices,
                                     self.card_A, 
@@ -373,7 +380,7 @@ class MetaAlgorithm:
                                     t + 1) # just to print which outer loop T we're on
                 
                 h_t, inner_hypotheses_t = oracle.execute_oracle()
-                hypotheses.extend(inner_hypotheses_t) # concatenate all of the inner loop hypotheses 
+                hypotheses.append(h_t) # concatenate all of the inner loop hypotheses 
 
                 end_inner = time.time()
                 print("ALGORITHM 1 (Meta Algorithm) Loop " + str(t  + 1) + " Completed!")

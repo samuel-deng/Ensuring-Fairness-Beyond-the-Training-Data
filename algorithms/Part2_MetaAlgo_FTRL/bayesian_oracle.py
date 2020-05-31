@@ -301,7 +301,10 @@ class BayesianOracle:
         T_inner_ensemble = VotingClassifier(hypotheses)
         print("ALGORITHM 4 (Learning Algorithm) Total Execution Time: " + str(end_outer - start_outer))
         print("=== ALGORITHM 4 (Learning Algorithm) T={} Statistics ===".format(self.current_t))
+        y_train_pred = T_inner_ensemble.predict(self.X)
         y_pred = T_inner_ensemble.predict(self.X_test)
+        print("Unweighted Train Accuracy = {}".format(accuracy_score(self.y, y_train_pred)))
+        print("Weighted Train Accuracy = {}".format(accuracy_score(self.y, y_train_pred, sample_weight=self.weights_org)))
         print("Test Accuracy = {}".format(accuracy_score(self.y_test, y_pred)))
         groups, group_metrics, gaps = self._evaluate_fairness(self.y_test, y_pred, self.sensitive_features_test)
         if(self.fair_constraint == 'dp'):
