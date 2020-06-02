@@ -40,7 +40,7 @@ instances are protected/non-protected
 class BayesianOracle:
     def __init__(self, X, y, X_test, y_test, weights_org, sensitive_features, sensitive_features_test, 
                 a_indices, card_A, B, T_inner, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, eta, 
-                num_cores, solver, fair_constraint, current_t):
+                num_cores, solver, fair_constraint, current_t, verbose):
         self.X = X
         self.y = y 
         self.X_test = X_test
@@ -61,6 +61,7 @@ class BayesianOracle:
         self.solver = solver
         self.fair_constraint = fair_constraint
         self.current_t = current_t
+        self.verbose = verbose
 
         # preset for the delta_i computation
         self.delta_i = np.zeros(len(self.weights_org))
@@ -272,29 +273,30 @@ class BayesianOracle:
             hypotheses.append(h_t)
 
             end_inner = time.time()
-            if((t + 1) % 10 == 0):
-                train_pred = h_t.predict(self.X)
-                test_pred = h_t.predict(self.X_test)
-                train_acc = accuracy_score(train_pred, self.y)
-                test_acc = accuracy_score(test_pred, self.y_test)
-                groups, group_metrics, gaps = self._evaluate_fairness(self.y_test, test_pred, self.sensitive_features_test)
-                print("Train accuracy of classifier {}: {}".format(t + 1, train_acc))
-                print("Test accuracy of classifier {}: {}".format(t + 1, test_acc))
-                if(self.fair_constraint == 'dp'):
-                    for group in groups:
-                        print("P[h(X) = 1 | {}] = {}".format(group, group_metrics['dp'][group]))
-                    print("Delta_dp = {}".format(gaps['dp']))
-                elif(self.fair_constraint == 'eo'):
-                    for group in groups:
-                        print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo_y0'][group]))
-                        print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
-                    print("Delta_eo0 = {}".format(gaps['eo_y0']))
-                    print("Delta_eo1 = {}".format(gaps['eo_y1']))
-                else:
-                    raise ValueError("Invalid fairness constraint. Choose dp or eo.")
-            if(t % 50 == 0):
-                print("ALGORITHM 4 (Learning Algorithm) Loop " + str(t + 1) + " Completed!")
-                print("ALGORITHM 4 (Learning Algorithm) Time/loop: " + str(end_inner - start_inner))
+            if(self.verbose):
+                if((t + 1) % 10 == 0):
+                    train_pred = h_t.predict(self.X)
+                    test_pred = h_t.predict(self.X_test)
+                    train_acc = accuracy_score(train_pred, self.y)
+                    test_acc = accuracy_score(test_pred, self.y_test)
+                    groups, group_metrics, gaps = self._evaluate_fairness(self.y_test, test_pred, self.sensitive_features_test)
+                    print("Train accuracy of classifier {}: {}".format(t + 1, train_acc))
+                    print("Test accuracy of classifier {}: {}".format(t + 1, test_acc))
+                    if(self.fair_constraint == 'dp'):
+                        for group in groups:
+                            print("P[h(X) = 1 | {}] = {}".format(group, group_metrics['dp'][group]))
+                        print("Delta_dp = {}".format(gaps['dp']))
+                    elif(self.fair_constraint == 'eo'):
+                        for group in groups:
+                            print("P[h(X) = 1 | {}, Y = 0] = {}".format(group, group_metrics['eo_y0'][group]))
+                            print("P[h(X) = 1 | {}, Y = 1] = {}".format(group, group_metrics['eo_y1'][group]))
+                        print("Delta_eo0 = {}".format(gaps['eo_y0']))
+                        print("Delta_eo1 = {}".format(gaps['eo_y1']))
+                    else:
+                        raise ValueError("Invalid fairness constraint. Choose dp or eo.")
+                if(t % 50 == 0):
+                    print("ALGORITHM 4 (Learning Algorithm) Loop " + str(t + 1) + " Completed!")
+                    print("ALGORITHM 4 (Learning Algorithm) Time/loop: " + str(end_inner - start_inner))
 
         end_outer = time.time()
 

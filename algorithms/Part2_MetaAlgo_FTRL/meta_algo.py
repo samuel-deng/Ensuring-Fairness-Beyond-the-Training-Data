@@ -299,7 +299,7 @@ class MetaAlgorithm:
         #assert(proportions['a0_y0'] + proportions['a0_y1'] + proportions['a1_y0'] + proportions['a1_y1'] == 1)
         return proportions
 
-    def meta_algorithm(self, X, y, sensitive_features, X_test, y_test, sensitive_features_test):
+    def meta_algorithm(self, X, y, sensitive_features, X_test, y_test, sensitive_features_test, verbose=True):
         """
         Runs the meta-algorithm, calling the bayesian_oracle at each time step (which itself calls
         the lambda_best_response_param_parallel). Meta-algorithm runs for T steps, and the Bayesian oracle
@@ -339,7 +339,7 @@ class MetaAlgorithm:
                                     self.num_cores,
                                     self.solver,
                                     self.fair_constraint,
-                                    0)
+                                    0, verbose)
             h_t, inner_hypotheses_t = oracle.execute_oracle() # t = 0
             h_0 = h_t
             hypotheses.append(h_t)
@@ -377,7 +377,8 @@ class MetaAlgorithm:
                                     self.num_cores,
                                     self.solver,
                                     self.fair_constraint,
-                                    t + 1) # just to print which outer loop T we're on
+                                    t + 1,
+                                    verbose) # just to print which outer loop T we're on
                 
                 h_t, inner_hypotheses_t = oracle.execute_oracle()
                 hypotheses.append(h_t) # concatenate all of the inner loop hypotheses 

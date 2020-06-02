@@ -149,6 +149,7 @@ if __name__ == '__main__':
     parser.add_argument("--prev_w_t", help="previous w_t from previous outer loops")
     parser.add_argument("--onlyh0", help="stop at the h0 classifier")
     parser.add_argument("--split", help="the train/test split number")
+    parser.add_argument("--verbose", help="verbose bayesian oracle")
 
     now = datetime.datetime.now()
     args = parser.parse_args()
@@ -159,7 +160,7 @@ if __name__ == '__main__':
     if(args.T):
         arg_T = int(args.T)
     else:
-        arg_T = 1
+        arg_T = 50
     if(args.T_inner):
         arg_T_inner = int(args.T_inner)
     else:
@@ -179,7 +180,7 @@ if __name__ == '__main__':
     if(args.eta):
         arg_eta = float(args.eta)
     else:
-        arg_eta = 0.2
+        arg_eta = 0.15
     if(args.eta_inner):
         arg_eta_inner = float(args.eta_inner)
     else:
@@ -224,6 +225,10 @@ if __name__ == '__main__':
         arg_split = args.split
     else:
         arg_split = '1'
+    if(args.verbose):
+        arg_verbose = True
+    else:
+        arg_verbose = False
    
     algo = MetaAlgorithm(B = arg_B, T = arg_T, T_inner = arg_T_inner, eta = arg_eta, eta_inner = arg_eta_inner,
                          epsilon=arg_epsilon, gamma_1 = arg_gamma_1, gamma_2 = arg_gamma_2, num_cores = arg_num_cores, 
@@ -234,7 +239,7 @@ if __name__ == '__main__':
     print("DATASET = {}".format(arg_dataset))
     print("Train/Test Split = {}".format(arg_split))
     list_hypotheses, final_ensemble, h_t, w_t, h_0 = algo.meta_algorithm(X_train, y_train, sensitive_features_train, 
-                                                            X_test, y_test, sensitive_features_test)
+                                                            X_test, y_test, sensitive_features_test, verbose=arg_verbose)
 
     if (args.name):
         arg_output = 'ensemble_' + args.name + 'split{}.pkl'.format(arg_split)
@@ -267,12 +272,15 @@ if __name__ == '__main__':
         raise ValueError("Invalid fairness constraint. Choose dp or eo.")
 
     if(not arg_no_output):
+        '''
         with open(arg_output_list, 'wb') as f:
             pickle.dump(list_hypotheses, f)
+        '''
 
         with open(arg_output, "wb") as f:
             pickle.dump(final_ensemble, f)
 
+        '''
         with open(arg_output_h_t, 'wb') as f:
             pickle.dump(h_t, f)
 
@@ -281,3 +289,4 @@ if __name__ == '__main__':
 
         with open(arg_output_h_0, "wb") as f:
             pickle.dump(h_0, f) 
+        '''
