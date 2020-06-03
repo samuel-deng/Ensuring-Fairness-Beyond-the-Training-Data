@@ -213,6 +213,7 @@ class LambdaBestResponse:
         # Violation of fairness
         if(max_lp > self.epsilon - 4*self.gamma_1):
             optimal_w = argmax_lp
+            optimal_w[:20]
             optimal_w[optimal_w < 0] = 0
             #optimal_w = self._discretize_weights_bsearch(optimal_w) # let w_i be the upper end-point of bucket
             

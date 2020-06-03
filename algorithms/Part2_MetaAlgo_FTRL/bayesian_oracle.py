@@ -80,12 +80,15 @@ class BayesianOracle:
         self.B_vec_a0a1y0 = np.zeros(len(self.weights_org))
         self.B_vec_a0a1y0[self.a_indices['a0_y0']] += self.B
         self.B_vec_a0a1y0[self.a_indices['a1_y0']] -= self.B
+        
         self.B_vec_a1a0y0 = np.zeros(len(self.weights_org))
         self.B_vec_a1a0y0[self.a_indices['a1_y0']] += self.B
         self.B_vec_a1a0y0[self.a_indices['a0_y0']] -= self.B
+
         self.B_vec_a0a1y1 = np.zeros(len(self.weights_org))
         self.B_vec_a0a1y1[self.a_indices['a0_y1']] += self.B
         self.B_vec_a0a1y1[self.a_indices['a1_y1']] -= self.B
+
         self.B_vec_a1a0y1 = np.zeros(len(self.weights_org))
         self.B_vec_a1a0y1[self.a_indices['a1_y1']] += self.B
         self.B_vec_a1a0y1[self.a_indices['a0_y1']] -= self.B

@@ -137,6 +137,7 @@ class MetaAlgorithm:
             pi_ap = 1 - pi_a
             if(proportions['a0'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0'] + self.gp_wt_bd 
             and proportions['a1'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1'] + self.gp_wt_bd):
+                assert(pi_ap + pi_a == 1)
                 dp_N_gamma_2_A.append((pi_a, pi_ap))
 
         N_gamma_2_A['dp'] = dp_N_gamma_2_A
@@ -153,6 +154,7 @@ class MetaAlgorithm:
             pi_ap = proportions['y0'] - pi_a
             if(proportions['a0_y0'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0_y0'] + self.gp_wt_bd 
             and proportions['a1_y0'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1_y0'] + self.gp_wt_bd):
+                assert(pi_a + pi_ap == proportions['y0'])
                 eo_y0_N_gamma_2_A.append((pi_a, pi_ap))
         
         N_gamma_2_A['eo_y0'] = eo_y0_N_gamma_2_A
@@ -169,6 +171,7 @@ class MetaAlgorithm:
             pi_ap = proportions['y1'] - pi_a
             if(proportions['a0_y1'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0_y1'] + self.gp_wt_bd 
             and proportions['a1_y1'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1_y1'] + self.gp_wt_bd):
+                assert(pi_a + pi_ap == proportions['y1'])
                 eo_y1_N_gamma_2_A.append((pi_a, pi_ap))
 
         N_gamma_2_A['eo_y1'] = eo_y1_N_gamma_2_A
@@ -359,9 +362,14 @@ class MetaAlgorithm:
                 print("Updated w vector={}".format(w[:10]))
                 print("Loss vector={}".format(self._zero_one_loss_grad_w(h_t.predict(X), y)[:10]))
 
-                print("Updated w vector prop. a0={}".format(np.sum(w[a_indices['a0']])))
-
-                print("Updated w vector prop. a1={}".format(np.sum(w[a_indices['a1']])))
+                if(self.fair_constraint == 'dp'):
+                    print("Updated w vector prop. a0={}".format(np.sum(w[a_indices['a0']])))
+                    print("Updated w vector prop. a1={}".format(np.sum(w[a_indices['a1']])))
+                elif(self.fair_constraint == 'eo'):
+                    print("Updated w vector prop. a0y0={}".format(np.sum(w[a_indices['a0_y0']])))
+                    print("Updated w vector prop. a1y0={}".format(np.sum(w[a_indices['a1_y0']])))
+                    print("Updated w vector prop. a0y1={}".format(np.sum(w[a_indices['a0_y1']])))
+                    print("Updated w vector prop. a1y1={}".format(np.sum(w[a_indices['a1_y1']])))
 
                 #w = self._alternate_update_w(X, y, a_indices, inner_hypotheses_t, w, proportions)
                 oracle = BayesianOracle(X, y, X_test, y_test, w, sensitive_features, sensitive_features_test,
