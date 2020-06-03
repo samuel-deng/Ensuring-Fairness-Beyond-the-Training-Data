@@ -142,39 +142,55 @@ class MetaAlgorithm:
 
         N_gamma_2_A['dp'] = dp_N_gamma_2_A
 
-        ### Equalized Odds Y0 (eo_y0) buckets ###
-        eo_y0_gamma_2_num_buckets = np.ceil(math.log((proportions['y0']/delta_2), 1 + self.gamma_2))
-        eo_y0_gamma_2_buckets = []
-        for j in range(int(eo_y0_gamma_2_num_buckets)):
-            bucket = (delta_2) * (1 + self.gamma_2)**j
-            eo_y0_gamma_2_buckets.append(bucket)
-                        
+        ### Equalized Odds Buckets ###
+        delta_2 = self.gp_wt_bd/2
+        pi_00_logterm = (proportions['a0_y0'] + self.gp_wt_bd)/(proportions['a0_y0'] - self.gp_wt_bd + delta_2)
+        pi_00_num_buckets = int(np.ceil(math.log(pi_00_logterm, 1 + self.gamma_2)))
+        pi_00_buckets = []
+        pi_00_buckets.append(proportions['a0_y0'] - self.gp_wt_bd)
+        for j in range(pi_00_num_buckets):
+            bucket = (proportions['a0_y0'] - self.gp_wt_bd + delta_2) * (1 + self.gamma_2)**j
+            pi_00_buckets.append(bucket)
+
+        pi_01_logterm = (proportions['a0_y1'] + self.gp_wt_bd)/(proportions['a0_y1'] - self.gp_wt_bd + delta_2)
+        pi_01_num_buckets = int(np.ceil(math.log(pi_01_logterm, 1 + self.gamma_2)))
+        pi_01_buckets = []
+        pi_01_buckets.append(proportions['a0_y1'] - self.gp_wt_bd)
+        for j in range(pi_01_num_buckets):
+            bucket = (proportions['a0_y1'] - self.gp_wt_bd + delta_2) * (1 + self.gamma_2)**j
+            pi_01_buckets.append(bucket)
+
+        pi_10_logterm = (proportions['a1_y0'] + self.gp_wt_bd)/(proportions['a1_y0'] - self.gp_wt_bd + delta_2)
+        pi_10_num_buckets = int(np.ceil(math.log(pi_10_logterm, 1 + self.gamma_2)))
+        pi_10_buckets = []
+        pi_10_buckets.append(proportions['a1_y0'] - self.gp_wt_bd)
+        for j in range(pi_10_num_buckets):
+            bucket = (proportions['a1_y0'] - self.gp_wt_bd + delta_2) * (1 + self.gamma_2)**j
+            pi_10_buckets.append(bucket)
+
+        print('pi00{}'.format(pi_00_buckets))
+        print('pi01{}'.format(pi_01_buckets))
+        print('pi10{}'.format(pi_10_buckets))
+
         eo_y0_N_gamma_2_A = []
-        for pi_a in eo_y0_gamma_2_buckets:
-            pi_ap = proportions['y0'] - pi_a
-            if(proportions['a0_y0'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0_y0'] + self.gp_wt_bd 
-            and proportions['a1_y0'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1_y0'] + self.gp_wt_bd):
-                assert(pi_a + pi_ap == proportions['y0'])
-                eo_y0_N_gamma_2_A.append((pi_a, pi_ap))
-        
-        N_gamma_2_A['eo_y0'] = eo_y0_N_gamma_2_A
-
-        ### Equalized Odds Y1 (eo_y1) buckets ###
-        eo_y1_gamma_2_num_buckets = np.ceil(math.log((proportions['y1']/delta_2), 1 + self.gamma_2))
-        eo_y1_gamma_2_buckets = []
-        for j in range(int(eo_y1_gamma_2_num_buckets)):
-            bucket = (delta_2) * (1 + self.gamma_2)**j
-            eo_y1_gamma_2_buckets.append(bucket)
-        
         eo_y1_N_gamma_2_A = []
-        for pi_a in eo_y1_gamma_2_buckets:
-            pi_ap = proportions['y1'] - pi_a
-            if(proportions['a0_y1'] - self.gp_wt_bd <= pi_a and pi_a <= proportions['a0_y1'] + self.gp_wt_bd 
-            and proportions['a1_y1'] - self.gp_wt_bd <= pi_ap and pi_ap <= proportions['a1_y1'] + self.gp_wt_bd):
-                assert(pi_a + pi_ap == proportions['y1'])
-                eo_y1_N_gamma_2_A.append((pi_a, pi_ap))
+        eo_N_gamma_2_A = []
+        for prod in itertools.product(pi_00_buckets, pi_10_buckets, pi_01_buckets):
+            pi_11 = 1 - prod[0] - prod[1] - prod[2]
+            if(proportions['a1_y1'] - self.gp_wt_bd <= pi_11 and pi_11 <= proportions['a1_y1'] + self.gp_wt_bd):
+                eo_y0_N_gamma_2_A.append((prod[0], prod[1]))
+                eo_y1_N_gamma_2_A.append((prod[2], pi_11))
 
+                assert(proportions['a0_y0'] - self.gp_wt_bd <= prod[0] and prod[0] <= proportions['a0_y0'] + self.gp_wt_bd)
+                assert(proportions['a1_y0'] - self.gp_wt_bd <= prod[1] and prod[1] <= proportions['a1_y0'] + self.gp_wt_bd)
+                assert(proportions['a0_y1'] - self.gp_wt_bd <= prod[2] and prod[2] <= proportions['a0_y1'] + self.gp_wt_bd)
+                assert(proportions['a1_y1'] - self.gp_wt_bd <= pi_11 and pi_11 <= proportions['a1_y1'] + self.gp_wt_bd)
+
+                eo_N_gamma_2_A.append((prod[0], prod[1], prod[2], pi_11))
+
+        N_gamma_2_A['eo_y0'] = eo_y0_N_gamma_2_A
         N_gamma_2_A['eo_y1'] = eo_y1_N_gamma_2_A
+        N_gamma_2_A['eo'] = eo_N_gamma_2_A
 
         if(self.fair_constraint == 'dp'):
             print("N(gamma_2, A) constraints:")
@@ -184,6 +200,8 @@ class MetaAlgorithm:
             print(N_gamma_2_A['eo_y0'])
             print("N(gamma_2, A) constraints for Y = 1:")
             print(N_gamma_2_A['eo_y1'])
+            print("N(gamma_2, A) total consttraints:")
+            print(N_gamma_2_A['eo'])
                         
         return N_gamma_2_A
 

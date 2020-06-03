@@ -257,7 +257,9 @@ class BayesianOracle:
 
             start_inner = time.time()
 
-            lambda_best_response = LambdaBestResponse(h_pred, 
+            lambda_best_response = LambdaBestResponse(
+                                        self.y, 
+                                        h_pred, 
                                         self.a_indices, 
                                         self.gamma_1,
                                         self.gamma_1_buckets,

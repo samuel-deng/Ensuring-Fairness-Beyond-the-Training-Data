@@ -58,11 +58,12 @@ class DpLinearProgram():
         return self._prob.value, self._w.value, (self._a, self._a_p, (pi[0], pi[1]))
 
 class EoLinearProgram():
-    def __init__(self, n, h_pred, a_indices, a, a_p, y, solver):
+    def __init__(self, n, h_pred, a_indices, a, a_p, y_prop, y_train, solver):
         self._w = cp.Variable(n)
-        self._y = y
-        self._a_y = str(a) + "_" + str(y)
-        self._a_p_y = str(a_p) + "_" + str(y)
+        self._y = y_prop
+        self._y_train = y_train
+        self._a_y = str(a) + "_" + str(self._y)
+        self._a_p_y = str(a_p) + "_" + str(self._y)
         self._excluded_subgroups = list({"a0_y0", "a0_y1", "a1_y0", "a1_y1"}.difference(set([self._a_y, self._a_p_y])))
         self.solver = solver
 
@@ -86,8 +87,20 @@ class EoLinearProgram():
             0 <= self._w,
         ]
 
+        # Constraints for excluded subgroups
+        if(self._y == 'y0'):
+            remaining_y = len(np.where(self._y_train == 1)[0])
+        elif(self._y == 'y1'):
+            remaining_y = len(np.where(self._y_train == 0)[0])
+        else:
+            raise ValueError("EO Linear Program has wrong y value.")
+
         for group in self._excluded_subgroups:
-            self._constraints.append(self._w[a_indices[group]] == 1/n)
+            self._constraints.append(self._w[a_indices[group]] == (1 - self.pi_0 - self.pi_1)/remaining_y)
+
+        gp1 = self._excluded_subgroups[0]
+        gp2 = self._excluded_subgroups[1]
+        assert(len(a_indices[gp1]) + len(a_indices[gp2]) == remaining_y)
 
         # Objective Function
         # NOTE: @ is dot product between w and the h prediction vector with all a or a_p zero'd out
@@ -117,7 +130,8 @@ where a is either 'a0' or 'a1' (string), a_p (read: a prime) is 'a0' or 'a1' (th
 of a), and w is the discretized (based on N(gamma_1, W)) weight vector that maximizes the LP.
 """
 class LambdaBestResponse:
-    def __init__(self, h_pred, a_indices, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, num_cores, solver, fair_constraint):
+    def __init__(self, y, h_pred, a_indices, gamma_1, gamma_1_buckets, gamma_2_buckets, epsilon, num_cores, solver, fair_constraint):
+        self.y = y
         self.h_pred = np.asarray(h_pred)
         self.a_indices = a_indices
         self.gamma_1 = gamma_1
@@ -190,11 +204,11 @@ class LambdaBestResponse:
 
         elif(self.fair_constraint == 'eo'):
             solved_results = []
-            for y in ['y0', 'y1']:
+            for y_prop in ['y0', 'y1']:
                 for (a, a_p) in a_a_p:
-                    problem = EoLinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, y, self.solver)
+                    problem = EoLinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, y_prop, self.y, self.solver)
                     pool = Pool(processes = self.num_cores)
-                    solved_results.extend(pool.map(problem.solve, N_gamma_2_A['eo_' + y]))
+                    solved_results.extend(pool.map(problem.solve, N_gamma_2_A['eo_' + y_prop]))
                     pool.close()
         
         else:
@@ -213,9 +227,10 @@ class LambdaBestResponse:
         # Violation of fairness
         if(max_lp > self.epsilon - 4*self.gamma_1):
             optimal_w = argmax_lp
-            optimal_w[:20]
+            #print(optimal_w[:20])
             optimal_w[optimal_w < 0] = 0
             #optimal_w = self._discretize_weights_bsearch(optimal_w) # let w_i be the upper end-point of bucket
+            print(np.sum(optimal_w))
             
             # lambda_w_a_ap = self.B
             lambda_entry = (optimal_tuple[0], optimal_tuple[1], optimal_w) 
