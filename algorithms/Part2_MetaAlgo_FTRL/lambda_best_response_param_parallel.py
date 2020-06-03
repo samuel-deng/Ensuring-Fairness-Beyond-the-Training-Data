@@ -29,29 +29,29 @@ class DpLinearProgram():
         self._h_xi_a[a_indices[a_p]] = 0 # we only want the indices where a_i = a after dotting, so set rest to 0
         self._h_xi_ap = h_pred.copy() 
         self._h_xi_ap[a_indices[a]] = 0 # we only want the indices where a_i = a_p after dotting, so set rest to 0
-        self.pi_0 = cp.Parameter(nonneg=True)
-        self.pi_1 = cp.Parameter(nonneg=True)
+        self.pi_a = cp.Parameter(nonneg=True)
+        self.pi_a_p = cp.Parameter(nonneg=True)
 
         # Constraints
         self._constraints = [
-            cp.sum(self._w[a_indices[a]]) == self.pi_0,
-            cp.sum(self._w[a_indices[a_p]]) == self.pi_1,
+            cp.sum(self._w[a_indices[a]]) == self.pi_a,
+            cp.sum(self._w[a_indices[a_p]]) == self.pi_a_p,
             cp.sum(self._w) == 1, # don't EXACTLY sum to 1 sometimes
             0 <= self._w,
         ]
 
         # Objective Function
         # NOTE: @ is dot product between w and the h prediction vector with all a or a_p zero'd out
-        self._objective = cp.Maximize(((1/self.pi_0) * (self._w @ self._h_xi_a)) - ((1/self.pi_1) * (self._w @ self._h_xi_ap)))
+        self._objective = cp.Maximize(((1/self.pi_a) * (self._w @ self._h_xi_a)) - ((1/self.pi_a_p) * (self._w @ self._h_xi_ap)))
         self._prob = cp.Problem(self._objective, self._constraints) 
 
     def solve(self, pi):
         if(self._a == 'a0'):
-            self.pi_0.value = pi[0] # fixed as constant from the Algorithm 2 loop
-            self.pi_1.value = pi[1] # fixed as constant from the Algorithm 2 loop
+            self.pi_a.value = pi[0] # fixed as constant from the Algorithm 2 loop
+            self.pi_a_p.value = pi[1] # fixed as constant from the Algorithm 2 loop
         else:
-            self.pi_0.value = pi[1] # fixed as constant from the Algorithm 2 loop
-            self.pi_1.value = pi[0] # fixed as constant from the Algorithm 2 loop
+            self.pi_a.value = pi[1] # fixed as constant from the Algorithm 2 loop
+            self.pi_a_p.value = pi[0] # fixed as constant from the Algorithm 2 loop
 
         #print("OBJECTIVE : 1/{} (w * h({})) - 1/{} (w * h({}))".format(self.pi_0.value, self._a, self.pi_1.value, self._a_p))
         self._prob.solve(solver = self.solver, verbose=False, warm_start = True)
@@ -76,18 +76,22 @@ class EoLinearProgram():
         self._h_xi_ap[a_indices[self._a_y]] = 0 # we only want the indices where a_i = a_p after dotting, so set rest to 0
         for gp in self._excluded_subgroups:
             self._h_xi_ap[a_indices[gp]] = 0
-        self.pi_0 = cp.Parameter(nonneg=True)
-        self.pi_1 = cp.Parameter(nonneg=True)
+
+        self.pi_a = cp.Parameter(nonneg=True)
+        self.pi_a_p = cp.Parameter(nonneg=True)
+        self.ex_pi_0 = cp.Parameter(nonneg=True)
+        self.ex_pi_1 = cp.Parameter(nonneg=True)
 
         # Constraints
         self._constraints = [
-            cp.sum(self._w[a_indices[self._a_y]]) == self.pi_0,
-            cp.sum(self._w[a_indices[self._a_p_y]]) == self.pi_1,
+            cp.sum(self._w[a_indices[self._a_y]]) == self.pi_a,
+            cp.sum(self._w[a_indices[self._a_p_y]]) == self.pi_a_p,
             cp.sum(self._w) == 1, # don't EXACTLY sum to 1 sometimes
             0 <= self._w,
         ]
 
         # Constraints for excluded subgroups
+        '''
         if(self._y == 'y0'):
             remaining_y = len(np.where(self._y_train == 1)[0])
         elif(self._y == 'y1'):
@@ -97,27 +101,62 @@ class EoLinearProgram():
 
         for group in self._excluded_subgroups:
             self._constraints.append(self._w[a_indices[group]] == (1 - self.pi_0 - self.pi_1)/remaining_y)
+        '''
+        for group in self._excluded_subgroups:
+            if(group.split('_')[0] == 'a0'):
+                self._constraints.append(
+                    self._w[a_indices[group]] == self.ex_pi_0/len(self._y_train[a_indices[group]]))
+            elif(group.split('_')[0] == 'a1'):
+                self._constraints.append(
+                    self._w[a_indices[group]] == self.ex_pi_1/len(self._y_train[a_indices[group]]))
+            else:
+                raise ValueError("Excluded subgp pi's in wrong format.")
 
         gp1 = self._excluded_subgroups[0]
         gp2 = self._excluded_subgroups[1]
-        assert(len(a_indices[gp1]) + len(a_indices[gp2]) == remaining_y)
+        assert(len(a_indices[gp1]) + len(a_indices[gp2]) == len(self._y_train[a_indices[gp1]]) + len(self._y_train[a_indices[gp2]]))
 
         # Objective Function
         # NOTE: @ is dot product between w and the h prediction vector with all a or a_p zero'd out
-        self._objective = cp.Maximize(((1/self.pi_0) * (self._w @ self._h_xi_a)) - ((1/self.pi_1) * (self._w @ self._h_xi_ap)))
+        self._objective = cp.Maximize(((1/self.pi_a) * (self._w @ self._h_xi_a)) - ((1/self.pi_a_p) * (self._w @ self._h_xi_ap)))
         self._prob = cp.Problem(self._objective, self._constraints) 
 
     def solve(self, pi):
+        if(self._a_y == 'a0_y0' and self._a_p_y == 'a1_y0'):
+            self.pi_a.value = pi[0] # fixed as constant from the Algorithm 2 loop
+            self.pi_a_p.value = pi[1] # fixed as constant from the Algorithm 2 loop
+            self.ex_pi_0.value = pi[2]
+            self.ex_pi_1.value = pi[3]
+        elif(self._a_y == 'a1_y0' and self._a_p_y == 'a0_y0'):
+            self.pi_a.value = pi[1]
+            self.pi_a_p.value = pi[0]
+            self.ex_pi_0.value = pi[2]
+            self.ex_pi_1.value = pi[3]
+        elif(self._a_y == 'a0_y1' and self._a_p_y == 'a1_y1'):
+            self.pi_a.value = pi[2] # fixed as constant from the Algorithm 2 loop
+            self.pi_a_p.value = pi[3] # fixed as constant from the Algorithm 2 loop
+            self.ex_pi_0.value = pi[0]
+            self.ex_pi_1.value = pi[1]
+        elif(self._a_y == 'a1_y1' and self._a_p_y == 'a0_y1'):
+            self.pi_a.value = pi[3]
+            self.pi_a_p.value = pi[2]
+            self.ex_pi_0.value = pi[0]
+            self.ex_pi_1.value = pi[1]
+        else:
+            raise ValueError("This combination of a_y and a_p_y is impossible.")
+
+        '''
         if(self._a_y == 'a1_y0' or self._a_y == 'a1_y1'):
             self.pi_0.value = pi[1]
             self.pi_1.value = pi[0]
         else:
             self.pi_0.value = pi[0] # fixed as constant from the Algorithm 2 loop
             self.pi_1.value = pi[1] # fixed as constant from the Algorithm 2 loop
+        '''
 
         #print("OBJECTIVE : 1/{} (w * h({})) - 1/{} (w * h({}))".format(self.pi_0.value, self._a_y, self.pi_1.value, self._a_p_y))
         self._prob.solve(solver = self.solver, verbose=False, warm_start = True)
-        return self._prob.value, self._w.value, (self._a_y, self._a_p_y, (pi[0], pi[1]))
+        return self._prob.value, self._w.value, (self._a_y, self._a_p_y, (self.pi_a.value, self.pi_a_p.value))
 
 """ 
 The Lambda Best Response step that solves an LP to give a single 3-tuple
@@ -208,7 +247,8 @@ class LambdaBestResponse:
                 for (a, a_p) in a_a_p:
                     problem = EoLinearProgram(len(self.h_pred), self.h_pred, self.a_indices, a, a_p, y_prop, self.y, self.solver)
                     pool = Pool(processes = self.num_cores)
-                    solved_results.extend(pool.map(problem.solve, N_gamma_2_A['eo_' + y_prop]))
+                    #solved_results.extend(pool.map(problem.solve, N_gamma_2_A['eo_' + y_prop]))
+                    solved_results.extend(pool.map(problem.solve, N_gamma_2_A['eo']))
                     pool.close()
         
         else:
@@ -230,8 +270,7 @@ class LambdaBestResponse:
             #print(optimal_w[:20])
             optimal_w[optimal_w < 0] = 0
             #optimal_w = self._discretize_weights_bsearch(optimal_w) # let w_i be the upper end-point of bucket
-            print(np.sum(optimal_w))
-            
+
             # lambda_w_a_ap = self.B
             lambda_entry = (optimal_tuple[0], optimal_tuple[1], optimal_w) 
             # return of form ('a0', 'a1', weight_vector) or ('a1', 'a0', weight_vector)
