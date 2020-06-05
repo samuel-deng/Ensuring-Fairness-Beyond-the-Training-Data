@@ -1,4 +1,4 @@
-# FairnessChecking
+# Ensuring Fairness Beyond the Training Data
 
 ## Preliminary Tests
 `main/Part1_CheckFairness` just contains some preliminary tests we did on COMPAS and Adult to see how existing fair classifiers performed vs. standard LogisticRegression. These can be safely ignored. 
