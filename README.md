@@ -19,8 +19,12 @@ Can be safely ignored/helper files:
 1. *evaluate_fairness.ipynb*: just helps me make some pretty graphs.
 1. *voting_classifier.py*: the helper file that contains the VotingClassifier class I use to wrap multiple hypotheses into a majority vote classifier. this is called in the functions above, but no need to look into it.
 
+For the exact experiments that we ran in the paper (with tuned hyperparameters), run `final_DP_1000.sh` and `final_EO_500.sh`for training robust classifiers on all the train/test splits and all datasets.
+
 ## Evaluation
 The evaluation and comparison of the robustness of our classifier can be done through `main/Part3_Comparisons`. There is a notebook for each dataset and fairness definition, the saved plots under `neurips-plots` and all of our trained models in `trained_robust.` The `ensemble_final` folder in `trained_robust` contains all the models we used for our experiments. The `h0_final` contains the models that are given only by running ApxFair (i.e. one iteration of the inner loop).
+
+Because of file size requirements for subimssion to NeurIPS, we only include the trained models for the first train/test split. However, running `final_DP_1000.sh` and `final_EO_500.sh` will duplicate the exact conditions to train the models for all five train/test splits for each dataset and fairness definition.
 
 ## How To Run
 Get off the ground by setting up the basic environment just using the included `environment.yml` file:
