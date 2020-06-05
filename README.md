@@ -7,13 +7,13 @@
 Can be found in `main/Part1_Marginal`. In these files, we used existing fair classifiers to check how non-robust they were to weighted perturbations in the data. to visualize this, we plot the marginal distributions of each feature in the data, doing this for Adult and COMPAS. We find that the marginals are almost identical, but fairness is quickly violated. These experiments correspond to Figure 1 in the paper.
 
 ## Training Robust Classifier
-Our robust classifier algorithms (Algorithms 1, 2, and 4) can be found in the `main/Part2_MetaAlgo_FTRL` directory. The main files here are:
+Our robust classifier algorithms (Algorithms 1, 2, and 3) can be found in the `main/Part2_MetaAlgo_FTRL` directory. The main files here are:
 1. **main.py**: The file that runs everything, and trains your robust classifier. It will output a single .pkl file that contains the robust classifier in the form of a VotingClassifier object. Hyperparameters can be tweaked using this file and the command line arguments specified in the file. For instance, if I want `T_inner = 50` and `T = 200` with `epsilon = 0.05`, I would run:
 `python main.py --T_inner 50 --T 200 --epsilon 0.05`
 The details/flags available are in the file. Paths to csv files/data are also all in that file.
 1. **meta_algo.py**: Algorithm 1 in the paper/the outer loop. Everything else gets run from here.
-1. **bayesian_oracle.py**: Algorithm 4 in the paper/the inner loop.
-1. **lambda_best_response_param_parallel.py:** Algorithm 2 in the paper/the LPs. I should probably rename this, but the ''param_parallel' part is just because I had a bunch of different versions of this and this is the parallelized one I settled on.
+1. **bayesian_oracle.py**: Algorithm 3 in the paper/the inner loop, AKA the ApxFair algorithm.
+1. **lambda_best_response_param_parallel.py:** Algorithm 2 in the paper/the LPs. This is the best response from the Lambda player in the ApxFair algorithm.
 
 Can be safely ignored/helper files:
 1. *evaluate_fairness.ipynb*: just helps me make some pretty graphs.
